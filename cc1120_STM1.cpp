@@ -448,6 +448,7 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 	temp[9] = e_txHeaderData;
   	temp[10] = e_txHeaderFlags ;
  	temp[11] = e_txHeaderSeqNum++;
+	temp[12] = e_txHeaderHop;
 
     for (i=CC1120_HEADER_LEN ; i<size+CC1120_HEADER_LEN ; i++) {
 		temp[i] = txBuffer[i-CC1120_HEADER_LEN];
@@ -680,6 +681,7 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 		e_rxHeaderData			  = 	temp[9];
 		e_rxHeaderFlags			  = 	temp[10];
 		e_rxHeaderSeqNum		  = 	temp[11];
+		e_rxHeaderHop			  =		temp[12];
 	
 		memcpy(rxBuffer, temp   + CC1120_HEADER_LEN, size-CC1120_HEADER_LEN -1 ); // copy payload. payload size = size - header length - checksum - bytenumber
 		for (i=0;i<120; i++) {

@@ -14,7 +14,7 @@
       
 #define CC1120_MAX_MESSAGE_LEN 50
 #define BROADCAST_ADDRESS 0xFFFF
-#define CC1120_HEADER_LEN 12
+#define CC1120_HEADER_LEN 13
 
 #define TYPE_ACK 				0x01
 #define TYPE_COMMAND 			0x02

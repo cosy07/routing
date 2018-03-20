@@ -10,7 +10,7 @@
 
 
 /// The default number of retries
-#define DEFAULT_RETRIES 5
+#define DEFAULT_RETRIES 3//나중에 5로 수정3
 
 // The default size of the routing table we keep
 #define ROUTING_TABLE_SIZE 10
@@ -65,7 +65,7 @@
 #define TIME_HOP					400
 #define TIME_CONTROL				5000
 
-#define NUM_OF_MASTER				6
+#define NUM_OF_MASTER				3
 
 void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
 
@@ -99,6 +99,7 @@ public:
 	uint8_t   		headerSeqNum();
 	uint8_t   		headerFlags();
 	uint8_t			headerHop();
+	uint16_t		getThisAddress();
 
 
 	bool           available();

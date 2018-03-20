@@ -131,7 +131,10 @@ uint8_t Datagram::headerHop()
 {
 	return(_driver.headerHop());
 }
-
+uint16_t Datagram::getThisAddress()
+{
+	return _thisAddress;
+}
 bool Datagram::available()
 {   //  Serial.println("111  CHECK"); 
 	if (_driver.CheckReceiveFlag()) {
@@ -167,6 +170,8 @@ byte  Datagram::recvData(uint8_t* buf)
 		_rxHeaderHop = headerHop();
 		return (size - CC1120_HEADER_LEN);
 	}
+	//routing 아닐시에는 여기서 바로 ack보내도록(type 값이 routing type의 값보다 크면 operation message)
+	//중간 node에서 목적지 node로 보내는 것도..
 	return 0;
 }
 
@@ -347,13 +352,13 @@ void Datagram::printRecvPacketHeader()
 {
 	Serial.println("-----------------------------------------------------------------------------");
 	Serial.print("_rxHeaderFrom : ");
-	Serial.println(_rxHeaderFrom);
+	Serial.println(_rxHeaderFrom, HEX);
 	Serial.print("_rxHeaderTo : ");
-	Serial.println(_rxHeaderTo);
+	Serial.println(_rxHeaderTo, HEX);
 	Serial.print("_rxHeaderSource : ");
-	Serial.println(_rxHeaderSource);
+	Serial.println(_rxHeaderSource, HEX);
 	Serial.print("_rxHeaderDestination : ");
-	Serial.println(_rxHeaderDestination);
+	Serial.println(_rxHeaderDestination, HEX);
 	Serial.print("_rxHeaderType : ");
 	Serial.println(_rxHeaderType);
 	Serial.print("_rxHeaderData : ");
@@ -377,13 +382,13 @@ void Datagram::printPath()
 		temp_address = convertToAddress(gatewayNumber, i, 0);
 		while (temp_address != _thisAddress)
 		{
-			Serial.print(temp_address);
+			Serial.print(temp_address, HEX);
 			Serial.print(" -> ");
 			index = convertToMasterNumber(temp_address);
 			temp_address = parentMaster[index];
 		}
 		Serial.print(" -> ");
-		Serial.println(_thisAddress);
+		Serial.println(_thisAddress, HEX);
 	}
 	Serial.println("--------------");
 }
@@ -571,7 +576,7 @@ int8_t Datagram::G_find_2ndRow_master()
 		if (number_of_unknown_node == 0)
 			return 0;
 		Serial.print("send : ");
-		Serial.println(node_list[i]);
+		Serial.println(node_list[i], HEX);
 
 
 		//from, to, src, dst, type, data, flags, seqnum, hop, payload, size of payload, timeout
@@ -586,8 +591,9 @@ int8_t Datagram::G_find_2ndRow_master()
 				temp_buf[1] = (uint8_t)(0x00FF & node_list[i]);
 				if (sendToWaitAck(_thisAddress, node_list[j], _thisAddress, node_list[j], R2_REQUEST_TYPE, 1, NONE, NONE, NONE, temp_buf, sizeof(temp_buf)))
 				{
-					startTime = millis();
-					while (millis() - startTime < 10 * TIME_TERM)
+					//startTime = millis();
+					//while (millis() - startTime < 10 * TIME_TERM)
+					while(1)//
 					{
 						SetReceive();
 						if (available())
@@ -614,9 +620,10 @@ int8_t Datagram::G_find_2ndRow_master()
 			continue;
 		}
 
-		Serial.println(word(temp_buf[0], temp_buf[1]));
-		startTime = millis();
-		while ((millis() - startTime) < number_of_unknown_node * 10 * TIME_TERM)
+		Serial.println(word(temp_buf[0], temp_buf[1]), HEX);
+		//startTime = millis();
+		//while ((millis() - startTime) < number_of_unknown_node * 10 * TIME_TERM)
+		while(1)
 		{
 			SetReceive();
 			if (available())
@@ -668,10 +675,10 @@ void Datagram::FromMasterToGateway() {
 		{
 			if (recvData(temp_buf))
 			{
-				addRouteTo(_rxHeaderFrom, _rxHeaderFrom, Valid, 1);
 				M_findCandidateParents();
-				if (_rxHeaderTo == _thisAddress || _rxHeaderTo == masterBroadcastAddress)
+				if (_rxHeaderTo == _thisAddress || _rxHeaderTo == masterBroadcastAddress)//routing 시 broadcast는 gateway에서 처음에 보내는 거 외에는 없어야함
 				{
+					addRouteTo(_rxHeaderFrom, _rxHeaderFrom, Valid, 1);
 					printRecvPacketHeader();
 					if (_rxHeaderDestination != _thisAddress && _rxHeaderDestination != masterBroadcastAddress)
 					{
@@ -713,7 +720,11 @@ void Datagram::FromMasterToGateway() {
 							//from, to, src, dst, type, data, flags, seqnum, hop
 							send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 							if (sendToWaitAck(_thisAddress, realDst, _rxHeaderSource, realDst, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, temp_buf, sizeof(temp_buf), TIME_TERM))
+							{
+								Serial.println("receive multihop ack to me");
+								Serial.println(getRouteTo(_rxHeaderDestination)->next_hop, HEX);
 								send(_thisAddress, getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, temp_buf, sizeof(temp_buf));
+							}
 							else
 								sendToWaitAck(_thisAddress, getRouteTo(_thisAddress & 0xFC00)->next_hop, _thisAddress, _thisAddress & 0xFC00, NACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 						}
@@ -734,6 +745,7 @@ void Datagram::FromMasterToGateway() {
 					}
 					else if (_rxHeaderType == CHECK_ROUTING)
 					{
+						send(_thisAddress, getRouteTo(_thisAddress & 0xFC00)->next_hop, _thisAddress, _thisAddress & 0xFC00, ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 						break;
 					}
 				}
@@ -761,7 +773,7 @@ void Datagram::M_findCandidateParents()
 			candidateRSSI = _driver.rssi;
 			//candidateHop = 
 			Serial.print("My choice : ");
-			Serial.println(candidateAddress);
+			Serial.println(candidateAddress, HEX);
 		}
 		else if (receivedType == _rxHeaderType)//Type check 안하면, 계속 가장 인접한 노드를 부모로 선택하게 되어서 hop수가 계속 늘어난다.
 		{
@@ -772,7 +784,7 @@ void Datagram::M_findCandidateParents()
 				candidateRSSI = _driver.rssi;
 				//candidateHop = 
 				Serial.print("My choice : ");
-				Serial.println(_rxHeaderFrom);
+				Serial.println(_rxHeaderFrom, HEX);
 			}
 		}
 	}
@@ -834,7 +846,7 @@ void Datagram::M_masterSendRoutingReply()
 	Serial.print("My candidate : ");
 	Serial.println(candidateAddress, HEX);
 	Serial.print("Receved from : ");
-	Serial.println(_rxHeaderFrom);
+	Serial.println(_rxHeaderFrom, HEX);
 	if (candidateAddress == _rxHeaderFrom || candidateAddress == 0)
 	{
 		addRouteTo(_rxHeaderSource, _rxHeaderFrom, Valid, _rxHeaderHop + 1);
