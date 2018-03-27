@@ -508,21 +508,42 @@ int8_t Datagram::G_find_1stRow_master()
 	uint8_t num_of_routed_nodes = 0;
 	Serial.println("send broadcast request message");
 	Serial.println(masterBroadcastAddress, HEX);
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < R_GATEWAY_SEND_NUM; i++)
 	{
 		send(_thisAddress, masterBroadcastAddress, _thisAddress, masterBroadcastAddress, REQUEST_BROADCAST, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 	}
 	for (int i = 1; i <= NUM_OF_MASTER; i++)
 	{
 		uint16_t dst = convertToAddress(gatewayNumber, i, 0);
-		if (sendToWaitAck(_thisAddress, dst, _thisAddress, dst, REQUEST_TYPE, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf)))
+		uint8_t recvAckNum = 0;
+		for (int j = 0; j < DEFAULT_RETRIES; j++)
 		{
-			printRecvPacketHeader();
-			Serial.print(i); Serial.println("master is 1 hop node");
-			checkReceive[i] = true;
-			parentMaster[i] = _thisAddress;
-			printRoutingTable();
-			num_of_routed_nodes++;
+			send(_thisAddress, dst, _thisAddress, dst, REQUEST_TYPE, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+			startTime = millis();
+			while (millis() - startTime < TIME_TERM * 5)
+			{
+				SetReceive();
+				if (available())
+				{
+					if (recvData(temp_buf) && _rxHeaderFrom == dst && _rxHeaderTo == _thisAddress && _rxHeaderType == REQUEST_ACK_TYPE)
+					{
+						recvAckNum++;
+						if (recvAckNum > 4)
+						{
+							addRouteTo(_rxHeaderFrom, _rxHeaderFrom, Valid, 1);
+							printRecvPacketHeader();
+							Serial.print(i); Serial.println("master is 1 hop node");
+							checkReceive[i] = true;
+							parentMaster[i] = _thisAddress;
+							printRoutingTable();
+							num_of_routed_nodes++;
+							j = DEFAULT_RETRIES;
+							break;
+						}
+					}
+				}
+			}
+			delay(1000);
 		}
 	}
 	for (uint8_t i = 1; i <= NUM_OF_MASTER; i++)
@@ -666,6 +687,11 @@ int8_t Datagram::G_find_2ndRow_master()
 ****************************************************************/
 void Datagram::FromMasterToGateway() {
 	uint8_t receivedRequestNum = 0;
+	uint8_t receivedOverhearNum = 1;
+
+	uint16_t priorPacketFrom = -1;
+	uint8_t priorPacketType = -1;
+
 	Serial.println("FromMasterToGateway");
 	Serial.println(masterBroadcastAddress, HEX);
 	while (1)
@@ -675,6 +701,13 @@ void Datagram::FromMasterToGateway() {
 		{
 			if (recvData(temp_buf))
 			{
+				if (priorPacketFrom == _rxHeaderFrom && priorPacketType == _rxHeaderType)
+				{
+					if (receivedOverhearNum++ > R_MASTER_SEND_NUM - 1)
+						M_findCandidateParents();
+				}
+				else
+					receivedOverhearNum = 1;
 				M_findCandidateParents();
 				if (_rxHeaderTo == _thisAddress || _rxHeaderTo == masterBroadcastAddress)//routing 시 broadcast는 gateway에서 처음에 보내는 거 외에는 없어야함
 				{
@@ -692,12 +725,13 @@ void Datagram::FromMasterToGateway() {
 						Serial.println(receivedRequestNum);
 						receivedRequestNum++;
 					}
-					else if (_rxHeaderType == REQUEST_TYPE && receivedRequestNum > 8)
+					else if (_rxHeaderType == REQUEST_TYPE && receivedRequestNum > R_GATEWAY_SEND_NUM - 2)
 					{
 						Serial.println("receive row1 request");
 						printRoutingTable();
 						//from, to, src, dst, type, data, flags, seqnum, hop
-						send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, REQUEST_ACK_TYPE, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+						for(uint8_t i = 0;i < R_MASTER_SEND_NUM;i++)
+							send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, REQUEST_ACK_TYPE, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 					}
 					else if (_rxHeaderType == R2_REQUEST_TYPE)
 					{
@@ -749,6 +783,8 @@ void Datagram::FromMasterToGateway() {
 						break;
 					}
 				}
+				priorPacketFrom = _rxHeaderFrom;
+				priorPacketType = _rxHeaderType;
 			}
 		}
 	}
@@ -788,7 +824,6 @@ void Datagram::M_findCandidateParents()
 			}
 		}
 	}
-
 }
 /****************************************************************
 *FUNCTION NAME:  M_find2ndRowMasters( )

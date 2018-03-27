@@ -15,6 +15,8 @@
 // The default size of the routing table we keep
 #define ROUTING_TABLE_SIZE 10
 #define ROUTER_MAX_MESSAGE_LEN 48
+#define R_MASTER_SEND_NUM 5
+#define R_GATEWAY_SEND_NUM 10
 
 //=====================================================================================================
 //	2017-04-26	ver.1
@@ -65,7 +67,7 @@
 #define TIME_HOP					400
 #define TIME_CONTROL				5000
 
-#define NUM_OF_MASTER				3
+#define NUM_OF_MASTER				6
 
 void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
 
