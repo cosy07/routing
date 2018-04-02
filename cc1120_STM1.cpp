@@ -379,7 +379,7 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(IOCFG3, 0xB0);        //GPIO3 IO Pin Configuration
 	SpiWriteReg(IOCFG2, 0x06);        //GPIO2 IO Pin Configuration
 	SpiWriteReg(IOCFG1, 0xB0);        //GPIO1 IO Pin Configuration
-	SpiWriteReg(IOCFG0, 0x06);        //GPIO0 IO Pin Configuration
+	SpiWriteReg(IOCFG0, 0x40);        //GPIO0 IO Pin Configuration
 	SpiWriteReg(SYNC_CFG1, 0x0B);     //Sync Word Detection Configuration Reg. 1
 	SpiWriteReg(DEVIATION_M, 0x89);   //Frequency Deviation Configuration
 	SpiWriteReg(MODCFG_DEV_E, 0x02);  //Modulation Format and Frequency Deviation Configur..
@@ -416,6 +416,8 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(FS_VCO0, 0xB4);       //FS Voltage Controlled Oscillator Configuration Reg..
 	SpiWriteReg(XOSC5, 0x0E);         //Crystal Oscillator Configuration Reg. 5
 	SpiWriteReg(XOSC1, 0x03);         //Crystal Oscillator Configuration Reg. 1
+
+
 
 ////SpiWriteReg(RFEND_CFG1,0x3F);
 
@@ -462,7 +464,7 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
    
 	
 
-   Serial.println("Sending : From   To    Source  Dest Type Data Flag Seq#  Payload....                         ");
+   Serial.println("Sending : From  To  Src   Dst Type Data Fg Seq hop Payload....                         ");
    Serial.print("          ");
    DisableLNA();
 

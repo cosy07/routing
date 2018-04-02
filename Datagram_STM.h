@@ -67,7 +67,7 @@
 #define TIME_HOP					400
 #define TIME_CONTROL				5000
 
-#define NUM_OF_MASTER				6
+#define NUM_OF_MASTER				5
 
 void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
 
@@ -149,11 +149,11 @@ public:
 
 	int8_t G_find_1stRow_master();
 
-	int8_t G_find_2ndRow_master();
+	int8_t G_find_2ndRow_master(uint16_t*);
 
 	uint8_t G_get_i_row_node_list(uint8_t row_number, uint16_t *node_list);
 
-	int8_t G_find_multihop_node();
+	int8_t G_find_multihop_node(uint8_t, uint16_t*);
 
 	void FromMasterToGateway();
 
