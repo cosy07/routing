@@ -395,7 +395,7 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(FIFO_CFG, 0x00);      //FIFO Configuration
 	SpiWriteReg(FS_CFG, 0x14);        //Frequency Synthesizer Configuration
 	SpiWriteReg(PKT_CFG0, 0x20);      //Packet Configuration Reg. 0
-	SpiWriteReg(PA_CFG2, 0x6D);       //Power Amplifier Configuration Reg. 2
+	SpiWriteReg(PA_CFG2, 0x4F);       //Power Amplifier Configuration Reg. 2
 	SpiWriteReg(PKT_LEN, 0xFF);       //Packet Length Configuration
 	SpiWriteReg(IF_MIX_CFG, 0x00);    //IF Mix Configuration
 	SpiWriteReg(FREQOFF_CFG, 0x22);   //Frequency Offset Correction Configuration
@@ -416,6 +416,7 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(FS_VCO0, 0xB4);       //FS Voltage Controlled Oscillator Configuration Reg..
 	SpiWriteReg(XOSC5, 0x0E);         //Crystal Oscillator Configuration Reg. 5
 	SpiWriteReg(XOSC1, 0x03);         //Crystal Oscillator Configuration Reg. 1
+
 
 
 
@@ -469,18 +470,20 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
    DisableLNA();
 
 
+
+
   for (i=0; i<CC1120_HEADER_LEN+size+1; i++) {
 	   Serial.print(temp[i],HEX);
 	  if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) Serial.print("   ");
   }        
 	
-    Serial.println("          ");
+	Serial.println("          ");
 	SpiWriteReg(SINGLE_TXFIFO, CC1120_HEADER_LEN + size + 1 ); // Header + Payload + checksum
 	SpiWriteBurstReg(BURST_TXFIFO, temp,  CC1120_HEADER_LEN + size + 1 );
 	SpiStrobe(STX) ;		//start send	
 
-   while (!digitalRead(GDO0));    ////Serial.println(" Sync Word transmitted (GPIO2) ");	// Wait for GDO0 to be set -> sync transmitted  
-   while (digitalRead(GDO0));     ////Serial.println(" End of packet (GPIO2)");	// Wait for GDO0 to be cleared -> end of packet
+   while (!digitalRead(GDO0));    //Serial.println(" Sync Word transmitted (GPIO2) ");	// Wait for GDO0 to be set -> sync transmitted  
+   while (digitalRead(GDO0));     //Serial.println(" End of packet (GPIO2)");	// Wait for GDO0 to be cleared -> end of packet
 
   
    

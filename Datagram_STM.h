@@ -67,7 +67,7 @@
 #define TIME_HOP					400
 #define TIME_CONTROL				5000
 
-#define NUM_OF_MASTER				5
+#define NUM_OF_MASTER				3
 
 void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
 
@@ -230,7 +230,7 @@ protected:
 	uint16_t parentMaster[NUM_OF_MASTER + 1];
 
 	uint16_t candidateAddress = 0;
-	uint8_t candidateRSSI = 0;
+	signed char candidateRSSI = 0;
 	uint8_t candidateHop = 0;
 
 	byte temp_buf[20];
