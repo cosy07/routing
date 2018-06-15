@@ -29,6 +29,9 @@ void ELECHOUSE_CC1120::SpiInit(void)
 	RE_PIN = PB6;
 	TE_PIN = PB7;
 
+	//RE_PIN = PB9; //에어컨회사
+	//TE_PIN = PB8;
+
 	GDO0 = PB0; // GPIO0 or GPIO2
 	RST_PIN = PB1;
 
@@ -36,30 +39,30 @@ void ELECHOUSE_CC1120::SpiInit(void)
 	SPI.begin();
 	SPI.setBitOrder(MSBFIRST); // Set the SPI_1 bit order
 
-	//SPI.setDataMode(SPI_MODE0); //Set the  SPI_2 data mode 0
+							   //SPI.setDataMode(SPI_MODE0); //Set the  SPI_2 data mode 0
 	SPI.setClockDivider(SPI_CLOCK_DIV128);
 
 	pinMode(SS_PIN, OUTPUT);
 
 	digitalWrite(SS_PIN, HIGH); // manually take CSN high between spi transmissions
-  
+
 	pinMode(RST_PIN, OUTPUT); //8
 
 	delay(100);
-	Serial.print("SS_PIN ");  Serial.print( SS_PIN  );
+	Serial.print("SS_PIN ");  Serial.print(SS_PIN);
 	Serial.print("   GDO0 ");  Serial.println(GDO0);
-   
-  // enable SPI Master, MSB, SPI mode 0, FOSC/4
+
+	// enable SPI Master, MSB, SPI mode 0, FOSC/4
 	SpiMode(0);
 }
 /****************************************************************
 *FUNCTION NAME:SpiMode
 *FUNCTION     :set spi mode
 *INPUT        :        config               mode
-			   (0<<CPOL) | (0 << CPHA)		 0
-			   (0<<CPOL) | (1 << CPHA)		 1
-			   (1<<CPOL) | (0 << CPHA)		 2
-			   (1<<CPOL) | (1 << CPHA)		 3
+(0<<CPOL) | (0 << CPHA)		 0
+(0<<CPOL) | (1 << CPHA)		 1
+(1<<CPOL) | (0 << CPHA)		 2
+(1<<CPOL) | (1 << CPHA)		 3
 *OUTPUT       :none
 ****************************************************************/
 void ELECHOUSE_CC1120::SpiMode(byte config)
@@ -73,11 +76,11 @@ void ELECHOUSE_CC1120::SpiMode(byte config)
 *INPUT        : none
 *OUTPUT       : none
 ****************************************************************/
-void ELECHOUSE_CC1120::GDO_Set (void)
-{	
- 	pinMode(GDO0, INPUT);
+void ELECHOUSE_CC1120::GDO_Set(void)
+{
+	pinMode(GDO0, INPUT);
 	digitalWrite(GDO0, HIGH);       // turn on pullup resistors
- 
+
 }
 
 /****************************************************************
@@ -86,40 +89,40 @@ void ELECHOUSE_CC1120::GDO_Set (void)
 *INPUT        :none
 *OUTPUT       :none
 ****************************************************************/
-void ELECHOUSE_CC1120::Reset (void)
+void ELECHOUSE_CC1120::Reset(void)
 {
-   
-	
-    digitalWrite(RST_PIN, LOW);
-     // give the sensor time to set up:
-    delay(100);
-    digitalWrite(RST_PIN, HIGH);
-    // give the sensor time to set up:
-    delay(100);               
+
+
+	digitalWrite(RST_PIN, LOW);
+	// give the sensor time to set up:
+	delay(100);
+	digitalWrite(RST_PIN, HIGH);
+	// give the sensor time to set up:
+	delay(100);
 	digitalWrite(SS_PIN, LOW);
- 	while(digitalRead(MISO_PIN)) Serial.println(" MISO 1");
-    SpiTransfer(SRES);
- 	while(digitalRead(MISO_PIN))Serial.println(" 2");
+	while (digitalRead(MISO_PIN)) Serial.println(" MISO 1");
+	SpiTransfer(SRES);
+	while (digitalRead(MISO_PIN))Serial.println(" 2");
 	digitalWrite(SS_PIN, HIGH);
 }
 /****************************************************************
 *FUNCTION NAME: Constructor
-*FUNCTION     : 
+*FUNCTION     :
 *INPUT        :none
 *OUTPUT       :none
-****************************************************************/ 
-ELECHOUSE_CC1120::ELECHOUSE_CC1120( ) :
-    e_thisAddress(0),
-    e_txHeaderFrom(0xAAAA),
-    e_txHeaderTo(0xBBBB),
-    e_txHeaderSource(0xCCCC),
-	e_txHeaderDestination(0xDDDD),
-    e_txHeaderType(0xEE),
-    e_txHeaderData(0xDF),
-    e_txHeaderFlags(0xFF),
-    e_txHeaderSeqNum(0x00)
-{   
-     
+****************************************************************/
+ELECHOUSE_CC1120::ELECHOUSE_CC1120() :
+	e_thisAddress(0),
+	e_txHeaderFrom(0xAA),
+	e_txHeaderTo(0xBB),
+	e_txHeaderSource(0xCC),
+	e_txHeaderDestination(0xDD),
+	e_txHeaderType(0xEE),
+	e_txHeaderData(0xDF),
+	e_txHeaderFlags(0xFF),
+	e_txHeaderSeqNum(0x00)
+{
+
 }
 
 /****************************************************************
@@ -141,10 +144,10 @@ void ELECHOUSE_CC1120::Init(void)
 	pinMode(TE_PIN, OUTPUT);
 	EnableLNA();
 
-	Reset();					
-	RegConfigSettings(0);			
+	Reset();
+	RegConfigSettings(0);
 	//ManualCalibration();
-	
+
 }
 
 /****************************************************************
@@ -158,7 +161,7 @@ void ELECHOUSE_CC1120::Init(byte f)
 
 	SpiInit();					//spi initialization
 	GDO_Set();					//GDO set
-	byte i,t;
+	byte i, t;
 
 	digitalWrite(SS_PIN, HIGH);
 	digitalWrite(SCK_PIN, HIGH);
@@ -167,10 +170,10 @@ void ELECHOUSE_CC1120::Init(byte f)
 	pinMode(TE_PIN, OUTPUT);
 	EnableLNA();
 
-	Reset();					
-	RegConfigSettings(f);	
+	Reset();
+	RegConfigSettings(f);
 	//ManualCalibration();
-	
+
 }
 
 
@@ -182,35 +185,35 @@ void ELECHOUSE_CC1120::Init(byte f)
 ****************************************************************/
 void ELECHOUSE_CC1120::SpiWriteReg(uint16_t addr, byte value)
 {
- 	byte  temp;
-    uint8_t tempExt  = (uint8_t)(addr>>8);
-    uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
-	
-	if(!tempExt)
+	byte  temp;
+	uint8_t tempExt = (uint8_t)(addr >> 8);
+	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
+
+	if (!tempExt)
 	{		/* Pull CS_N low and wait for SO to go low before communication starts */
 		digitalWrite(SS_PIN, LOW);
 		//Sean delay(100);
-	 	while(digitalRead(MISO_PIN));
+		while (digitalRead(MISO_PIN));
 		SpiTransfer(tempAddr);
 		SpiTransfer(value);
 		digitalWrite(SS_PIN, HIGH);
 	}
 	else if (tempExt == 0x2F)
-	{   
+	{
 		digitalWrite(SS_PIN, LOW);
- 	 	while(digitalRead(MISO_PIN));
+		while (digitalRead(MISO_PIN));
 		SpiTransfer(tempExt);
 		SpiTransfer(tempAddr);
 		SpiTransfer(value);
 		digitalWrite(SS_PIN, HIGH);
-	}	
+	}
 }
 
 
 
-	
-	
-	
+
+
+
 /****************************************************************
 *FUNCTION NAME:SpiWriteBurstReg
 *FUNCTION     :CC1101 write burst data to register
@@ -221,16 +224,16 @@ void ELECHOUSE_CC1120::SpiWriteBurstReg(byte addr, byte *buffer, byte num)
 {
 	byte i, temp;
 	byte arrayt[20];
-	
+
 
 	temp = addr | WRITE_BURST;
-    digitalWrite(SS_PIN, LOW);
-    while(digitalRead(MISO_PIN));
-    SpiTransfer(temp);
-    for (i = 0; i < num; i++)
- 	{
-        SpiTransfer(buffer[i]);
-    }
+	digitalWrite(SS_PIN, LOW);
+	while (digitalRead(MISO_PIN));
+	SpiTransfer(temp);
+	for (i = 0; i < num; i++)
+	{
+		SpiTransfer(buffer[i]);
+	}
 
 	digitalWrite(SS_PIN, HIGH);
 }
@@ -245,7 +248,7 @@ byte ELECHOUSE_CC1120::SpiStrobe(byte strobe)
 {
 	byte sts;
 	digitalWrite(SS_PIN, LOW);
-	while(digitalRead(MISO_PIN));
+	while (digitalRead(MISO_PIN));
 	sts = SpiTransfer(strobe);
 	digitalWrite(SS_PIN, HIGH);
 	return sts;
@@ -257,32 +260,32 @@ byte ELECHOUSE_CC1120::SpiStrobe(byte strobe)
 *INPUT        :addr: register address
 *OUTPUT       :register value
 ****************************************************************/
-byte ELECHOUSE_CC1120::SpiReadReg(uint16_t addr) 
+byte ELECHOUSE_CC1120::SpiReadReg(uint16_t addr)
 {
-	 	
-	byte value,temp,i;
-    uint8_t tempExt  = (uint8_t)(addr>>8);
-    uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
-	
-	if(!tempExt)
+
+	byte value, temp, i;
+	uint8_t tempExt = (uint8_t)(addr >> 8);
+	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
+
+	if (!tempExt)
 	{
 		digitalWrite(SS_PIN, LOW);
-		while(digitalRead(MISO_PIN));
+		while (digitalRead(MISO_PIN));
 		temp = tempAddr | READ_SINGLE;
 		SpiTransfer(temp);
-		value=SpiTransfer(1);
+		value = SpiTransfer(1);
 		digitalWrite(SS_PIN, HIGH);
-		return value; 
+		return value;
 	}
 	else if (tempExt == 0x2F)
 	{
 		digitalWrite(SS_PIN, LOW);
-		while(digitalRead(MISO_PIN));
-		SpiTransfer(tempExt| READ_SINGLE);
+		while (digitalRead(MISO_PIN));
+		SpiTransfer(tempExt | READ_SINGLE);
 		SpiTransfer(tempAddr);
-		value=SpiTransfer(1);
-		digitalWrite(SS_PIN, HIGH);		 
-		return value; 
+		value = SpiTransfer(1);
+		digitalWrite(SS_PIN, HIGH);
+		return value;
 	}
 }
 
@@ -294,36 +297,36 @@ byte ELECHOUSE_CC1120::SpiReadReg(uint16_t addr)
 ****************************************************************/
 void ELECHOUSE_CC1120::SpiReadBurstReg(uint16_t addr, byte *buffer, byte num)
 {
-	byte value,temp,i;
-    uint8_t tempExt  = (uint8_t)(addr>>8);
-    uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
-	
-	if(!tempExt)
+	byte value, temp, i;
+	uint8_t tempExt = (uint8_t)(addr >> 8);
+	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
+
+	if (!tempExt)
 	{
 		digitalWrite(SS_PIN, LOW);
-		while(digitalRead(MISO_PIN));
+		while (digitalRead(MISO_PIN));
 		temp = tempAddr | READ_BURST;
 		SpiTransfer(temp);
-		for(i=0;i<num;i++)
+		for (i = 0; i<num; i++)
 		{
-			buffer[i]=SpiTransfer(0);
+			buffer[i] = SpiTransfer(0);
 		}
 		digitalWrite(SS_PIN, HIGH);
-		 
+
 	}
 	else if (tempExt == 0x2F)
 	{
 		digitalWrite(SS_PIN, LOW);
-		while(digitalRead(MISO_PIN));
+		while (digitalRead(MISO_PIN));
 		temp = tempAddr;
-		SpiTransfer(tempExt| READ_BURST);
+		SpiTransfer(tempExt | READ_BURST);
 		SpiTransfer(temp);
-		for(i=0;i<num;i++)
+		for (i = 0; i<num; i++)
 		{
-			buffer[i]=SpiTransfer(0);
+			buffer[i] = SpiTransfer(0);
 		}
 		digitalWrite(SS_PIN, HIGH);
-		
+
 	}
 }
 
@@ -334,35 +337,35 @@ void ELECHOUSE_CC1120::SpiReadBurstReg(uint16_t addr, byte *buffer, byte num)
 *OUTPUT       :status value
 ****************************************************************/
 
-byte ELECHOUSE_CC1120::SpiReadStatus(uint16_t addr) 
+byte ELECHOUSE_CC1120::SpiReadStatus(uint16_t addr)
 {
-	byte value,temp;
-    uint8_t tempExt  = (uint8_t)(addr>>8);
-    uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
+	byte value, temp;
+	uint8_t tempExt = (uint8_t)(addr >> 8);
+	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
 
-	
-	if(!tempExt)
+
+	if (!tempExt)
 	{
 		temp = tempAddr | READ_SINGLE;
 		digitalWrite(SS_PIN, LOW);
-		while(digitalRead(MISO_PIN));
+		while (digitalRead(MISO_PIN));
 		SpiTransfer(temp);
-		value=SpiTransfer(0);
+		value = SpiTransfer(0);
 		digitalWrite(SS_PIN, HIGH);
 
 		return value;
 	}
 	else if (tempExt == 0x2F)
-	{   
+	{
 		digitalWrite(SS_PIN, LOW);
-		while(digitalRead(MISO_PIN));
-		SpiTransfer(tempExt| READ_SINGLE);
+		while (digitalRead(MISO_PIN));
+		SpiTransfer(tempExt | READ_SINGLE);
 		SpiTransfer(tempAddr);
-		value=SpiTransfer(0);
+		value = SpiTransfer(0);
 		digitalWrite(SS_PIN, HIGH);
-	
+
 		return value;
-	}	
+	}
 }
 
 /****************************************************************
@@ -395,7 +398,7 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(FIFO_CFG, 0x00);      //FIFO Configuration
 	SpiWriteReg(FS_CFG, 0x14);        //Frequency Synthesizer Configuration
 	SpiWriteReg(PKT_CFG0, 0x20);      //Packet Configuration Reg. 0
-	SpiWriteReg(PA_CFG2, 0x4F);       //Power Amplifier Configuration Reg. 2
+	SpiWriteReg(PA_CFG2, 0x4F);       //Power Amplifier Configuration Reg. 2	0x74 : 10dBm, 0x6D : 7dBm, 0x69 : 6dBm, 0x5D : 0dBm, 0x56 : -3dBm, 0x4F : -6dBm, 0x43 : -11dBm
 	SpiWriteReg(PKT_LEN, 0xFF);       //Packet Length Configuration
 	SpiWriteReg(IF_MIX_CFG, 0x00);    //IF Mix Configuration
 	SpiWriteReg(FREQOFF_CFG, 0x22);   //Frequency Offset Correction Configuration
@@ -439,19 +442,15 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 	byte temp[40];
 	byte i;
 
-	temp[0] = (uint8_t) (e_txHeaderFrom >> 8);
-	temp[1] = (uint8_t)(0x00FF & e_txHeaderFrom);
-	temp[2] = (uint8_t) (e_txHeaderTo >> 8);
-	temp[3] = (uint8_t)(0x00FF & e_txHeaderTo);
-	temp[4] = (uint8_t) (e_txHeaderSource >> 8);
-	temp[5] = (uint8_t) (0x00FF & e_txHeaderSource);
-	temp[6] = (uint8_t)(e_txHeaderDestination >> 8);
-	temp[7] = (uint8_t)(0x00FF & e_txHeaderDestination);
-	temp[8] = e_txHeaderType;
-	temp[9] = e_txHeaderData;
-  	temp[10] = e_txHeaderFlags ;
- 	temp[11] = e_txHeaderSeqNum++;
-	temp[12] = e_txHeaderHop;
+	temp[0] = e_txHeaderFrom;
+	temp[1] = e_txHeaderTo;
+	temp[2] = e_txHeaderSource;
+	temp[3] = e_txHeaderDestination;
+	temp[4] = e_txHeaderType;
+	temp[5] = e_txHeaderData;
+  	temp[6] = e_txHeaderFlags ;
+ 	temp[7] = e_txHeaderSeqNum++;
+	temp[8] = e_txHeaderHop;
 
     for (i=CC1120_HEADER_LEN ; i<size+CC1120_HEADER_LEN ; i++) {
 		temp[i] = txBuffer[i-CC1120_HEADER_LEN];
@@ -465,7 +464,7 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
    
 	
 
-   Serial.println("Sending : From  To  Src   Dst Type Data Fg Seq hop Payload....                         ");
+   Serial.println("Sending : From To Src Dst Type Data Fg Seq hop Payload....                         ");
    Serial.print("          ");
    DisableLNA();
 
@@ -473,8 +472,9 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 
 
   for (i=0; i<CC1120_HEADER_LEN+size+1; i++) {
-	   Serial.print(temp[i],HEX);
-	  if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) Serial.print("   ");
+	   Serial.print(temp[i]);
+	  //if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) 
+		  Serial.print("   ");
   }        
 	
 	Serial.println("          ");
@@ -491,6 +491,7 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 	SpiStrobe(SFTX );									//flush TXfifo
 //	Serial.println(" ******************************************************* ");	
 	EnableLNA();
+	//Serial.println("send end");
 }
 void ELECHOUSE_CC1120::EnableLNA(void)
 {
@@ -579,36 +580,25 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 	byte status[2];
 	byte temp[120];
 	byte i;
-	//byte crchigh, crclow;
     signed char lqi;
     byte crc;
- //	Serial.println("Receive 1");	
 	byte num;
 	size =SpiReadStatus(NUM_RXBYTES);
-//	Serial.print(" RXFIFO size: ");
-//	Serial.println(size);
 		
 	while((num =SpiReadStatus(NUM_RXBYTES)) >CC1120_HEADER_LEN)
 	{
   		size=SpiReadReg(SINGLE_RXFIFO);
  		if ((size < CC1120_HEADER_LEN) || ( size > CC1120_MAX_MESSAGE_LEN) ) { //  CC1120_MAX_MESSAGE_LEN is  50
-//		if ((size < CC1120_HEADER_LEN) || ( size > 120) ) { //  CC1120_MAX_MESSAGE_LEN is  50
 		Serial.print("************* Size ERROR : Too short or Too large ********* " );
 		 	Serial.println(size);
+			delay(100);
 			SpiStrobe(SFRX );
 		 	return 0; // Too short or Too large to be a real message
 		}
-		Serial.print("BURST_RXFIFO size: ");
-		Serial.print(size);
-		Serial.print("  num: ");
-		Serial.println(num);
 	
  
 		SpiReadBurstReg(BURST_RXFIFO,temp,size);
 	   	SpiReadBurstReg(BURST_RXFIFO,status,2);
-		
-		//crchigh = (uint8_t) (CRC(temp,size-2) >> 8);
-		//crclow =  (uint8_t)(0x00FF & CRC(temp,size-2));
 		
 	
 		rssi = rssi_dbm(status[0]);
@@ -616,25 +606,6 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 	    crc = (status[1] & 0x80);
 	
 	   
-		//if ((temp[size-2] != crchigh) ||
-		    //(temp[size-1] != crclow )){
-			////Serial.print("====== CRC ERROR (Received:Calulated) " );
-			/*//Serial.print(temp[size-2]);
-			//Serial.print("  :  ");
-			//Serial.print (crchigh);
-			//Serial.print(" , ");
-			//Serial.print(temp[size-1]);
-			//Serial.print("  :  ");
-			//Serial.println(crclow);
-			//Serial.print(" Hardware CRC : ");
-			//Serial.println(crc);*/
-			//SpiStrobe(SFRX );
-		 	//return 0; // Too short to be a real message
-		//}
-	
-		    //temp[size+CC1120_HEADER_LEN] = (uint8_t) (CRC(temp,size+CC1120_HEADER_LEN) >> 8);
-			
-		////Serial.println("From   To    Source  Type Data Flag Seq# Payload.... ");	
 		byte checkSum = 0;
 		for (i = 0; i < size - 1; i++)
 		{
@@ -642,63 +613,54 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 		}
 		if (temp[size - 1] != checkSum)
 		{
+			Serial.println("************* checksum ERROR *********  ");
+			delay(100);
 			SpiStrobe(SFRX);
-			Serial.print("************* checksum ERROR *********  ");
-			for (i=0;i<size; i++) {
-				Serial.print(temp[i],HEX);
-				if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) Serial.print("   ");
-			}
-			for (i=0;i<2; i++) {
-				Serial.print(status[i],HEX);
-				Serial.print("   ");
-			}
-		
-			Serial.print (" crc: ");
-			Serial.print (crc);
-		    Serial.println(" ");
-		  //  SpiStrobe(SFRX );
 		    return 0;
 		}
+
+		rssi = Read8BitRssi();
+
+		if (rssi < -120) {
+			Serial.println("************* weak signal(rssi below threshold)*********  ");
+			delay(100);
+			SpiStrobe(SFRX);
+			return 0;
+		}
+
 		Serial.print("-----receive-----");
 		Serial.println(millis()/1000 );
 		for (i=0;i<size; i++) {
-			Serial.print(temp[i],HEX);
-			if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) Serial.print("   ");
-		}
-		for (i=0;i<2; i++) {
-			Serial.print(status[i],HEX);
+			Serial.print(temp[i]);
+			//if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) 
 			Serial.print("   ");
 		}
 	
-	//	Serial.print ("crc:");
-	//	Serial.print (crc);
-	    Serial.print (", In Packet rssi:");
-	    Serial.print (rssi);
-	    rssi =Read8BitRssi();
-	    Serial.print (", Function rssi:");
-	    Serial.println (rssi);
-    	// Extract the 12 bytes headers
-		e_rxHeaderFrom			  =   	word(temp[0],temp[1]);
-		e_rxHeaderTo			  =   	word(temp[2],temp[3]);
-		e_rxHeaderSource		  =  	word(temp[4],temp[5]);
-		e_rxHeaderDestination	  =		word(temp[6], temp[7]);
-		e_rxHeaderType			  = 	temp[8];
-		e_rxHeaderData			  = 	temp[9];
-		e_rxHeaderFlags			  = 	temp[10];
-		e_rxHeaderSeqNum		  = 	temp[11];
-		e_rxHeaderHop			  =		temp[12];
+		Serial.println();
+
+		e_rxHeaderFrom			  =     temp[0];
+		e_rxHeaderTo			  =		temp[1];
+		e_rxHeaderSource		  =		temp[2];
+		e_rxHeaderDestination	  =		temp[3];
+		e_rxHeaderType			  = 	temp[4];
+		e_rxHeaderData			  = 	temp[5];
+		e_rxHeaderFlags			  = 	temp[6];
+		e_rxHeaderSeqNum		  = 	temp[7];
+		e_rxHeaderHop			  =		temp[8];
 	
 		memcpy(rxBuffer, temp   + CC1120_HEADER_LEN, size-CC1120_HEADER_LEN -1 ); // copy payload. payload size = size - header length - checksum - bytenumber
 		for (i=0;i<120; i++) {
 		  temp[i] =0;
 		}
+
+		delay(100);
+		SpiStrobe(SFRX);
 		return size;
-	} /*
-	else
-	{
-		SpiStrobe(SFRX );
-		return 0;
-	} */
+	}
+
+	delay(100);
+	SpiStrobe(SFRX );
+	return 0;
 }
 
 void ELECHOUSE_CC1120::ManualCalibration(void) {
@@ -857,23 +819,23 @@ ELECHOUSE_CC1120 ELECHOUSE_cc1120;
 *OUTPUT       : 
 ****************************************************************/
 
-void ELECHOUSE_CC1120::setThisAddress(uint16_t address)
+void ELECHOUSE_CC1120::setThisAddress(uint8_t address)
 {
    	 e_thisAddress = address;
 }
-void ELECHOUSE_CC1120::setHeaderFrom(uint16_t from)
+void ELECHOUSE_CC1120::setHeaderFrom(uint8_t from)
 {
    	 e_txHeaderFrom = from;
 }
-void ELECHOUSE_CC1120::setHeaderTo(uint16_t to)
+void ELECHOUSE_CC1120::setHeaderTo(uint8_t to)
 {
    	 e_txHeaderTo = to;
 }
-void ELECHOUSE_CC1120::setHeaderSource(uint16_t source)
+void ELECHOUSE_CC1120::setHeaderSource(uint8_t source)
 {
    	 e_txHeaderSource = source;
 }
-void ELECHOUSE_CC1120::setHeaderDestination(uint16_t destination)
+void ELECHOUSE_CC1120::setHeaderDestination(uint8_t destination)
 {
 	e_txHeaderDestination = destination;
 }
@@ -897,20 +859,20 @@ void ELECHOUSE_CC1120::setHeaderHop(uint8_t hop)
 {
 	e_txHeaderHop = hop;
 }
- uint16_t  ELECHOUSE_CC1120::headerTo( )
+ uint8_t  ELECHOUSE_CC1120::headerTo( )
 {
    	return  e_rxHeaderTo;
  	
 }
- uint16_t  ELECHOUSE_CC1120::headerFrom( )
+ uint8_t  ELECHOUSE_CC1120::headerFrom( )
 {
 	return  e_rxHeaderFrom;
  }
- uint16_t  ELECHOUSE_CC1120::headerSource( )
+ uint8_t  ELECHOUSE_CC1120::headerSource( )
 { 
 	return  e_rxHeaderSource;
 }
- uint16_t  ELECHOUSE_CC1120::headerDestination()
+ uint8_t  ELECHOUSE_CC1120::headerDestination()
  {
 	 return e_rxHeaderDestination;
  }

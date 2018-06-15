@@ -14,7 +14,7 @@
       
 #define CC1120_MAX_MESSAGE_LEN 50
 #define BROADCAST_ADDRESS 0xFFFF
-#define CC1120_HEADER_LEN 13
+#define CC1120_HEADER_LEN 9
 
 #define TYPE_ACK 				0x01
 #define TYPE_COMMAND 			0x02
@@ -280,21 +280,21 @@ class ELECHOUSE_CC1120
 
 // ********************************************************************************
  	protected:
-		uint16_t  e_thisAddress; //Added by Guin
-  		uint16_t  e_rxHeaderFrom ;
-		uint16_t  e_rxHeaderTo ;
-  		uint16_t  e_rxHeaderSource ;
-		uint16_t  e_rxHeaderDestination ;
+		uint8_t  e_thisAddress; //Added by Guin
+  		uint8_t  e_rxHeaderFrom ;
+		uint8_t  e_rxHeaderTo ;
+  		uint8_t  e_rxHeaderSource ;
+		uint8_t  e_rxHeaderDestination ;
  		uint8_t   e_rxHeaderType ;
 		uint8_t   e_rxHeaderData ;
   		uint8_t   e_rxHeaderFlags ;
 		uint8_t   e_rxHeaderSeqNum ;
 		uint8_t   e_rxHeaderHop ;
 
-  		uint16_t  e_txHeaderFrom ;
-		uint16_t  e_txHeaderTo ;  		
-		uint16_t  e_txHeaderSource ;
-		uint16_t  e_txHeaderDestination ;
+  		uint8_t  e_txHeaderFrom ;
+		uint8_t  e_txHeaderTo ;  		
+		uint8_t  e_txHeaderSource ;
+		uint8_t  e_txHeaderDestination ;
  		uint8_t   e_txHeaderType ;
 		uint8_t   e_txHeaderData ;
 		uint8_t   e_txHeaderFlags ;
@@ -328,11 +328,11 @@ ELECHOUSE_CC1120(uint8_t mosi,uint8_t miso, uint8_t sclk, uint8_t cs,uint8_t gdo
 		byte CheckReceiveFlag(void);
 		byte ReceiveData(byte *rxBuffer);
 // ********************************************************************************
-		void setThisAddress(uint16_t address); //Added by Guin
-		void setHeaderFrom(uint16_t address);
-		void setHeaderTo(uint16_t address);
-		void setHeaderSource(uint16_t address);
-		void setHeaderDestination(uint16_t address);
+		void setThisAddress(uint8_t address); //Added by Guin
+		void setHeaderFrom(uint8_t address);
+		void setHeaderTo(uint8_t address);
+		void setHeaderSource(uint8_t address);
+		void setHeaderDestination(uint8_t address);
 		void setHeaderType(uint8_t type);
 		void setHeaderData(uint8_t data);
 		void setHeaderFlags(uint8_t seq);
@@ -342,10 +342,10 @@ ELECHOUSE_CC1120(uint8_t mosi,uint8_t miso, uint8_t sclk, uint8_t cs,uint8_t gdo
 		void setTxPowerTo5mW();
 		int  Read8BitRssi(void);
 		byte  setSyncWords(const uint8_t* syncWords, uint8_t len);
-		uint16_t  headerFrom( ); //  
-		uint16_t  headerTo( );  // return _rxHeaderTo  
-		uint16_t  headerSource( );
-		uint16_t  headerDestination( );
+		uint8_t  headerFrom( ); //  
+		uint8_t  headerTo( );  // return _rxHeaderTo  
+		uint8_t  headerSource( );
+		uint8_t  headerDestination( );
 		uint8_t  headerType( );
 		uint8_t  headerData( );
 		uint8_t  headerFlags( );
