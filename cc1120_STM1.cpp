@@ -34,6 +34,7 @@ void ELECHOUSE_CC1120::SpiInit(void)
 
 	GDO0 = PB0; // GPIO0 or GPIO2
 	RST_PIN = PB1;
+	GDO3 = PB10;
 
 
 	SPI.begin();
@@ -80,7 +81,8 @@ void ELECHOUSE_CC1120::GDO_Set(void)
 {
 	pinMode(GDO0, INPUT);
 	digitalWrite(GDO0, HIGH);       // turn on pullup resistors
-
+	pinMode(GDO3, INPUT);
+	digitalWrite(GDO3, HIGH);
 }
 
 /****************************************************************
@@ -379,7 +381,7 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	//
 	// Rf settings for CC1120
 	//
-	SpiWriteReg(IOCFG3, 0xB0);        //GPIO3 IO Pin Configuration
+	SpiWriteReg(IOCFG3, 0x06);        //GPIO3 IO Pin Configuration
 	SpiWriteReg(IOCFG2, 0x06);        //GPIO2 IO Pin Configuration
 	SpiWriteReg(IOCFG1, 0xB0);        //GPIO1 IO Pin Configuration
 	SpiWriteReg(IOCFG0, 0x40);        //GPIO0 IO Pin Configuration
@@ -391,6 +393,8 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(IQIC, 0xC6);          //Digital Image Channel Compensation Configuration
 	SpiWriteReg(CHAN_BW, 0x18);       //Channel Filter Configuration
 	SpiWriteReg(MDMCFG0, 0x05);       //General Modem Parameter Configuration Reg. 0
+
+	SpiWriteReg(SYMBOL_RATE2, 0x53);  //Symbol Rate Configuration Exponent and Mantissa [1..
 	SpiWriteReg(AGC_REF, 0x20);       //AGC Reference Level Configuration
 	SpiWriteReg(AGC_CS_THR, 0x19);    //Carrier Sense Threshold Configuration
 	SpiWriteReg(AGC_CFG1, 0xA9);      //Automatic Gain Control Configuration Reg. 1
@@ -420,6 +424,8 @@ void ELECHOUSE_CC1120::RegConfigSettings(byte ch)
 	SpiWriteReg(XOSC5, 0x0E);         //Crystal Oscillator Configuration Reg. 5
 	SpiWriteReg(XOSC1, 0x03);         //Crystal Oscillator Configuration Reg. 1
 
+	SpiWriteReg(PKT_CFG2, 0x10);
+
 
 
 
@@ -436,6 +442,10 @@ SetChannel(ch);                         // Set the channel
 ****************************************************************/
 void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 {
+	//byte sts = SpiStrobe(SNOP + 0x80);
+	//Serial.print("send status");
+	//Serial.println(sts);
+	Serial.println();
 	if (size > CC1120_MAX_MESSAGE_LEN)
 		return;					// Guin
 	
@@ -482,12 +492,12 @@ void ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 	SpiWriteBurstReg(BURST_TXFIFO, temp,  CC1120_HEADER_LEN + size + 1 );
 	SpiStrobe(STX) ;		//start send	
 
-   while (!digitalRead(GDO0));    //Serial.println(" Sync Word transmitted (GPIO2) ");	// Wait for GDO0 to be set -> sync transmitted  
-   while (digitalRead(GDO0));     //Serial.println(" End of packet (GPIO2)");	// Wait for GDO0 to be cleared -> end of packet
+	while (!digitalRead(GDO3)); //Serial.println("!digitalRead(GDO3)");    Serial.println(" Sync Word transmitted (GPIO3) ");	// Wait for GDO0 to be set -> sync transmitted  
+	while (digitalRead(GDO3)); // Serial.println("digitalRead(GDO3)");     Serial.println(" End of packet (GPIO3)");	// Wait for GDO0 to be cleared -> end of packet
 
   
    
-	delay(10);
+	delay(100);
 	SpiStrobe(SFTX );									//flush TXfifo
 //	Serial.println(" ******************************************************* ");	
 	EnableLNA();
@@ -512,26 +522,35 @@ void ELECHOUSE_CC1120::DisableLNA(void)
 *OUTPUT       :none
 ****************************************************************/
 void ELECHOUSE_CC1120::SetReceive(void)
-{
-	byte sts,size;
+{	
+	byte sts, size;
 	byte temp;
 	byte buffer[50];
-	sts = SpiStrobe(SNOP + 0x80) ; // Receive status...
+	sts = SpiStrobe(SNOP + 0x80); // Receive status...
 	temp = sts & 0x70;
-/*	
-	if ( sts != 0x10) {
-	 	Serial.print("state: ");
-	   	Serial.println(sts,HEX);
-	}
-*/	
+	Serial.print(sts);
+	Serial.print(" ");
 
-	if( sts == 0  ) {
-			SpiStrobe(SRX);
+	if (sts == 0)//IDLEÀÌ¸é 
+	{
+		//Serial.print("hihi");
+		//Serial.print(sts);
+		//Serial.print(" ");
+		SpiStrobe(SRX);
+		sts = SpiStrobe(SNOP + 0x80);
+		//Serial.print(sts);
+		//Serial.print(" ");
+		//Serial.print(";");
 	}
-	if( temp == 0x60 ) {
-			SpiStrobe(SFRX );
+
+	if (temp == 0x60 || (sts & 0xF) != 0) //RX FIFO error || reserved != 0000
+	{
+		SpiStrobe(SFRX);
 	}
-	
+	if (temp == 0x70 || temp == 0x20)//TX FIFO error || TX mode
+	{
+		SpiStrobe(SFTX);
+	}
 }
 
 /****************************************************************
@@ -548,7 +567,7 @@ byte ELECHOUSE_CC1120::CheckReceiveFlag(void)
 	sts = SpiStrobe(SNOP + 0x80) ; // Receive status...
 	reserved = sts & 0x0F;
 //	Serial.print("2 state: ");
-//   Serial.println(sts,HEX);
+//  Serial.println(sts,HEX);
 	
 	/*if ( reserved == 0x0F)
 	{  
@@ -575,7 +594,7 @@ byte ELECHOUSE_CC1120::CheckReceiveFlag(void)
 ****************************************************************/
 byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 {
-	
+	Serial.println();
 	byte size;
 	byte status[2];
 	byte temp[120];
@@ -583,9 +602,12 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
     signed char lqi;
     byte crc;
 	byte num;
-	size =SpiReadStatus(NUM_RXBYTES);
-		
-	while((num =SpiReadStatus(NUM_RXBYTES)) >CC1120_HEADER_LEN)
+	size =SpiReadReg(NUM_RXBYTES);
+	
+	if (size == 0)
+		return 0;
+
+	while((num =SpiReadReg(NUM_RXBYTES)) >CC1120_HEADER_LEN)
 	{
   		size=SpiReadReg(SINGLE_RXFIFO);
  		if ((size < CC1120_HEADER_LEN) || ( size > CC1120_MAX_MESSAGE_LEN) ) { //  CC1120_MAX_MESSAGE_LEN is  50
@@ -595,7 +617,12 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 			SpiStrobe(SFRX );
 		 	return 0; // Too short or Too large to be a real message
 		}
-	
+		if (num != (size + 3))
+		{
+			Serial.println("size mismatch");
+			SpiStrobe(SFRX);
+			return 0;
+		}
  
 		SpiReadBurstReg(BURST_RXFIFO,temp,size);
 	   	SpiReadBurstReg(BURST_RXFIFO,status,2);

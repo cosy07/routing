@@ -6,11 +6,11 @@
 
 #include <Datagram_STM.h>
 
-Datagram::Datagram(ELECHOUSE_CC1120& driver, uint8_t thisAddress)//, uint8_t num_of_master)
+Datagram::Datagram(ELECHOUSE_CC1120& driver, uint8_t thisAddress)//, uint8_t master_num)
 	:
 	_driver(driver),
 	_thisAddress(thisAddress)//,
-	//_numOfMaster(num_of_master)
+	//_numOfMaster(master_num)
 {
 	//_retransmissions = 0;
 	clearRoutingTable();
@@ -138,6 +138,10 @@ uint8_t Datagram::getThisAddress()
 }
 bool Datagram::available()
 {
+	/////test용/////
+	//return true;
+	/////test용/////
+
 	if (_driver.CheckReceiveFlag()) {
 		return true;
 	}
@@ -179,7 +183,7 @@ byte  Datagram::recvData(uint8_t* buf)
 ////////////////////////////////////////////////////////////////////
 // Public methods
 
-void Datagram::addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8_t hop)
+void Datagram::addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8_t hop, unsigned long lastTime)
 {
 	uint8_t i;
 
@@ -192,6 +196,7 @@ void Datagram::addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8
 			_routes[i].next_hop = next_hop;
 			_routes[i].hop = hop;
 			_routes[i].state = state;
+			_routes[i].lastTime = millis();
 			return;
 		}
 	}
@@ -205,6 +210,7 @@ void Datagram::addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8
 			_routes[i].next_hop = next_hop;
 			_routes[i].hop = hop;
 			_routes[i].state = state;
+			_routes[i].lastTime = millis();
 			return;
 		}
 	}
@@ -218,6 +224,7 @@ void Datagram::addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8
 			_routes[i].next_hop = next_hop;
 			_routes[i].hop = hop;
 			_routes[i].state = state;
+			_routes[i].lastTime = millis();
 		}
 	}
 }
@@ -228,7 +235,10 @@ Datagram::RoutingTableEntry* Datagram::getRouteTo(uint8_t  dest)
 	uint8_t i;
 	for (i = 0; i < ROUTING_TABLE_SIZE; i++)
 		if (_routes[i].dest == dest && _routes[i].state != Invalid)
+		{
+			_routes[i].lastTime = millis();;
 			return &_routes[i];
+		}
 	return NULL;
 }
 
@@ -256,7 +266,9 @@ void Datagram::printRoutingTable()
 		Serial.print(" State: ");
 		Serial.print(_routes[i].state);
 		Serial.print(" Hop: ");
-		Serial.println(_routes[i].hop);
+		Serial.print(_routes[i].hop);
+		Serial.print(" Last Time: ");
+		Serial.println(_routes[i].lastTime);
 	}
 	//#endif
 }
@@ -286,16 +298,32 @@ void Datagram::clearRoutingTable()
 		_routes[i].state = Invalid;
 		_routes[i].next_hop = -1;
 		_routes[i].dest = -1;
+		_routes[i].lastTime = 0;
 	}
 }
+
+////////////////////////////////////////////////////////////////////
+void Datagram::checkRoutingTable()
+{
+	Serial.println("checkRoutingTable()");
+	printRoutingTable();
+	for (int8_t i = 0; i < ROUTING_TABLE_SIZE; i++)
+	{
+		if (_routes[i].state == Valid && _routes[i].lastTime + 300000 < millis())
+		{
+			deleteRoute(i);
+		}
+	}
+	Serial.println("after");
+	printRoutingTable();
+}
+
 //////////////////////////////////여기부터 라우팅 하는 코드//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //=====================================================================================================
 // 2017-04-26 ver.1
 void Datagram::send(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size)
 {
-	while (millis() - sendingTime < 1000);
-	sendingTime = millis();//어차피 대충 20일에 한번은 reset된다하면 sendingTime 타입 int여도 무방함
-
+	while (millis() - sendingTime < 1000);//어차피 대충 20일에 한번은 reset된다하면 sendingTime 타입 int여도 무방함
 	setHeaderFrom(from);
 	setHeaderTo(to);
 	setHeaderSource(src);
@@ -306,6 +334,7 @@ void Datagram::send(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t 
 	setHeaderSeqNum(seqNum);
 	setHeaderHop(hop);
 	_driver.SendData(temp_buf, size);
+	sendingTime = millis();
 }
 bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size, unsigned long time)
 {
@@ -322,11 +351,12 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 	for (int i = 0; i < DEFAULT_RETRIES; i++)
 	{
 		while (millis() - sendingTime < 1000);
-		sendingTime = millis();//어차피 대충 20일에 한번은 reset된다하면 sendingTime 타입 int여도 무방함, TIME_TERM이 1000 이상이면 이거 없어도 되지만 ACK 보낼 때 send함수쓰고 다음에 바로 이 함수 쓰는 경우가 있으므로 필요
+		//sendingTime = millis();//어차피 대충 20일에 한번은 reset된다하면 sendingTime 타입 int여도 무방함, TIME_TERM이 1000 이상이면 이거 없어도 되지만 ACK 보낼 때 send함수쓰고 다음에 바로 이 함수 쓰는 경우가 있으므로 필요
 
 		Serial.print("retry : ");
 		Serial.println(i);
 		_driver.SendData(temp_buf, size);
+		sendingTime = millis();
 		startTime = millis();
 		while (millis() - startTime < TIME_TERM)
 		{
@@ -337,7 +367,8 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 				{
 					if (_rxHeaderTo == _thisAddress && (_rxHeaderType == ACK || _rxHeaderType == REQUEST_ACK_TYPE || _rxHeaderType == R2_REQUEST_ACK_TYPE || _rxHeaderType == REQUEST_MULTI_HOP_ACK || _rxHeaderType == REQUEST_DIRECT_ACK))
 					{
-						addRouteTo(_rxHeaderFrom, _rxHeaderFrom, Valid, 1);
+						if(_rxHeaderType != ACK)
+							addRouteTo(_rxHeaderFrom, _rxHeaderFrom, Valid, 1);
 						return true;
 					}
 					if (type == R2_REQUEST_TYPE && _rxHeaderType == R2_REQUEST_REAL_TYPE)//gateway에서 round2요청을 1hop master에게 하고 master가 gateway에게 ack을 보냈는데, 못받을 경우 대비
@@ -346,10 +377,11 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 						return true;
 					if (_rxHeaderType == CHECK_ROUTING_ACK && type == CHECK_ROUTING)
 					{
-						if (_thisAddress != (_thisAddress & 0xFC00))
+						if (_thisAddress != (_thisAddress & 0x00))//master면
 						{
 							send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
-							sendToWaitAck(_thisAddress, getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, temp_buf, sizeof(temp_buf));
+							if(getRouteTo(_rxHeaderDestination) != NULL)
+								sendToWaitAck(_thisAddress, getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, temp_buf, sizeof(temp_buf));
 						}
 						return true;
 					}
@@ -389,7 +421,7 @@ void Datagram::printPath()
 	uint8_t temp_address;
 	Serial.println("-----PATH-----");
 	byte index;
-	for (uint8_t i = 1; i <= NUM_OF_MASTER;i++)
+	for (uint8_t i = 1; i <= master_num;i++)
 	{
 		Serial.print(i);
 		Serial.print(" master : ");
@@ -423,7 +455,7 @@ void Datagram::printTree()
 	Serial.print("abcde");
 	Serial.print(" ");
 	Serial.println(0);// convertToAddress(gatewayNumber, 0, 0));
-	for (uint8_t i = 1; i <= NUM_OF_MASTER;i++)
+	for (uint8_t i = 1; i <= master_num;i++)
 	{
 		if (checkReceive[i])
 		{
@@ -500,14 +532,14 @@ void Datagram::FromGatewayToMaster() {
 	Serial.println("FromGatewayToMaster");
 	Serial.println("[row1]");
 
-	if (G_find_1stRow_master() != NUM_OF_MASTER)
+	if (G_find_1stRow_master() != master_num)
 	{
 		if ((number_of_unknown_node = G_find_2ndRow_master(unknown_node_list)))
 		{
 			if (G_find_multihop_node(number_of_unknown_node, unknown_node_list))
 			{
 				Serial.println("REQUEST_DIRECT-------------------------------");
-				for (int i = 1; i <= NUM_OF_MASTER; i++)
+				for (int i = 1; i <= master_num; i++)
 				{
 					if (!checkReceive[i])
 					{
@@ -525,7 +557,7 @@ void Datagram::FromGatewayToMaster() {
 						{
 							uint8_t row_number = 1;
 							uint8_t number_of_node;
-							uint8_t node_list[NUM_OF_MASTER] = { 0 };
+							uint8_t node_list[34] = { 0 };
 
 							number_of_node = G_get_i_row_node_list(row_number, node_list);  // the gateway needs the list of 2nd row masters which will send Multi_HOP_REQUEST
 																							// to unknown nodes.
@@ -544,23 +576,24 @@ void Datagram::FromGatewayToMaster() {
 	}
 	while (1)
 	{
-		for (int i = 1; i <= NUM_OF_MASTER; i++)
+		for (int i = 1; i <= master_num; i++)
 		{
-			Serial.println("monitoring start");
-			Serial.println(i);
+			//Serial.print("monitoring start  ");
+			//Serial.println(i);
+			//delay(2500);
 			bool timeout = true;
 			address_i = i;// convertToAddress(gatewayNumber, i, 0);
 			sendCnt++;
-			printTree();
 			if (!checkReceive[i])
 				continue;
-			if (!sendToWaitAck(_thisAddress, getRouteTo(address_i)->next_hop, _thisAddress, address_i, CHECK_ROUTING, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf)))
+			if (!sendToWaitAck(_thisAddress, getRouteTo(address_i)->next_hop, _thisAddress, address_i, CHECK_ROUTING, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf)), 2000)
 			{
 				uint8_t reroutingAddr = getRouteTo(address_i)->next_hop;
 				//Serial.println(getRouteTo(reroutingAddr)->hop);
 				checkReceive[reroutingAddr] = false;
 				parentMaster[reroutingAddr] = -1;
 				G_discoverNewPath(reroutingAddr, getRouteTo(reroutingAddr)->hop);
+				printTree();
 				reroutingCnt++;
 			}
 			else if (getRouteTo(address_i)->hop != 1)
@@ -587,10 +620,20 @@ void Datagram::FromGatewayToMaster() {
 									G_discoverNewPath(reroutingAddr, getRouteTo(reroutingAddr)->hop);
 									reroutingCnt++;
 									unRecvCnt[reroutingAddr] = 0;
+									printTree();
 								}
 							}
 							else if (_rxHeaderType == CHECK_ROUTING_ACK)
 							{
+								//Serial.print("_rxHeaderData : ");
+								//Serial.println(_rxHeaderData);
+								for (uint8_t i = 0; i < _rxHeaderData; i++)
+								{
+									addRouteTo(temp_buf[10 + i], _rxHeaderFrom, Valid, _rxHeaderHop + 1);
+									checkReceive[temp_buf[10 + i]] = true;
+									parentMaster[temp_buf[10 + i]] = _rxHeaderFrom;
+									master_num++;
+								}
 								recvCnt++;
 							}
 							break;
@@ -607,6 +650,19 @@ void Datagram::FromGatewayToMaster() {
 			{
 				send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 				recvCnt++;
+				if (_rxHeaderType == CHECK_ROUTING_ACK)
+				{
+					Serial.print("_rxHeaderData : ");
+					Serial.println(_rxHeaderData);
+					for (uint8_t i = 0; i < _rxHeaderData; i++)
+					{
+						addRouteTo(temp_buf[10 + i], _rxHeaderFrom, Valid, getRouteTo(address_i)->next_hop + 1);
+						checkReceive[temp_buf[10 + i]] = true;
+						parentMaster[temp_buf[10 + i]] = _rxHeaderFrom;
+						master_num++;
+						printRoutingTable();
+					}
+				}
 			}
 			Serial.print("sendCnt : ");
 			Serial.println(sendCnt);
@@ -634,7 +690,7 @@ int8_t Datagram::G_find_1stRow_master()
 	{
 		send(_thisAddress, masterBroadcastAddress, _thisAddress, masterBroadcastAddress, REQUEST_BROADCAST, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 	}
-	for (int i = 1; i <= NUM_OF_MASTER; i++)
+	for (int i = 1; i <= master_num; i++)
 	{
 		/////////뭐하고 있었냐면 이거 재전송하면서 ack 5번 받을 때 시간 어떻게 할건지..이거 고치고, master 2 hop코드가서 이거랑 비슷한부분 2hop한테 5번 받도록 하고,,
 		uint8_t dst = i;// convertToAddress(gatewayNumber, i, 0);
@@ -686,7 +742,7 @@ int8_t Datagram::G_find_2ndRow_master(uint8_t* unknown_node_list)
 	Serial.println("[row2]");
 	//row2 : 1hop인 master들에게 아직 라우팅이 안된 노드들의 주소를 보내서 근처에 노드들이 있는지 물어봄
 
-	uint8_t node_list[NUM_OF_MASTER] = { 0 };
+	uint8_t node_list[34] = { 0 };
 	uint8_t number_of_node;
 	uint8_t number_of_unknown_node = 0;
 
@@ -698,13 +754,13 @@ int8_t Datagram::G_find_2ndRow_master(uint8_t* unknown_node_list)
 	for (uint8_t i = 0; i < number_of_node; i++)//1hop node들에게 요청
 	{
 		number_of_unknown_node = 0;
-		for (int i = 1; i <= NUM_OF_MASTER; i++)
+		for (int i = 1; i <= master_num; i++)
 		{
 			Serial.print(checkReceive[i]);
 			Serial.print(" ");
 		}
 		Serial.println();
-		for (uint8_t j = 1; j <= NUM_OF_MASTER; j++)//routing이 안된 노드들의 주소를 table을 뒤져서 알아냄
+		for (uint8_t j = 1; j <= master_num; j++)//routing이 안된 노드들의 주소를 table을 뒤져서 알아냄
 		{
 			if (!checkReceive[j])
 			{
@@ -721,7 +777,6 @@ int8_t Datagram::G_find_2ndRow_master(uint8_t* unknown_node_list)
 			return 0;
 		Serial.print("send to ");
 		Serial.println(node_list[i]);
-
 
 
 		//1hop인 애가 못받음..test 시에는 이런 경우가 많았으니 실제로는 없을 듯함.
@@ -799,7 +854,7 @@ int8_t Datagram::G_find_2ndRow_master(uint8_t* unknown_node_list)
 		}
 	}
 	number_of_unknown_node = 0;
-	for (uint8_t i = 1; i <= NUM_OF_MASTER; i++)
+	for (uint8_t i = 1; i <= master_num; i++)
 	{
 		if (!checkReceive[i])
 		{
@@ -822,10 +877,10 @@ int8_t Datagram::G_find_multihop_node(uint8_t number_of_unknown_node, uint8_t* u
 {
 	uint8_t row_number = 2;
 	uint8_t number_of_node;
-	uint8_t node_list[NUM_OF_MASTER] = { 0 };
+	uint8_t node_list[34] = { 0 };
 	uint8_t cnt = number_of_unknown_node;
 
-	for (int i = 1; i <= NUM_OF_MASTER; i++)
+	for (int i = 1; i <= master_num; i++)
 	{
 		Serial.print(checkReceive[i]);
 		Serial.print(" ");
@@ -935,7 +990,7 @@ bool Datagram::G_discoverNewPath(uint8_t address, uint8_t row_number)//, bool ch
 	Serial.println(address);
 	uint8_t cpy_row_number = row_number;
 	uint8_t number_of_node;
-	uint8_t node_list[NUM_OF_MASTER] = { 0 };
+	uint8_t node_list[34] = { 0 };
 
 	//row_number = getRouteTo(address)->hop;
 	if (row_number != getRouteTo(address)->hop)
@@ -1015,14 +1070,14 @@ bool Datagram::G_discoverNewPath(uint8_t address, uint8_t row_number)//, bool ch
 
 	if (!checkReceive[address])
 	{
-		Serial.println(address);
+		Serial.print(address);
 		Serial.println("-th node is error");
 	}
 
 	//if (!child)
 	//{
 		number_of_node = G_get_i_row_node_list(cpy_row_number, node_list);
-		for (int i = 1; i <= NUM_OF_MASTER; i++)//address의 자식의 path 새로 지정
+		for (int i = 1; i <= master_num; i++)//address의 자식의 path 새로 지정
 		{
 			//Serial.println("child node rerouting!!");
 			if (parentMaster[i] == address)
@@ -1044,7 +1099,7 @@ bool Datagram::G_discoverNewPath(uint8_t address, uint8_t row_number)//, bool ch
 }
 void Datagram::changeNextHop(uint8_t address)
 {
-	for (int i = 1; i <= NUM_OF_MASTER; i++)
+	for (int i = 1; i <= master_num; i++)
 	{
 		if (parentMaster[i] == address)
 		{
@@ -1063,7 +1118,7 @@ void Datagram::changeNextHop(uint8_t address)
 void Datagram::G_find_error_node(uint8_t address)
 {
 	Serial.println("find_error_node");
-	uint8_t path[NUM_OF_MASTER] = { 0 };
+	uint8_t path[34] = { 0 };
 	getPath(address, path);
 	for (int i = 0; i < getRouteTo(address)->hop; i++)
 	{
@@ -1131,23 +1186,34 @@ void Datagram::FromMasterToGateway() {
 	uint8_t priorPacketFrom = -1;
 	uint8_t priorPacketType = -1;
 
+	bool newNode = false;
+	uint8_t check_cnt = 0;
+	unsigned long check_table_time = millis();
+
 	Serial.println("FromMasterToGateway");
 	Serial.println(_thisAddress);
 	while (1)
 	{
+		if (check_table_time + 600000 < millis())
+		{
+			checkRoutingTable();
+			check_table_time = millis();
+			Serial.print(check_table_time + 60000);
+			Serial.print(" ");
+			Serial.println(millis());
+		}
 		SetReceive();
 		if (available())
 		{
 			if (recvData(temp_buf))
 			{
-				Serial.println(paperTestCnt);
 				if (_rxHeaderTo == _thisAddress || _rxHeaderTo == masterBroadcastAddress)//routing 시 broadcast는 gateway에서 처음에 보내는 거 외에는 없어야함
 				{
 					printRecvPacketHeader();
-					if (_rxHeaderDestination != _thisAddress && _rxHeaderTo != masterBroadcastAddress)
+					if (_rxHeaderDestination != _thisAddress && _rxHeaderTo != masterBroadcastAddress)//relay상황
 					{
 						uint8_t temp_source = _rxHeaderSource;
-						if (_routes[0].state == Invalid)
+						if (getRouteTo(_thisAddress & 0x00) == NULL)
 						{
 							printRoutingTable();
 							continue;
@@ -1158,7 +1224,15 @@ void Datagram::FromMasterToGateway() {
 							addRouteTo(_rxHeaderSource, _rxHeaderFrom, Valid, _rxHeaderHop + 1);
 							printRoutingTable();
 						}
-						if (!sendToWaitAck(_thisAddress, getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, temp_buf, sizeof(temp_buf)))
+						else if (_rxHeaderType == CHECK_ROUTING_ACK && _rxHeaderData > 0)
+						{
+							for (uint8_t i = 0; i < _rxHeaderData; i++)
+							{
+								addRouteTo(temp_buf[10 + i], _rxHeaderFrom, Valid, _rxHeaderHop + 1);
+							}
+						}
+						if (getRouteTo(_rxHeaderDestination) == NULL
+							|| !sendToWaitAck(_thisAddress, getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, temp_buf, sizeof(temp_buf)))
 						{
 							//Serial.println(temp_source);
 							//Serial.println(_thisAddress & 0xFC00);
@@ -1269,19 +1343,41 @@ void Datagram::FromMasterToGateway() {
 					else if (_rxHeaderType == CHECK_ROUTING)
 					{
 						receivedRequestNum = 0;
-						paperTestCnt++;
-						if (_routes[0].state != Invalid)
-							sendToWaitAck(_thisAddress, getRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CHECK_ROUTING_ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+						if (getRouteTo(_thisAddress & 0x00) != NULL)
+						{
+							if (newNode)
+							{
+								int newNodeCnt = 0;
+								for (uint8_t i = 0; i < ROUTING_TABLE_SIZE; i++)
+								{
+									if (_routes[i].state == Discovering)
+									{
+										temp_buf[10 + newNodeCnt++] = _routes[i].dest;
+										_routes[i].state = Valid;
+									}
+								}
+								newNode = false;
+								sendToWaitAck(_thisAddress, getRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CHECK_ROUTING_ACK, newNodeCnt, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+							}
+							else
+							{
+								sendToWaitAck(_thisAddress, getRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CHECK_ROUTING_ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+							}
+						}
 						else
 							printRoutingTable();
+					}
+					else if (_rxHeaderType == NEW_NODE_REGISTER)
+					{
+						addRouteTo(_rxHeaderFrom, _rxHeaderFrom, Discovering, 1);
+						send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, getRouteTo(_thisAddress & 0x00)->hop, temp_buf, sizeof(temp_buf));
+						newNode = true;
 					}
 				}
 				else//to가 다른 노드인 패킷 수신 (overhear)
 				{
 					if (priorPacketFrom == _rxHeaderFrom && priorPacketType == _rxHeaderType && _rxHeaderFrom != (_thisAddress & 0x00))
 					{
-						//Serial.print("candidate??");
-						//Serial.println(receivedOverhearNum + 1);
 						if (++receivedOverhearNum >= R_MASTER_SEND_NUM * 0.8)
 							M_findCandidateParents();
 					}
@@ -1348,7 +1444,7 @@ void Datagram::M_find2ndRowMasters()
 	uint8_t temp[20];
 	Serial.println("receive R2 request and I succeed R1");
 
-	uint8_t count = _rxHeaderData;  // Guin: number of unknown node
+	uint8_t count = _rxHeaderData;
 	uint8_t child_node_num = 0;
 
 	for (int8_t i = 0; i < count; i++)//temp_buf에 수신되는 data가 계속 들어오므로 temp에 복사해두어야함
@@ -1428,5 +1524,86 @@ void Datagram::M_masterSendRoutingReply()
 			send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, type, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
 		}
 	}
+}
+
+void Datagram::newMaster()
+{
+	unsigned long waitTime = millis();
+	uint8_t receivedNum[34] = { 0 };
+	uint16_t candidate_parent;
+	uint8_t maxReceiveNum = 0;
+	uint8_t hop = 0;
+
+	while (millis() - waitTime < 10000)
+	{
+		SetReceive();
+		if (available())
+		{
+			if (recvData(temp_buf))
+			{
+				receivedNum[_rxHeaderFrom]++;
+			}
+		}
+	}
+
+	for (uint8_t i = 1; i <= 34; i++)
+	{
+		if (maxReceiveNum < receivedNum[i])
+		{
+			candidate_parent = i;
+			maxReceiveNum = receivedNum[i];
+		}
+	}
+
+	while (!sendToWaitAck(_thisAddress, candidate_parent, _thisAddress, candidate_parent, NEW_NODE_REGISTER, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf)))
+	{
+		while (millis() - waitTime < 10000)
+		{
+			SetReceive();
+			if (available())
+			{
+				if (recvData(temp_buf))
+				{
+					receivedNum[_rxHeaderFrom]++;
+				}
+			}
+		}
+
+		for (uint8_t i = 1; i <= 34; i++)
+		{
+			if (maxReceiveNum < receivedNum[i])
+			{
+				candidate_parent = i;
+				maxReceiveNum = receivedNum[i];
+			}
+		}
+	}
+
+	addRouteTo(_thisAddress & 0x00, candidate_parent, Valid, _rxHeaderHop + 1);//master는 hop count 몰라도 되낭..알아야됨...
+	printRoutingTable();
+
+	waitTime = millis();
+	bool receiveFromG = false;
+
+	while (millis() - waitTime < 600000)
+	{
+		SetReceive();
+		if (available())
+		{
+			if (recvData(temp_buf))
+			{
+				if (_rxHeaderTo == _thisAddress && _rxHeaderType == CHECK_ROUTING)
+				{
+					sendToWaitAck(_thisAddress, getRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CHECK_ROUTING_ACK, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+					receiveFromG = true;
+					break;
+				}
+			}
+		}
+	}
+	if (receiveFromG)
+		FromMasterToGateway();
+	else
+		newMaster();
 }
 //////////////////////

@@ -310,7 +310,7 @@ class ELECHOUSE_CC1120
 		uint8_t   TE_PIN;
 
 		uint8_t   GDO0;
-		uint8_t	  GDO2;
+		uint8_t	  GDO3;
 		uint8_t   _mosi,_miso,_sclk,_cs,_gdo;
 
 		

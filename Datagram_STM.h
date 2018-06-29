@@ -11,14 +11,15 @@
 
 /// The default number of retries
 #define DEFAULT_RETRIES 3//나중에 5로 수정3
+#define MAX_master_num				31		//0 ~ 30, 31 is broadcast
 
 // The default size of the routing table we keep
-#define ROUTING_TABLE_SIZE 17  //////////////////////////////////////////////////////////////////////////////////////////////////////////수정
+#define ROUTING_TABLE_SIZE 5  //////////////////////////////////////////////////////////////////////////////////////////////////////////수정
 #define ROUTER_MAX_MESSAGE_LEN 48
 #define R_MASTER_SEND_NUM 5
 #define R_GATEWAY_SEND_NUM 10
 
-//=====================================================================================================
+//===============================================================
 //	2017-04-26	ver.1
 /****************************************************************
 #define
@@ -37,8 +38,7 @@
 #define CHECK_ROUTING_ACK				11
 #define ACK								12
 #define NACK							13
-
-#define MAX_NUM_OF_MASTER				31		//0 ~ 30, 31 is broadcast
+#define NEW_NODE_REGISTER				14
 
 #define SCAN_REQUEST_TO_MASTER			13
 #define SCAN_REQUEST_TO_RC_EXTERNAL		14
@@ -61,20 +61,19 @@
 
 #define NONE						0
 
-#define TIME_TERM					1400
+#define TIME_TERM					1600
 #define TIME_HOP					400
 #define TIME_CONTROL				5000
 
-#define NUM_OF_MASTER				17
-#define MAX_UN_RECV					3//일단 0으로
+//#define NUM_OF_MASTER				17
+#define MAX_UN_RECV					2//일단 0으로
 
 void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
-
 
 class  Datagram
 {
 public:
-	Datagram(ELECHOUSE_CC1120& driver, uint8_t thisAddress = 0);// , uint8_t num_of_master);//실제 16bit 주소
+	Datagram(ELECHOUSE_CC1120& driver, uint8_t thisAddress = 0);// , uint8_t master_num);//실제 16bit 주소
 	void	init();
 	void 	init(byte ch);
 	void 	SetReceive(void);
@@ -119,23 +118,24 @@ public:
 	typedef enum
 	{
 		Invalid = 0,           ///< No valid route is known
-		Discovering,           ///< Discovering a route (not currently used)
+		Discovering,           ///< Discovering a route
 		Valid                  ///< Route is valid
 	} RouteState;
 
 	/// Defines an entry in the routing table
 	typedef struct
 	{
-		int8_t      dest;      ///< Destination node address
-		int8_t      next_hop;  ///< Send via this next hop address
-		int8_t      state;     ///< State of this route, one of RouteState
-		int8_t		 hop;
+		int8_t				dest;      ///< Destination node address
+		int8_t				next_hop;  ///< Send via this next hop address
+		int8_t				state;     ///< State of this route, one of RouteState
+		int8_t				hop;
+		unsigned long		lastTime;
 	} RoutingTableEntry;
 
 	/// \param[in] thisAddress The address to assign to this node. Defaults to 0
 
 
-	void addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state = Valid, uint8_t hop = 0);
+	void addRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state = Valid, uint8_t hop = 0, unsigned long lastTime = 0);
 
 	RoutingTableEntry* getRouteTo(uint8_t  dest);
 
@@ -171,7 +171,7 @@ public:
 
 	void send(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size);
 
-	bool sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size, unsigned long time = 2000);
+	bool sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size, unsigned long time = 1000);
 
 	void printRecvPacketHeader();
 
@@ -189,13 +189,17 @@ public:
 	
 	void changeNextHop(uint8_t address);
 
+	void newMaster();
+
+	void checkRoutingTable();
+
 protected:
 
 	uint8_t masterBroadcastAddress;
 
 	uint8_t gatewayNumber = 0;
 
-	int	sendingTime = -60000;
+	unsigned long	sendingTime = -60000;
 
 	void 	deleteRoute(uint8_t index);
 
@@ -207,7 +211,7 @@ protected:
 	uint8_t  			_rxHeaderTo;
 	uint8_t  			_rxHeaderFrom;
 	uint8_t  			_rxHeaderSource;
-	uint8_t			_rxHeaderDestination;
+	uint8_t				_rxHeaderDestination;
 	uint8_t   			_rxHeaderType;
 	uint8_t   			_rxHeaderData;
 	uint8_t   			_rxHeaderFlags;
@@ -215,18 +219,18 @@ protected:
 	uint8_t				_rxHeaderHop;
 
 	uint8_t ch;
-
+	int master_num = 2;
 	//=================================================================================
 	//	2017-04-27 ver.1.1
-	bool checkReceive[NUM_OF_MASTER + 1] = { false };
-	int8_t parentMaster[NUM_OF_MASTER + 1] = {-1};
+	bool checkReceive[34] = { false };
+	int8_t parentMaster[34] = {-1};
 
 	uint8_t candidateAddress = 0;
 	signed char candidateRSSI = 0;
 	uint8_t candidateHop = 0;
 
 	byte temp_buf[20];
-	byte unRecvCnt[NUM_OF_MASTER + 1] = { 0 };
+	byte unRecvCnt[34] = { 0 };
 	uint8_t receivedType = 0;//To avoid receiving from Master that has same hop
 
 	unsigned long startTime;
