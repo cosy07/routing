@@ -36,9 +36,11 @@
 #define REQUEST_DIRECT_ACK				9
 #define CHECK_ROUTING					10
 #define CHECK_ROUTING_ACK				11
-#define ACK								12
-#define NACK							13
-#define NEW_NODE_REGISTER				14
+#define CHECK_ROUTING_ACK_REROUTING		12
+#define ACK								13
+#define NACK							14
+#define NEW_NODE_REGISTER				15
+#define ROUTING_TABLE_UPDATE			16
 
 #define SCAN_REQUEST_TO_MASTER			13
 #define SCAN_REQUEST_TO_RC_EXTERNAL		14
@@ -171,7 +173,7 @@ public:
 
 	void send(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size);
 
-	bool sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size, unsigned long time = 1000);
+	bool sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size, unsigned long time = 2000);
 
 	void printRecvPacketHeader();
 
@@ -187,7 +189,7 @@ public:
 
 	void getPath(uint8_t address, uint8_t* path);
 	
-	void changeNextHop(uint8_t address);
+	void changeNextHop(uint8_t address, uint8_t hopCount);
 
 	void newMaster();
 
@@ -219,7 +221,7 @@ protected:
 	uint8_t				_rxHeaderHop;
 
 	uint8_t ch;
-	int master_num = 2;
+	int master_num = 3;
 	//=================================================================================
 	//	2017-04-27 ver.1.1
 	bool checkReceive[34] = { false };

@@ -528,29 +528,21 @@ void ELECHOUSE_CC1120::SetReceive(void)
 	byte buffer[50];
 	sts = SpiStrobe(SNOP + 0x80); // Receive status...
 	temp = sts & 0x70;
-	Serial.print(sts);
-	Serial.print(" ");
+	//Serial.print(sts);
+	//Serial.print(" ");
+	//Serial.print(temp);
+	//Serial.print(" ;");
 
 	if (sts == 0)//IDLE¿Ã∏È 
-	{
-		//Serial.print("hihi");
-		//Serial.print(sts);
-		//Serial.print(" ");
 		SpiStrobe(SRX);
-		sts = SpiStrobe(SNOP + 0x80);
-		//Serial.print(sts);
-		//Serial.print(" ");
-		//Serial.print(";");
-	}
-
-	if (temp == 0x60 || (sts & 0xF) != 0) //RX FIFO error || reserved != 0000
-	{
+	if ((sts & 0xF) != 0)//reserved != 0000
 		SpiStrobe(SFRX);
-	}
-	if (temp == 0x70 || temp == 0x20)//TX FIFO error || TX mode
-	{
+	if(temp == 0x20)
+		SpiStrobe(SRX);
+	if (temp == 0x60)//RX FIFO error
+		SpiStrobe(SFRX);
+	if (temp == 0x70)//TX FIFO error
 		SpiStrobe(SFTX);
-	}
 }
 
 /****************************************************************
