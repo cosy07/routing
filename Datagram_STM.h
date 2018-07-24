@@ -42,28 +42,21 @@
 #define NEW_NODE_REGISTER				15
 #define ROUTING_TABLE_UPDATE			16
 
-#define SCAN_REQUEST_TO_MASTER			13
+#define SCAN_REQUEST_TO_MASTER			17
+#define SCAN_REQUEST_ACK_FROM_MASTER	18
+#define SCAN_RESPONSE_TO_GATEWAY		19
+#define CONTROL_TO_MASTER				20
+#define CONTROL_RESPONSE_TO_GATEWAY		21
+
+
 #define SCAN_REQUEST_TO_RC_EXTERNAL		14
 #define SCAN_REQUEST_TO_SLAVE			15
 #define SCAN_RESPONSE_TO_RC				16
-#define SCAN_RESPONSE_TO_MASTER			17
-#define SCAN_RESPONSE_TO_GATEWAY		18
 
-#define CONTROL_MESSAGE					19		//INSTRUCTION_FROM_GATEWAY
-#define SCAN_MESSAGE					20		//SCAN_FROM_GATEWAY
-#define SCAN_SLAVE						21
-#define SCAN_ACK						22
-#define CONTROL_ACK						23		//INSTRUCTION_ACK_FROM_MASTER
-#define INSTRUCTION_FROM_RC				24
-#define ADD_ROUTE						25
-#define MAX_NUM_OF_SLAVE				26
-#define SCAN_SLAVE_ACK					27
-#define ERROR_MESSAGE					28
-#define SCAN_UPDATE						29
 
 #define NONE						0
 
-#define TIME_TERM					1600
+#define TIME_TERM					1700
 #define TIME_HOP					400
 #define TIME_CONTROL				5000
 
@@ -75,7 +68,7 @@ void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
 class  Datagram
 {
 public:
-	Datagram(ELECHOUSE_CC1120& driver, uint8_t thisAddress = 0);// , uint8_t master_num);//角力 16bit 林家
+	Datagram(ELECHOUSE_CC1120& driver, uint8_t gatewayNumber, uint8_t thisAddress = 0);// , uint8_t master_num);//角力 16bit 林家
 	void	init();
 	void 	init(byte ch);
 	void 	SetReceive(void);
@@ -96,12 +89,12 @@ public:
 	uint8_t        headerFrom();
 	uint8_t        headerSource();
 	uint8_t        headerDestination();
-	uint8_t         headerType();
-	uint8_t         headerData();
-	uint8_t   		headerSeqNum();
-	uint8_t   		headerFlags();
-	uint8_t			headerHop();
-	uint8_t			getThisAddress();
+	uint8_t        headerType();
+	uint8_t        headerData();
+	uint8_t   	   headerSeqNum();
+	uint8_t   	   headerFlags();
+	uint8_t		   headerHop();
+	uint8_t		   getThisAddress();
 
 
 
@@ -195,19 +188,29 @@ public:
 
 	void checkRoutingTable();
 
-protected:
+	void deleteRoute(uint8_t index);
 
-	uint8_t masterBroadcastAddress;
 
-	uint8_t gatewayNumber = 0;
 
-	unsigned long	sendingTime = -60000;
 
-	void 	deleteRoute(uint8_t index);
 
-	/// Local routing table
+
+
+
+
+
+	
 	RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
 
+	bool checkReceive[34] = { false };
+	uint8_t ch;
+	int master_num = 3;
+
+	int8_t parentMaster[34] = { -1 };
+	byte unRecvCnt[34] = { 0 };
+	byte temp_buf[20];
+
+private:
 	ELECHOUSE_CC1120&   _driver;	   /// The Driver we are to use
 	uint8_t         	_thisAddress;		/// The address of this node
 	uint8_t  			_rxHeaderTo;
@@ -220,28 +223,24 @@ protected:
 	uint8_t   			_rxHeaderSeqNum;
 	uint8_t				_rxHeaderHop;
 
-	uint8_t ch;
-	int master_num = 3;
-	//=================================================================================
-	//	2017-04-27 ver.1.1
-	bool checkReceive[34] = { false };
-	int8_t parentMaster[34] = {-1};
 
 	uint8_t candidateAddress = 0;
 	signed char candidateRSSI = 0;
-	uint8_t candidateHop = 0;
 
-	byte temp_buf[20];
-	byte unRecvCnt[34] = { 0 };
+
+	//byte temp_buf[20];
 	uint8_t receivedType = 0;//To avoid receiving from Master that has same hop
 
 	unsigned long startTime;
 	unsigned long resetTime;
-	int sendCnt = 0;
-	int recvCnt = 0;
-	int reroutingCnt = 0;
 
-	int paperTestCnt = 0;
+
+	uint8_t masterBroadcastAddress;
+
+	uint8_t gatewayNumber = 0;
+
+	unsigned long	sendingTime = -60000;
+
 };
 
 #endif
