@@ -27,25 +27,28 @@ uint8_t slave_num;
 unsigned long slave_receive_time;
 
 bool scanning = false;
+unsigned long time = millis();
   
-void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf)
+void RS485_Write_Read()
 {
-  uint8_t num, temp;
+  uint8_t num = 0;
+  
   digitalWrite(SSerialTxControl, RS485Transmit);
-  Serial1.write(write_buf, sizeof(write_buf));
+  Serial1.write(inputData, sizeof(inputData));
   Serial1.flush();
   digitalWrite(SSerialTxControl, RS485Receive);
 
-  num = 0;
-  while(1)
+  time = millis();
+  while(time + 3000 > millis())
   {
     if(Serial1.available())
     {
-      read_buf[num++] = Serial1.read();
+      outputData[num++] = Serial1.read();
       if(num == 10)
         break;
     }
-  }    
+  }
+  Serial1.flush();   
 }
 
 
@@ -70,10 +73,12 @@ void setup()
 void loop() 
 {
   //if()//외부 마스터로부터 시리얼을 받음
-  {
+  /*{
     //if()//control
     {
-      RS485_Write_Read(state_request, outputData);
+      for(int i = 0;i < 10;i++)
+        inputData[i] = state_request[i];
+      RS485_Write_Read();
       for(int i = 0; i < 10;i++)
         manager.temp_buf[i] = outputData[i];
       bool receiveACK = manager.sendToWaitAck(_thisAddress, 0x00, master_number, CONTROL_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
@@ -91,7 +96,7 @@ void loop()
         //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
       }
     }
-  }
+  }*/
   manager.SetReceive();
   if(manager.available())
   {
@@ -110,7 +115,7 @@ void loop()
             inputData[i] = manager.temp_buf[i];
 
           num_of_slave = manager.temp_buf[10];
-          RS485_Write_Read(inputData, outputData);
+          RS485_Write_Read();
           
           for(int i = 0;i < 10;i++)
             manager.temp_buf[i] = outputData[i];
@@ -142,7 +147,7 @@ void loop()
             inputData[9] ^= inputData[i];
             
           manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
-          RS485_Write_Read(inputData, outputData);
+          RS485_Write_Read();
         }
       }
     }

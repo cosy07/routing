@@ -585,10 +585,8 @@ byte IN_ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
     byte crc;
 	byte num;
 	size =SpiReadReg(NUM_RXBYTES);
-	
 	if (size == 0)
 		return 0;
-
 	while((num =SpiReadReg(NUM_RXBYTES)) >CC1120_HEADER_LEN)
 	{
   		size=SpiReadReg(SINGLE_RXFIFO);

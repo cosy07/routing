@@ -102,7 +102,7 @@ void setup()
   digitalWrite(SSerialTxControl, RS485Receive);  // Init Transceiver
   Serial1.begin(9600);   // set the data rate 
 
-  nvic_irq_set_priority(NVIC_USART2, 14);
+  nvic_irq_set_priority(NVIC_USART2, 0xE);
 
   
   attachInterrupt(PA3, receiveFromGW, FALLING);
@@ -122,13 +122,13 @@ void loop()
     
     nextScan = true;
     if(++scanMasterNum > manager.master_num)
-      scanMasterNum = 0;
+      scanMasterNum = 1;
   }
 
 
 
 
-  for(int beControlIndex = 0;beControlIndex < 32;beControlIndex++)
+  for(int beControlIndex = 0;beControlIndex <= 32;beControlIndex++) //마스터 번호(유선 통신) : 0 ~ 0x1F, 무선통신 주소 : 1 ~ 0x20
   {
     if(beControl[beControlIndex])
     {
@@ -141,16 +141,31 @@ void loop()
       if (manager.checkReceive[address_i] && !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, CONTROL_TO_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
       {
         uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
-        manager.checkReceive[reroutingAddr] = false;
-        manager.parentMaster[reroutingAddr] = -1;
-        manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
-        manager.printTree();
+        if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
+        {
+          manager.checkReceive[reroutingAddr] = false;
+          manager.parentMaster[reroutingAddr] = -1;
+          manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
+          manager.unRecvCnt[reroutingAddr] = 0;
+          manager.printTree();
+        }
       }
       else if(manager.getRouteTo(address_i)->hop == 1)
       {
+        _rxHeaderTo = manager.headerTo();
+        _rxHeaderFrom = manager.headerFrom();
+        _rxHeaderSource = manager.headerSource();
+        _rxHeaderDestination = manager.headerDestination();
+        _rxHeaderType = manager.headerType();
+        _rxHeaderData = manager.headerData();
+        _rxHeaderFlags = manager.headerFlags();
+        _rxHeaderSeqNum = manager.headerSeqNum();
+        _rxHeaderHop = manager.headerHop();
         manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
         beControl[beControlIndex] = false;
         timeout = false;
+        for(uint8_t i = 0;i < 10;i++)
+          master_answer[beControlIndex][i] = manager.temp_buf[i];
       }
       else if (manager.getRouteTo(address_i)->hop != 1)
       {
@@ -175,7 +190,6 @@ void loop()
               manager.printRecvPacketHeader();
               timeout = false;
               manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-
               
               if (_rxHeaderType == NACK)
               {
@@ -192,13 +206,15 @@ void loop()
               }
               else if (_rxHeaderType == CONTROL_RESPONSE_TO_GATEWAY)
               {
+                for(uint8_t i = 0;i < 10;i++)
+                  master_answer[beControlIndex][i] = manager.temp_buf[i];
                 beControl[beControlIndex] = false;
               }
               break;
             }
           }
         }
-        if (timeout)//timeout! timeout일 경우는 바로 rerouting하도록
+        if (timeout)
         {
           Serial.println("timeout!");
           manager.G_find_error_node(address_i);
@@ -218,24 +234,36 @@ void loop()
 
 
 
-  if(nextScan)
+  if(nextScan)//default 값 true
   {
     address_i = scanMasterNum;
     if (manager.checkReceive[address_i] && !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, SCAN_REQUEST_TO_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
     {
       uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
-      manager.checkReceive[reroutingAddr] = false;
-      manager.parentMaster[reroutingAddr] = -1;
-      manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
-      manager.printTree();
+      if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
+      {
+        manager.checkReceive[reroutingAddr] = false;
+        manager.parentMaster[reroutingAddr] = -1;
+        manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
+        manager.unRecvCnt[reroutingAddr] = 0;
+        manager.printTree();
+      }
     }
     else if(manager.getRouteTo(address_i)->hop == 1)
     {
+      _rxHeaderTo = manager.headerTo();
+      _rxHeaderFrom = manager.headerFrom();
+      _rxHeaderSource = manager.headerSource();
+      _rxHeaderDestination = manager.headerDestination();
+      _rxHeaderType = manager.headerType();
+      _rxHeaderData = manager.headerData();
+      _rxHeaderFlags = manager.headerFlags();
+      _rxHeaderSeqNum = manager.headerSeqNum();
+      _rxHeaderHop = manager.headerHop();
+      
       manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
       timeout = false;
       nextScan = false;
-      if(++scanMasterNum > manager.master_num)
-        scanMasterNum = 0;
     }
     else if (manager.getRouteTo(address_i)->hop != 1)
     {
@@ -279,8 +307,6 @@ void loop()
             {
               scanTime = millis();
               nextScan = false;
-              if(++scanMasterNum > manager.master_num)
-                scanMasterNum = 1;
             }
             break;
           }
@@ -312,10 +338,14 @@ void loop()
   if (manager.checkReceive[address_i] && !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, CHECK_ROUTING, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
   {
     uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
-    manager.checkReceive[reroutingAddr] = false;
-    manager.parentMaster[reroutingAddr] = -1;
-    manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
-    manager.printTree();
+    if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
+    {
+      manager.checkReceive[reroutingAddr] = false;
+      manager.parentMaster[reroutingAddr] = -1;
+      manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
+      manager.unRecvCnt[reroutingAddr] = 0;
+      manager.printTree();
+    }
   }
   else if (manager.getRouteTo(address_i)->hop != 1)
   {
@@ -393,7 +423,8 @@ void loop()
             }
             if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
             {
-              scanMasterNum++;
+              if(++scanMasterNum > manager.master_num)
+                scanMasterNum = 1;
               nextScan = true;
             }
           }
@@ -401,12 +432,14 @@ void loop()
         }
       }
     }
-    if (timeout)//timeout! timeout일 경우는 바로 rerouting하도록
+    if (timeout)
     {
       Serial.println("timeout!");
       manager.G_find_error_node(address_i);
     }
   }
+
+  
   else//rerouting 결과 혹은 원래 1hop인 애들
   {
     _rxHeaderTo = manager.headerTo();
@@ -430,7 +463,7 @@ void loop()
       {
         manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
         manager.checkReceive[manager.temp_buf[10 + i]] = true;
-        manager.parentMaster[manager.temp_buf[10 + i]] = _rxHeaderFrom;
+        manager.parentMaster[manager.temp_buf[10 + i]] = _rxHeaderSource;
         manager.master_num++;
       }
     }
@@ -457,7 +490,8 @@ void loop()
     }
     else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
     {
-      scanMasterNum++;
+      if(++scanMasterNum > manager.master_num)
+        scanMasterNum = 1;
       nextScan = true;
     }
   }

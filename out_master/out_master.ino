@@ -105,16 +105,11 @@ void loop()
     Serial.println("check_rerouting_time");
     check_rerouting_time = millis();
     int8_t max_receivedNum = 0;
-    for (uint8_t i = 0; i < 5; i++)
+    for (uint8_t i = 1; i < manager.master_num; i++)
     {
-      Serial.println(receivedNum[i]);
-      Serial.print("max_receivedNum : ");
-      Serial.println(max_receivedNum);
       if (max_receivedNum < receivedNum[i])
       {
         rerouting_candidate = i;
-        Serial.print("candidate : ");
-        Serial.println(rerouting_candidate);
         max_receivedNum = receivedNum[i];
         receivedNum[i] = 0;
         rerouting = true;
@@ -283,6 +278,7 @@ void loop()
             }
           }
         }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////여기서부터 다시보기///////////////////////////////////////////////////////////
         else if (_rxHeaderType == CHECK_ROUTING)
         {
           receivedRequestNum = 0;
@@ -348,6 +344,7 @@ void loop()
         {
           for (uint8_t i = 1; i < _rxHeaderData; i++)
             manager.addRouteTo(manager.temp_buf[i], manager.temp_buf[0], manager.Valid, _rxHeaderHop + 1);
+          manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
         }
         
 
@@ -372,7 +369,6 @@ void loop()
             manager.temp_buf[i] = outputData[i];
             
           //send control to internal master to serial
-
           
           if()//control 끝나면
           {

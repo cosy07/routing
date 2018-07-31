@@ -31,6 +31,8 @@ uint8_t _rxHeaderType;
 uint8_t indexFromR = 0;
 uint8_t id;
 
+unsigned long controllingTime;
+
 void setup()
 {
   Serial.begin(9600);
@@ -38,7 +40,7 @@ void setup()
   digitalWrite(SSerialTxControl, RS485Receive);  // Init Transceiver
   Serial1.begin(9600);   // set the data rate 
   
-  manager.init(20);
+  manager.init(15);
   manager.SetReceive();
   _thisAddress = manager.getThisAddress();
 
@@ -57,7 +59,6 @@ void setup()
     for(int j = 0;j < 9;j++)
       slave_answer[i][9] ^= slave_answer[i][j];
   }
-
   
   nvic_irq_set_priority(NVIC_USART2, 14);
   nvic_irq_set_priority(NVIC_USART1, 14);
@@ -123,6 +124,7 @@ void receiveFromRC()
             roomcon_control[i] = receiveFromR[i];
           }
           rc_control = true;
+          controllingTime = millis();
         }
       } 
       indexFromR = 0;
@@ -137,8 +139,6 @@ void receiveFromRC()
 
 void loop()
 {
-  //manager.send(_thisAddress, 1, master_number, SCAN_REQUEST_TO_SLAVE, manager.temp_buf, sizeof(manager.temp_buf));
-  Serial.println(millis());
   manager.SetReceive();
   if(manager.available())
   {
@@ -186,9 +186,8 @@ void loop()
       }
     }
   }
-  if(rc_control)
+  if(rc_control && millis() - controllingTime > 5000)
   {
-    delay(2000);
     for(int i = 0;i < 10;i++)
       manager.temp_buf[i] = roomcon_control[i]; 
     manager.sendToWaitAck(_thisAddress, 0xFF, master_number, RC_CONTROL_TO_SLAVE, manager.temp_buf, sizeof(manager.temp_buf));
