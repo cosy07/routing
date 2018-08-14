@@ -118,7 +118,8 @@ void loop()
 
   if(scanTime + 60000 < millis())
   {
-    //scanMasterNum의 Slave or Roomcon error
+    //scanMasterNum의 
+    //Slave or Roomcon 에러
     
     nextScan = true;
     if(++scanMasterNum > manager.master_num)
@@ -264,6 +265,7 @@ void loop()
       manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
       timeout = false;
       nextScan = false;
+      scanTime = millis();
     }
     else if (manager.getRouteTo(address_i)->hop != 1)
     {
@@ -312,7 +314,7 @@ void loop()
           }
         }
       }
-      if (timeout)//timeout! timeout일 경우는 바로 rerouting하도록
+      if (timeout)
       {
         Serial.println("timeout!");
         manager.G_find_error_node(address_i);
