@@ -34,12 +34,14 @@
 #define REQUEST_MULTI_HOP_ACK			7
 #define REQUEST_DIRECT					8
 #define REQUEST_DIRECT_ACK				9
-#define CHECK_ROUTING					10
-#define CHECK_ROUTING_ACK				11
-#define CHECK_ROUTING_ACK_REROUTING		12
-#define ACK								13
-#define NACK							14
-#define NEW_NODE_REGISTER				15
+#define NEW_NODE_REGISTER				10
+
+
+#define CHECK_ROUTING					11
+#define CHECK_ROUTING_ACK				12
+#define CHECK_ROUTING_ACK_REROUTING		13
+#define ACK								14
+#define NACK							15
 #define ROUTING_TABLE_UPDATE			16
 
 #define SCAN_REQUEST_TO_MASTER			17
@@ -150,8 +152,6 @@ public:
 
 	int8_t G_find_multihop_node(uint8_t, uint8_t*);
 
-	void FromMasterToGateway();
-
 	void M_findCandidateParents();
 
 	void M_find2ndRowMasters();
@@ -204,11 +204,12 @@ public:
 
 	bool checkReceive[34] = { false };
 	uint8_t ch;
-	int master_num = 3;
+	int master_num = 2;
 
 	int8_t parentMaster[34] = { -1 };
 	byte unRecvCnt[34] = { 0 };
 	byte temp_buf[20];
+	byte buffer[20];
 
 private:
 	ELECHOUSE_CC1120&   _driver;	   /// The Driver we are to use

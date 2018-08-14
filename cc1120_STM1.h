@@ -341,6 +341,7 @@ ELECHOUSE_CC1120(uint8_t mosi,uint8_t miso, uint8_t sclk, uint8_t cs,uint8_t gdo
         void RegConfigSettings(byte f);
 		void setTxPowerTo5mW();
 		int  Read8BitRssi(void);
+
 		byte  setSyncWords(const uint8_t* syncWords, uint8_t len);
 		uint8_t  headerFrom( ); //  
 		uint8_t  headerTo( );  // return _rxHeaderTo  

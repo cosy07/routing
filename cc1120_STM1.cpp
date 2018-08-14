@@ -187,7 +187,6 @@ void ELECHOUSE_CC1120::Init(byte f)
 ****************************************************************/
 void ELECHOUSE_CC1120::SpiWriteReg(uint16_t addr, byte value)
 {
-	byte  temp;
 	uint8_t tempExt = (uint8_t)(addr >> 8);
 	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
 
@@ -225,7 +224,6 @@ void ELECHOUSE_CC1120::SpiWriteReg(uint16_t addr, byte value)
 void ELECHOUSE_CC1120::SpiWriteBurstReg(byte addr, byte *buffer, byte num)
 {
 	byte i, temp;
-	byte arrayt[20];
 
 
 	temp = addr | WRITE_BURST;
@@ -265,7 +263,7 @@ byte ELECHOUSE_CC1120::SpiStrobe(byte strobe)
 byte ELECHOUSE_CC1120::SpiReadReg(uint16_t addr)
 {
 
-	byte value, temp, i;
+	byte value, temp;
 	uint8_t tempExt = (uint8_t)(addr >> 8);
 	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
 
@@ -299,7 +297,7 @@ byte ELECHOUSE_CC1120::SpiReadReg(uint16_t addr)
 ****************************************************************/
 void ELECHOUSE_CC1120::SpiReadBurstReg(uint16_t addr, byte *buffer, byte num)
 {
-	byte value, temp, i;
+	byte temp, i;
 	uint8_t tempExt = (uint8_t)(addr >> 8);
 	uint8_t tempAddr = (uint8_t)(addr & 0x00FF);
 
@@ -523,15 +521,14 @@ void ELECHOUSE_CC1120::DisableLNA(void)
 ****************************************************************/
 void ELECHOUSE_CC1120::SetReceive(void)
 {	
-	byte sts, size;
+	byte sts;
 	byte temp;
-	byte buffer[50];
 	sts = SpiStrobe(SNOP + 0x80); // Receive status...
 	temp = sts & 0x70;
-	//Serial.print(sts);
-	//Serial.print(" ");
-	//Serial.print(temp);
-	//Serial.print(" ;");
+	Serial.print(sts);
+	Serial.print(" ");
+	Serial.print(temp);
+	Serial.print(" ;");
 
 	if (sts == 0)//IDLE¿Ã∏È 
 		SpiStrobe(SRX);

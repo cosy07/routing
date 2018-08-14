@@ -324,6 +324,8 @@ void Datagram::checkRoutingTable()
 // 2017-04-26 ver.1
 void Datagram::send(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size)
 {
+	if (type >= 10 && getRouteTo(dst) == NULL)
+		return;
 	while (millis() - sendingTime < 1000);//어차피 대충 20일에 한번은 reset된다하면 sendingTime 타입 int여도 무방함
 	setHeaderFrom(from);
 	setHeaderTo(to);
@@ -339,6 +341,8 @@ void Datagram::send(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t 
 }
 bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* temp_buf, uint8_t size, unsigned long time)
 {
+	if (type >= 11 && getRouteTo(dst) == NULL)
+		return false;
 	unsigned long startTime = 0;
 	setHeaderFrom(from);
 	setHeaderTo(to);
@@ -348,6 +352,9 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 	setHeaderData(data);
 	setHeaderSeqNum(seqNum);
 	setHeaderHop(hop);
+	byte length = size;
+	for (int i = 0; i < size; i++)
+		buffer[i] = temp_buf[i];
 
 	for (int i = 0; i < DEFAULT_RETRIES; i++)
 	{
@@ -356,7 +363,7 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 
 		Serial.print("retry : ");
 		Serial.println(i);
-		_driver.SendData(temp_buf, size);
+		_driver.SendData(buffer, length);
 		sendingTime = millis();
 		startTime = millis();
 		while (millis() - startTime < TIME_TERM)
@@ -376,7 +383,7 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 						return true;
 					if (type == REQUEST_MULTI_HOP && _rxHeaderType == REQUEST_MULTI_HOP)
 						return true;
-					if (_rxHeaderType == CHECK_ROUTING_ACK && type == CHECK_ROUTING)
+					if ((_rxHeaderType == CHECK_ROUTING_ACK || _rxHeaderType == SCAN_RESPONSE_TO_GATEWAY) && type == CHECK_ROUTING)
 					{
 						if (_thisAddress != (_thisAddress & 0x00))//master면
 						{
@@ -931,9 +938,11 @@ bool Datagram::G_discoverNewPath(uint8_t address, uint8_t row_number)//, bool ch
 			temp_buf[0] = address;
 			//temp_buf[1] = (uint8_t)(0x00FF & address);
 			uint8_t recvAckNum = 0;
+			for (byte i; i < sizeof(temp_buf); i++)
+				buffer[i] = temp_buf[i];
 			for (int j = 0; j < DEFAULT_RETRIES; j++)	
 			{
-				send(_thisAddress, address, _thisAddress, address, REQUEST_DIRECT, NONE, NONE, NONE, NONE, temp_buf, sizeof(temp_buf));
+				send(_thisAddress, address, _thisAddress, address, REQUEST_DIRECT, NONE, NONE, NONE, NONE, buffer, sizeof(buffer));
 				startTime = millis();
 				recvAckNum = 0;
 				while (millis() - startTime < TIME_TERM * 5)//원래 TIME_TERM만큼만 기다리고 아무것도 못받으면 재전송하려고 했으나 보냈는데 게이트웨이에서 못받는 거일 수도 있으므로 여기서 끝까지 기다려주고 재전송하는게 나음..
@@ -1248,6 +1257,8 @@ void Datagram::newMaster()
 		{
 			candidate_parent = i;
 			maxReceiveNum = receivedNum[i];
+			Serial.print("i : ");
+			Serial.println(i);
 		}
 	}
 
@@ -1297,9 +1308,7 @@ void Datagram::newMaster()
 			}
 		}
 	}
-	if (receiveFromG)
-		FromMasterToGateway();
-	else
+	if(!receiveFromG)
 		newMaster();
 }
 //////////////////////
