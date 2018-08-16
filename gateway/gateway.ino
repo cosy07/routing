@@ -116,7 +116,7 @@ void setup()
 void loop()
 {
 
-  if(scanTime + 60000 < millis())
+  if(scanTime + 600000 < millis())
   {
     //scanMasterNum의 
     //Slave or Roomcon 에러
@@ -124,7 +124,7 @@ void loop()
     nextScan = true;
     if(++scanMasterNum > manager.master_num)
       scanMasterNum = 1;
-  }
+  }nextScan = false;
 
 
 
@@ -139,7 +139,118 @@ void loop()
       for(int i = 0;i < 10;i++)
         manager.temp_buf[i] = control_message[beControlIndex][i];
 
-      if (manager.checkReceive[address_i] && !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, CONTROL_TO_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
+      if(manager.checkReceive[address_i])
+      {
+        if (!manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, CONTROL_TO_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
+        {
+          uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
+          if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
+          {
+            manager.checkReceive[reroutingAddr] = false;
+            manager.parentMaster[reroutingAddr] = -1;
+            manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
+            manager.unRecvCnt[reroutingAddr] = 0;
+            manager.printTree();
+          }
+        }
+        else if(manager.getRouteTo(address_i)->hop == 1)
+        {
+          _rxHeaderTo = manager.headerTo();
+          _rxHeaderFrom = manager.headerFrom();
+          _rxHeaderSource = manager.headerSource();
+          _rxHeaderDestination = manager.headerDestination();
+          _rxHeaderType = manager.headerType();
+          _rxHeaderData = manager.headerData();
+          _rxHeaderFlags = manager.headerFlags();
+          _rxHeaderSeqNum = manager.headerSeqNum();
+          _rxHeaderHop = manager.headerHop();
+          manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+          beControl[beControlIndex] = false;
+          timeout = false;
+          for(uint8_t i = 0;i < 10;i++)
+            master_answer[beControlIndex][i] = manager.temp_buf[i];
+        }
+        else if (manager.getRouteTo(address_i)->hop != 1)
+        {
+          startTime = millis();
+          while (millis() - startTime < DEFAULT_RETRIES * 4 * manager.getRouteTo(address_i)->hop * TIME_TERM)
+          {
+            manager.SetReceive();
+            if (manager.available())
+            {
+              if (manager.recvData(manager.temp_buf) && manager.headerTo() == _thisAddress)
+              {
+                _rxHeaderTo = manager.headerTo();
+                _rxHeaderFrom = manager.headerFrom();
+                _rxHeaderSource = manager.headerSource();
+                _rxHeaderDestination = manager.headerDestination();
+                _rxHeaderType = manager.headerType();
+                _rxHeaderData = manager.headerData();
+                _rxHeaderFlags = manager.headerFlags();
+                _rxHeaderSeqNum = manager.headerSeqNum();
+                _rxHeaderHop = manager.headerHop();
+        
+                manager.printRecvPacketHeader();
+                timeout = false;
+                manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+                
+                if (_rxHeaderType == NACK)
+                {
+                  Serial.println("NACK");
+                  uint8_t reroutingAddr = manager.temp_buf[0];
+                  if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
+                  {
+                    manager.checkReceive[reroutingAddr] = false;
+                    manager.parentMaster[reroutingAddr] = -1;
+                    manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
+                    manager.unRecvCnt[reroutingAddr] = 0;
+                    manager.printTree();
+                  }
+                }
+                else if (_rxHeaderType == CONTROL_RESPONSE_TO_GATEWAY)
+                {
+                  for(uint8_t i = 0;i < 10;i++)
+                    master_answer[beControlIndex][i] = manager.temp_buf[i];
+                  beControl[beControlIndex] = false;
+                }
+                break;
+              }
+            }
+          }
+          if (timeout)
+          {
+            Serial.println("timeout!");
+            manager.G_find_error_node(address_i);
+          }
+        } 
+      }
+    }
+    else
+    {
+      for(uint8_t i = 0;i < 10;i++)
+        master_answer[beControlIndex][i] = 0;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  if(nextScan)//default 값 true
+  {
+    Serial.println("SCAN");
+    Serial.println(scanMasterNum);
+    address_i = scanMasterNum;
+    if(manager.checkReceive[address_i])
+    {
+      if (!manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, SCAN_REQUEST_TO_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
       {
         uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
         if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
@@ -162,11 +273,11 @@ void loop()
         _rxHeaderFlags = manager.headerFlags();
         _rxHeaderSeqNum = manager.headerSeqNum();
         _rxHeaderHop = manager.headerHop();
+        
         manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-        beControl[beControlIndex] = false;
         timeout = false;
-        for(uint8_t i = 0;i < 10;i++)
-          master_answer[beControlIndex][i] = manager.temp_buf[i];
+        nextScan = false;
+        scanTime = millis();
       }
       else if (manager.getRouteTo(address_i)->hop != 1)
       {
@@ -191,6 +302,7 @@ void loop()
               manager.printRecvPacketHeader();
               timeout = false;
               manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+  
               
               if (_rxHeaderType == NACK)
               {
@@ -205,11 +317,10 @@ void loop()
                   manager.printTree();
                 }
               }
-              else if (_rxHeaderType == CONTROL_RESPONSE_TO_GATEWAY)
+              else if (_rxHeaderType == SCAN_REQUEST_ACK_FROM_MASTER)
               {
-                for(uint8_t i = 0;i < 10;i++)
-                  master_answer[beControlIndex][i] = manager.temp_buf[i];
-                beControl[beControlIndex] = false;
+                scanTime = millis();
+                nextScan = false;
               }
               break;
             }
@@ -220,7 +331,7 @@ void loop()
           Serial.println("timeout!");
           manager.G_find_error_node(address_i);
         }
-      }
+      } 
     }
   }
 
@@ -230,15 +341,18 @@ void loop()
 
 
 
+  
+  timeout = true;
+  address_i = checkMasterNum;// convertToAddress(gatewayNumber, i, 0);
 
-
-
-
-
-  if(nextScan)//default 값 true
+  for(int i = 0;i < 10;i++)
   {
-    address_i = scanMasterNum;
-    if (manager.checkReceive[address_i] && !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, SCAN_REQUEST_TO_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
+    manager.temp_buf[i] = gateway_request[checkMasterNum - 1][i];
+  }
+
+  if(manager.checkReceive[address_i])
+  {
+    if (!manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, CHECK_ROUTING, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
     {
       uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
       if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
@@ -249,23 +363,6 @@ void loop()
         manager.unRecvCnt[reroutingAddr] = 0;
         manager.printTree();
       }
-    }
-    else if(manager.getRouteTo(address_i)->hop == 1)
-    {
-      _rxHeaderTo = manager.headerTo();
-      _rxHeaderFrom = manager.headerFrom();
-      _rxHeaderSource = manager.headerSource();
-      _rxHeaderDestination = manager.headerDestination();
-      _rxHeaderType = manager.headerType();
-      _rxHeaderData = manager.headerData();
-      _rxHeaderFlags = manager.headerFlags();
-      _rxHeaderSeqNum = manager.headerSeqNum();
-      _rxHeaderHop = manager.headerHop();
-      
-      manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-      timeout = false;
-      nextScan = false;
-      scanTime = millis();
     }
     else if (manager.getRouteTo(address_i)->hop != 1)
     {
@@ -286,16 +383,16 @@ void loop()
             _rxHeaderFlags = manager.headerFlags();
             _rxHeaderSeqNum = manager.headerSeqNum();
             _rxHeaderHop = manager.headerHop();
-    
+  
             manager.printRecvPacketHeader();
             timeout = false;
             manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-
             
             if (_rxHeaderType == NACK)
             {
               Serial.println("NACK");
-              uint8_t reroutingAddr = manager.temp_buf[0];
+              uint8_t reroutingAddr = manager.temp_buf[0];// word(manager.temp_buf[0], manager.temp_buf[1]);
+              //deleteRouteTo(rerouting_addr);
               if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
               {
                 manager.checkReceive[reroutingAddr] = false;
@@ -305,10 +402,49 @@ void loop()
                 manager.printTree();
               }
             }
-            else if (_rxHeaderType == SCAN_REQUEST_ACK_FROM_MASTER)
+            else
             {
-              scanTime = millis();
-              nextScan = false;
+              for(int i = 0;i < 10;i++)
+                master_answer[checkMasterNum - 1][i] = manager.temp_buf[i];
+                
+              if (_rxHeaderType == CHECK_ROUTING_ACK)
+              {
+                for (uint8_t i = 0; i < _rxHeaderData; i++)
+                {
+                  manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, manager.getRouteTo(_rxHeaderSource)->hop + 1);
+                  manager.checkReceive[manager.temp_buf[10 + i]] = true;
+                  manager.parentMaster[manager.temp_buf[10 + i]] = _rxHeaderSource;
+                  manager.master_num++;
+                  manager.printRoutingTable();
+                }
+              }
+              else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
+              {
+                int8_t temp_hopCount = manager.getRouteTo(_rxHeaderSource)->hop;
+                manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
+                manager.changeNextHop(_rxHeaderSource, temp_hopCount - (_rxHeaderHop + 1));
+                manager.parentMaster[_rxHeaderSource] = manager.temp_buf[10];
+    
+                manager.printRoutingTable();
+                uint8_t cnt = 1;
+                manager.temp_buf[0] = _rxHeaderSource;
+                for (uint8_t i = 1; i <= manager.master_num; i++)
+                {
+                  if (manager.getRouteTo(i)->state == manager.Discovering)
+                  {
+                    manager.temp_buf[cnt++] = i;
+                    manager.getRouteTo(i)->state = manager.Valid;
+                  }
+                }
+                if(manager.parentMaster[_rxHeaderSource] != _thisAddress)
+                  manager.sendToWaitAck(_thisAddress, manager.getRouteTo(manager.parentMaster[_rxHeaderSource])->next_hop, _thisAddress, manager.parentMaster[_rxHeaderSource], ROUTING_TABLE_UPDATE, cnt, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+              }
+              else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
+              {
+                if(++scanMasterNum > manager.master_num)
+                  scanMasterNum = 1;
+                nextScan = true;
+              }
             }
             break;
           }
@@ -320,182 +456,73 @@ void loop()
         manager.G_find_error_node(address_i);
       }
     }
-  }
-
-
-
-
-
-
-
   
-  timeout = true;
-  address_i = checkMasterNum;// convertToAddress(gatewayNumber, i, 0);
-
-  for(int i = 0;i < 10;i++)
-  {
-    manager.temp_buf[i] = gateway_request[checkMasterNum - 1][i];
-  }
-  
-  if (manager.checkReceive[address_i] && !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(address_i)->next_hop, _thisAddress, address_i, CHECK_ROUTING, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf)))
-  {
-    uint8_t reroutingAddr = manager.getRouteTo(address_i)->next_hop;
-    if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
-    {
-      manager.checkReceive[reroutingAddr] = false;
-      manager.parentMaster[reroutingAddr] = -1;
-      manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
-      manager.unRecvCnt[reroutingAddr] = 0;
-      manager.printTree();
-    }
-  }
-  else if (manager.getRouteTo(address_i)->hop != 1)
-  {
-    startTime = millis();
-    while (millis() - startTime < DEFAULT_RETRIES * 4 * manager.getRouteTo(address_i)->hop * TIME_TERM)
-    {
-      manager.SetReceive();
-      if (manager.available())
-      {
-        if (manager.recvData(manager.temp_buf) && manager.headerTo() == _thisAddress)
-        {
-          _rxHeaderTo = manager.headerTo();
-          _rxHeaderFrom = manager.headerFrom();
-          _rxHeaderSource = manager.headerSource();
-          _rxHeaderDestination = manager.headerDestination();
-          _rxHeaderType = manager.headerType();
-          _rxHeaderData = manager.headerData();
-          _rxHeaderFlags = manager.headerFlags();
-          _rxHeaderSeqNum = manager.headerSeqNum();
-          _rxHeaderHop = manager.headerHop();
-
-          manager.printRecvPacketHeader();
-          timeout = false;
-          manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-          
-          if (_rxHeaderType == NACK)
-          {
-            Serial.println("NACK");
-            uint8_t reroutingAddr = manager.temp_buf[0];// word(manager.temp_buf[0], manager.temp_buf[1]);
-            //deleteRouteTo(rerouting_addr);
-            if (manager.unRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
-            {
-              manager.checkReceive[reroutingAddr] = false;
-              manager.parentMaster[reroutingAddr] = -1;
-              manager.G_discoverNewPath(reroutingAddr, manager.getRouteTo(reroutingAddr)->hop);
-              manager.unRecvCnt[reroutingAddr] = 0;
-              manager.printTree();
-            }
-          }
-          else
-          {
-            for(int i = 0;i < 10;i++)
-              master_answer[checkMasterNum - 1][i] = manager.temp_buf[i];
-              
-            if (_rxHeaderType == CHECK_ROUTING_ACK)
-            {
-              for (uint8_t i = 0; i < _rxHeaderData; i++)
-              {
-                manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
-                manager.checkReceive[manager.temp_buf[10 + i]] = true;
-                manager.parentMaster[manager.temp_buf[10 + i]] = _rxHeaderFrom;
-                manager.master_num++;
-              }
-            }
-            else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
-            {
-              int8_t temp_hopCount = manager.getRouteTo(_rxHeaderSource)->hop;
-              manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
-              manager.changeNextHop(_rxHeaderSource, temp_hopCount - (_rxHeaderHop + 1));
-              manager.parentMaster[_rxHeaderSource] = manager.temp_buf[10];
-  
-              manager.printRoutingTable();
-              uint8_t cnt = 1;
-              manager.temp_buf[0] = _rxHeaderSource;
-              for (uint8_t i = 1; i <= manager.master_num; i++)
-              {
-                if (manager.getRouteTo(i)->state == manager.Discovering)
-                {
-                  manager.temp_buf[cnt++] = i;
-                  manager.getRouteTo(i)->state = manager.Valid;
-                }
-              }
-              if(manager.parentMaster[_rxHeaderSource] != _thisAddress)
-                manager.sendToWaitAck(_thisAddress, manager.getRouteTo(manager.parentMaster[_rxHeaderSource])->next_hop, _thisAddress, manager.parentMaster[_rxHeaderSource], ROUTING_TABLE_UPDATE, cnt, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-            }
-            if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
-            {
-              if(++scanMasterNum > manager.master_num)
-                scanMasterNum = 1;
-              nextScan = true;
-            }
-          }
-          break;
-        }
-      }
-    }
-    if (timeout)
-    {
-      Serial.println("timeout!");
-      manager.G_find_error_node(address_i);
-    }
-  }
-
-  
-  else//rerouting 결과 혹은 원래 1hop인 애들
-  {
-    _rxHeaderTo = manager.headerTo();
-    _rxHeaderFrom = manager.headerFrom();
-    _rxHeaderSource = manager.headerSource();
-    _rxHeaderDestination = manager.headerDestination();
-    _rxHeaderType = manager.headerType();
-    _rxHeaderData = manager.headerData();
-    _rxHeaderFlags = manager.headerFlags();
-    _rxHeaderSeqNum = manager.headerSeqNum();
-    _rxHeaderHop = manager.headerHop();
-     
-    manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
     
-    for(int i = 0;i < 10;i++)
-      master_answer[checkMasterNum - 1][i] = manager.temp_buf[i];
+    else//rerouting 결과 혹은 원래 1hop인 애들
+    {
+      _rxHeaderTo = manager.headerTo();
+      _rxHeaderFrom = manager.headerFrom();
+      _rxHeaderSource = manager.headerSource();
+      _rxHeaderDestination = manager.headerDestination();
+      _rxHeaderType = manager.headerType();
+      _rxHeaderData = manager.headerData();
+      _rxHeaderFlags = manager.headerFlags();
+      _rxHeaderSeqNum = manager.headerSeqNum();
+      _rxHeaderHop = manager.headerHop();
+       
+      manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
       
-    if (_rxHeaderType == CHECK_ROUTING_ACK)
-    {
-      for (uint8_t i = 0; i < _rxHeaderData; i++)
+      for(int i = 0;i < 10;i++)
+        master_answer[checkMasterNum - 1][i] = manager.temp_buf[i];
+        
+      if (_rxHeaderType == CHECK_ROUTING_ACK)
       {
-        manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
-        manager.checkReceive[manager.temp_buf[10 + i]] = true;
-        manager.parentMaster[manager.temp_buf[10 + i]] = _rxHeaderSource;
-        manager.master_num++;
-      }
-    }
-    else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
-    {
-      int8_t temp_hopCount = manager.getRouteTo(_rxHeaderSource)->hop;
-      manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
-      manager.changeNextHop(_rxHeaderSource, temp_hopCount - (_rxHeaderHop + 1));
-      manager.parentMaster[_rxHeaderSource] = manager.temp_buf[10];
-  
-      manager.printRoutingTable();
-      uint8_t cnt = 1;
-      manager.temp_buf[0] = _rxHeaderSource;
-      for (uint8_t i = 1; i <= manager.master_num; i++)
-      {
-        if (manager.getRouteTo(i)->state == manager.Discovering)
+        for (uint8_t i = 0; i < _rxHeaderData; i++)
         {
-          manager.temp_buf[cnt++] = i;
-          manager.getRouteTo(i)->state = manager.Valid;
+          manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, manager.getRouteTo(_rxHeaderSource)->hop + 1);
+          manager.checkReceive[manager.temp_buf[10 + i]] = true;
+          manager.parentMaster[manager.temp_buf[10 + i]] = _rxHeaderSource;
+          manager.printRoutingTable();
+          manager.master_num++;
         }
       }
-      if(manager.parentMaster[_rxHeaderSource] != _thisAddress)
-        manager.sendToWaitAck(_thisAddress, manager.getRouteTo(manager.parentMaster[_rxHeaderSource])->next_hop, _thisAddress, manager.parentMaster[_rxHeaderSource], ROUTING_TABLE_UPDATE, cnt, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-    }
-    else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
-    {
-      if(++scanMasterNum > manager.master_num)
-        scanMasterNum = 1;
-      nextScan = true;
-    }
+      else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
+      {
+        int8_t temp_hopCount = manager.getRouteTo(_rxHeaderSource)->hop;
+        manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
+        manager.changeNextHop(_rxHeaderSource, temp_hopCount - (_rxHeaderHop + 1));
+        manager.parentMaster[_rxHeaderSource] = manager.temp_buf[10];
+    
+        manager.printRoutingTable();
+        uint8_t cnt = 1;
+        manager.temp_buf[0] = _rxHeaderSource;
+        for (uint8_t i = 1; i <= manager.master_num; i++)
+        {
+          if (manager.getRouteTo(i)->state == manager.Discovering)
+          {
+            manager.temp_buf[cnt++] = i;
+            manager.getRouteTo(i)->state = manager.Valid;
+          }
+        }
+        if(manager.parentMaster[_rxHeaderSource] != _thisAddress)
+          manager.sendToWaitAck(_thisAddress, manager.getRouteTo(manager.parentMaster[_rxHeaderSource])->next_hop, _thisAddress, manager.parentMaster[_rxHeaderSource], ROUTING_TABLE_UPDATE, cnt, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+      }
+      else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
+      {
+        Serial.println("what");
+        Serial.println(scanMasterNum);
+        if(++scanMasterNum > manager.master_num)
+          scanMasterNum = 1;
+        Serial.println("what");
+        Serial.println(scanMasterNum);
+        nextScan = true;
+      }
+    } 
+  }
+  else
+  {
+    for(uint8_t i = 0;i < 10;i++)
+      master_answer[checkMasterNum - 1][i] = 0;
   }
 
 
