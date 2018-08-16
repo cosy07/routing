@@ -437,7 +437,10 @@ void loop()
                   }
                 }
                 if(manager.parentMaster[_rxHeaderSource] != _thisAddress)
+                {
                   manager.sendToWaitAck(_thisAddress, manager.getRouteTo(manager.parentMaster[_rxHeaderSource])->next_hop, _thisAddress, manager.parentMaster[_rxHeaderSource], ROUTING_TABLE_UPDATE, cnt, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+                  delay(TIME_TERM * DEFAULT_RETRIES * manager.getRouteTo(_rxHeaderSource)->hop);
+                }
               }
               else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
               {
@@ -456,8 +459,6 @@ void loop()
         manager.G_find_error_node(address_i);
       }
     }
-  
-    
     else//rerouting 결과 혹은 원래 1hop인 애들
     {
       _rxHeaderTo = manager.headerTo();
@@ -509,12 +510,8 @@ void loop()
       }
       else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
       {
-        Serial.println("what");
-        Serial.println(scanMasterNum);
         if(++scanMasterNum > manager.master_num)
           scanMasterNum = 1;
-        Serial.println("what");
-        Serial.println(scanMasterNum);
         nextScan = true;
       }
     } 
