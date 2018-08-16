@@ -8,7 +8,7 @@
 #define RS485Receive     LOW
 
 ELECHOUSE_CC1120 cc1120;
-Datagram manager(cc1120, 0x01);
+Datagram manager(cc1120, 0x00, 0x01);
 
 uint8_t receivedRequestNum = 0;
 uint8_t receivedOverhearNum = 1;
@@ -23,8 +23,9 @@ uint8_t receivedNum[33] = { 0 };
 int8_t rerouting_candidate = -1;
 
 uint8_t check_cnt = 0;
-unsigned long check_table_time = millis();
-unsigned long check_rerouting_time = millis();
+unsigned long check_table_time;
+unsigned long check_rerouting_time;
+unsigned long rs485_time;
 
 
 uint8_t     _thisAddress;
@@ -43,35 +44,42 @@ uint8_t masterBroadcastAddress = 0xFF;
 byte inputData[10];
 byte outputData[10];
   
-bool RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf)
+bool RS485_Write_Read()
 {
   byte buffer[10];
   uint8_t index = 0;
-  digitalWrite(SSerialTxControl, RS485Transmit);
-  Serial1.write(write_buf, sizeof(write_buf));
-  Serial1.flush();
-  digitalWrite(SSerialTxControl, RS485Receive);
-  while(1)
+  for(int i = 0;i < 3;i++)
   {
-    if(Serial1.available())
+    digitalWrite(SSerialTxControl, RS485Transmit);
+    Serial1.write(inputData, sizeof(inputData));
+    Serial1.flush();
+    digitalWrite(SSerialTxControl, RS485Receive);
+  
+    rs485_time = millis();
+    while(rs485_time + 3000 > millis())
     {
-      buffer[index++] = Serial1.read();
+      if(Serial1.available())
+      {
+        buffer[index++] = Serial1.read();
+      }
+      if(index == 10)
+        break;
     }
-    if(index == 10)
-      break;
-  }
-  if(buffer[0] == 0xAD)
-  {
-    byte temp = 0;
-    for(int i = 0;i < 9;i++)
-      temp ^= buffer[i];
-    if(buffer[9] == temp)
+    if(buffer[0] == 0xAD)
     {
-      for(int i = 0;i < 10;i++)
-        read_buf[i] = buffer[i];
-       return true;
+      byte temp = 0;
+      for(int i = 0;i < 9;i++)
+        temp ^= buffer[i];
+      if(buffer[9] == temp)
+      {
+        for(int i = 0;i < 10;i++)
+          outputData[i] = buffer[i];
+        return true;
+      }
     }
   }
+  for(int i = 0;i < 10;i++)
+    outputData[i] = 0;
   return false;
 }
 
@@ -86,6 +94,9 @@ void setup()
   manager.SetReceive();
 
  _thisAddress = manager.getThisAddress();
+ 
+ check_table_time = millis();
+ check_rerouting_time = millis();
 }
 
 
@@ -105,8 +116,11 @@ void loop()
     Serial.println("check_rerouting_time");
     check_rerouting_time = millis();
     int8_t max_receivedNum = 0;
-    for (uint8_t i = 1; i < manager.master_num; i++)
+    for (uint8_t i = 0; i <= manager.master_num; i++)
     {
+      Serial.print(i);
+      Serial.print(" : ");
+      Serial.println(receivedNum[i]);
       if (max_receivedNum < receivedNum[i])
       {
         rerouting_candidate = i;
@@ -137,41 +151,45 @@ void loop()
         if (_rxHeaderDestination != _thisAddress && _rxHeaderTo != masterBroadcastAddress)//relay상황
         {
           uint8_t temp_source = _rxHeaderSource;
+          Serial.println("receive relay");
           if (manager.getRouteTo(_thisAddress & 0x00) == NULL)
           {
             manager.printRoutingTable();
           }
-          manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
-          if (_rxHeaderType == REQUEST_MULTI_HOP_ACK || _rxHeaderType == REQUEST_DIRECT_ACK)
+          else
           {
-            manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
-            manager.printRoutingTable();
-          }
-          else if (_rxHeaderType == CHECK_ROUTING_ACK && _rxHeaderData > 0)
-          {
-            for (uint8_t i = 0; i < _rxHeaderData; i++)
+            manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+            if (_rxHeaderType == REQUEST_MULTI_HOP_ACK || _rxHeaderType == REQUEST_DIRECT_ACK)
             {
-              manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
+              manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
+              manager.printRoutingTable();
             }
-          }
-          else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
-          {
-            manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
-          }
-          else if(_rxHeaderType == ROUTING_TABLE_UPDATE)
-          {
-            for (uint8_t i = 1; i < _rxHeaderData; i++)
-              manager.addRouteTo(manager.temp_buf[i], manager.temp_buf[0], manager.Valid, _rxHeaderHop + 1);
-          }
-          if (manager.getRouteTo(_rxHeaderDestination) == NULL
-            || !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, manager.temp_buf, sizeof(manager.temp_buf)))
-          {
-            if (temp_source == (_thisAddress & 0x00))
+            else if (_rxHeaderType == CHECK_ROUTING_ACK && _rxHeaderData > 0)
             {
-              Serial.println("send NACK");
-              manager.temp_buf[0] = manager.getRouteTo(_rxHeaderDestination)->next_hop;
-              //manager.temp_buf[1] = (uint8_t)(0x00FF & getRouteTo(_rxHeaderDestination)->next_hop);
-              manager.sendToWaitAck(_thisAddress, manager.getRouteTo(temp_source)->next_hop, _thisAddress, _thisAddress & 0x00, NACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+              for (uint8_t i = 0; i < _rxHeaderData; i++)
+              {
+                manager.addRouteTo(manager.temp_buf[10 + i], _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
+              }
+            }
+            else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
+            {
+              manager.addRouteTo(_rxHeaderSource, _rxHeaderFrom, manager.Valid, _rxHeaderHop + 1);
+            }
+            else if(_rxHeaderType == ROUTING_TABLE_UPDATE)
+            {
+              for (uint8_t i = 1; i < _rxHeaderData; i++)
+                manager.addRouteTo(manager.temp_buf[i], manager.temp_buf[0], manager.Valid, _rxHeaderHop + 1);
+            }
+            if (manager.getRouteTo(_rxHeaderDestination) == NULL
+              || !manager.sendToWaitAck(_thisAddress, manager.getRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, manager.temp_buf, sizeof(manager.temp_buf)))
+            {
+              if (temp_source == (_thisAddress & 0x00))
+              {
+                Serial.println("send NACK");
+                manager.temp_buf[0] = manager.getRouteTo(_rxHeaderDestination)->next_hop;
+                //manager.temp_buf[1] = (uint8_t)(0x00FF & getRouteTo(_rxHeaderDestination)->next_hop);
+                manager.sendToWaitAck(_thisAddress, manager.getRouteTo(temp_source)->next_hop, _thisAddress, _thisAddress & 0x00, NACK, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
+              }
             }
           }
         }
@@ -290,8 +308,8 @@ void loop()
             
             for(int i = 0;i < 10;i++)
               inputData[i] = manager.temp_buf[i];
-            while(!RS485_Write_Read(inputData, outputData));
-
+            //while(!RS485_Write_Read());
+            RS485_Write_Read();
             for(int i = 0;i < 10;i++)
               manager.temp_buf[i] = outputData[i];
 
@@ -334,13 +352,13 @@ void loop()
           else
             manager.printRoutingTable();
         }
-        else if (_rxHeaderType == NEW_NODE_REGISTER)
+        else if (_rxHeaderType == NEW_NODE_REGISTER && manager.getRouteTo(_thisAddress & 0x00) != NULL)
         {
           manager.addRouteTo(_rxHeaderFrom, _rxHeaderFrom, manager.Discovering, 1);
           manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, manager.getRouteTo(_thisAddress & 0x00)->hop, manager.temp_buf, sizeof(manager.temp_buf));
           newNode = true;
         }
-        else if (_rxHeaderType == ROUTING_TABLE_UPDATE)
+        else if (_rxHeaderType == ROUTING_TABLE_UPDATE && manager.getRouteTo(_thisAddress & 0x00) != NULL)
         {
           for (uint8_t i = 1; i < _rxHeaderData; i++)
             manager.addRouteTo(manager.temp_buf[i], manager.temp_buf[0], manager.Valid, _rxHeaderHop + 1);
@@ -351,7 +369,7 @@ void loop()
 
 
         
-        else if(_rxHeaderType == SCAN_REQUEST_TO_MASTER)
+        else if(_rxHeaderType == SCAN_REQUEST_TO_MASTER && manager.getRouteTo(_thisAddress & 0x00) != NULL)
         {
           manager.getRouteTo(_thisAddress & 0x00)->hop = _rxHeaderHop + 1;
           manager.sendToWaitAck(_thisAddress, manager.getRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, SCAN_REQUEST_ACK_FROM_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
@@ -360,11 +378,12 @@ void loop()
           
         }
         
-        else if(_rxHeaderType == CONTROL_TO_MASTER)
+        else if(_rxHeaderType == CONTROL_TO_MASTER && manager.getRouteTo(_thisAddress & 0x00) != NULL)
         {
           for(int i = 0;i < 10;i++)
             inputData[i] = manager.temp_buf[i];
-          while(!RS485_Write_Read(inputData, outputData));
+          //while(!RS485_Write_Read());
+          RS485_Write_Read();
           for(int i = 0;i < 10;i++)
             manager.temp_buf[i] = outputData[i];
             
@@ -414,6 +433,10 @@ void loop()
         {
           Serial.println("hi");
           receivedNum[_rxHeaderFrom]++;
+          Serial.print("_rxHeaderFrom : ");
+          Serial.println(_rxHeaderFrom);
+          Serial.print("receivedNum : ");
+          Serial.println(receivedNum[_rxHeaderFrom]);
         }
       }
 
