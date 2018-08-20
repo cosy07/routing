@@ -645,7 +645,7 @@ byte ELECHOUSE_CC1120::ReceiveData(byte *rxBuffer)
 		}
 
 		Serial.print("-----receive-----");
-		Serial.println(millis()/1000 );
+		Serial.println(millis()/1000);
 		for (i=0;i<size; i++) {
 			Serial.print(temp[i]);
 			//if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) 
@@ -761,17 +761,13 @@ void ELECHOUSE_CC1120::ManualCalibration(void) {
 
 void ELECHOUSE_CC1120::SetChannel(int ch) {
 
-	int i = 1, temp, FreQ2, FreQ1, FreQ0;
+	int temp, FreQ2, FreQ1, FreQ0;
 	float Base_Frequency = 424.7125;
 	float frequency = Base_Frequency + (ch * 0.0125);
 
 	float  f_vco = 8 * frequency; // LO divider * RF;
 	long   Freq = f_vco * 65536 / 32;
 
-	for (int i = 0; i < 30; i++)
-	{
-
-	}
 	FreQ2 = Freq / 65536;
 	temp = Freq % 65536;
 	FreQ1 = temp / 256;
@@ -783,12 +779,12 @@ void ELECHOUSE_CC1120::SetChannel(int ch) {
 
 }
 void ELECHOUSE_CC1120::PrintChannel() {
-
+	int temp, FreQ2, FreQ1, FreQ0;
+	float Base_Frequency = 424.7125;
+	float frequency;
 	for (int i = 0; i < 30; i++)
 	{
-		int temp, FreQ2, FreQ1, FreQ0;
-		float Base_Frequency = 424.7125;
-		float frequency = Base_Frequency + (i * 0.0125);
+		frequency = Base_Frequency + (i * 0.0125);
 
 		float  f_vco = 8 * frequency; // LO divider * RF;
 		long   Freq = f_vco * 65536 / 32;
@@ -805,8 +801,6 @@ void ELECHOUSE_CC1120::PrintChannel() {
 		Serial.print(" ");
 		Serial.println();
 	}
-
-
 }
 int ELECHOUSE_CC1120::Read8BitRssi(void){
 	uint8_t rssi2compl,rssiValid;

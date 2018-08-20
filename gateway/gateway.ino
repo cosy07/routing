@@ -79,7 +79,7 @@ void receiveFromGW()
               gateway_request[group_id][i] = receiveFromG[i];
             }
         }
-        else if(receiveFromG[0] = 0xBE)//제어요청
+        else if(receiveFromG[0] == 0xBE)//제어요청
         {
           for(int i = 0;i < 10;i++)
           {

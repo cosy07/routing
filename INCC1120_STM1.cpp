@@ -482,8 +482,8 @@ void IN_ELECHOUSE_CC1120::SendData(byte *txBuffer,byte size)
 	SpiStrobe(STX) ;		//start send	
 
 
-	while (!digitalRead(GDO0));//GDO3으로 해야함 Serial.println("!digitalRead(GDO3)");    //Serial.println(" Sync Word transmitted (GPIO3) ");	// Wait for GDO0 to be set -> sync transmitted  
-	while (digitalRead(GDO0));//GDO3으로 해야함Serial.println("digitalRead(GDO3)");     //Serial.println(" End of packet (GPIO3)");	// Wait for GDO0 to be cleared -> end of packet
+	while (!digitalRead(GDO3));//GDO3으로 해야함 Serial.println("!digitalRead(GDO3)");    //Serial.println(" Sync Word transmitted (GPIO3) ");	// Wait for GDO0 to be set -> sync transmitted  
+	while (digitalRead(GDO3));//GDO3으로 해야함Serial.println("digitalRead(GDO3)");     //Serial.println(" End of packet (GPIO3)");	// Wait for GDO0 to be cleared -> end of packet
 
   
    
@@ -844,7 +844,6 @@ void IN_ELECHOUSE_CC1120::setHeaderType(uint8_t type)
  uint8_t  IN_ELECHOUSE_CC1120::headerTo( )
 {
    	return  e_rxHeaderTo;
- 	
 }
  uint8_t  IN_ELECHOUSE_CC1120::headerFrom( )
 {

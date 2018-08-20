@@ -34,12 +34,13 @@
 #define REQUEST_MULTI_HOP_ACK			7
 #define REQUEST_DIRECT					8
 #define REQUEST_DIRECT_ACK				9
-#define CHECK_ROUTING					10
-#define CHECK_ROUTING_ACK				11
-#define CHECK_ROUTING_ACK_REROUTING		12
-#define ACK								13
-#define NACK							14
-#define NEW_NODE_REGISTER				15
+#define NEW_NODE_REGISTER				10
+
+#define CHECK_ROUTING					11
+#define CHECK_ROUTING_ACK				12
+#define CHECK_ROUTING_ACK_REROUTING		13
+#define ACK								14
+#define NACK							15
 #define ROUTING_TABLE_UPDATE			16
 
 #define SCAN_REQUEST_TO_MASTER			17
@@ -69,7 +70,6 @@
 //#define NUM_OF_MASTER				17
 #define MAX_UN_RECV					2//일단 0으로
 
-void RS485_Write_Read(uint8_t *write_buf,uint8_t *read_buf);
 
 class  InDatagram
 {
@@ -98,8 +98,6 @@ public:
 	bool           available();
 
 	byte           recvData(uint8_t* buf);
-
-	byte receive(byte*);
 
 	void send(uint8_t from, uint8_t to, uint8_t master, uint8_t type, uint8_t* temp_buf, uint8_t size);
 

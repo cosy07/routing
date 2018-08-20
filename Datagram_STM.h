@@ -36,7 +36,6 @@
 #define REQUEST_DIRECT_ACK				9
 #define NEW_NODE_REGISTER				10
 
-
 #define CHECK_ROUTING					11
 #define CHECK_ROUTING_ACK				12
 #define CHECK_ROUTING_ACK_REROUTING		13
@@ -50,10 +49,17 @@
 #define CONTROL_TO_MASTER				20
 #define CONTROL_RESPONSE_TO_GATEWAY		21
 
+#define SCAN_REQUEST_TO_RC				22
+#define CONTROL_TO_RC					23
 
-#define SCAN_REQUEST_TO_RC_EXTERNAL		14
-#define SCAN_REQUEST_TO_SLAVE			15
-#define SCAN_RESPONSE_TO_RC				16
+#define CONTROL_RESPONSE_BROADCAST		24
+#define SCAN_RESPONSE_TO_RC				25
+
+#define SCAN_REQUEST_TO_SLAVE			26
+#define RC_CONTROL_TO_SLAVE				27
+#define GW_CONTROL_TO_SLAVE				28
+
+#define INTERNAL_COM_FAIL				29
 
 
 #define NONE						0
@@ -240,7 +246,7 @@ private:
 
 	uint8_t gatewayNumber = 0;
 
-	unsigned long	sendingTime = -60000;
+	signed long	sendingTime = -60000;
 
 };
 
