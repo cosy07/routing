@@ -1,3 +1,7 @@
+//내부 마스터
+//1. 외부마스터와의 통신(게이트웨이로부터의 내부 zone 스캔 요청, 게이트웨이로부터의 내부 zone 제어 요청)
+//2. 룸콘 및 슬레이브와의 통신
+
 #include <InDatagram_STM.h>
 
 #define SSerialRX        PA3  //Serial Receive pin DI
@@ -26,11 +30,12 @@ byte state_request[10] {0xD5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
 uint8_t slave_num;
 unsigned long slave_receive_time;
 
-bool scanning = false;
 unsigned long time = millis();
-unsigned long controlTime = millis();
-unsigned long scanTime = millis();
+unsigned long controlTime;
+unsigned long scanTime;
 bool timeout = true;
+
+byte receivedFromOutMaster;
   
 void RS485_Write_Read()
 {
@@ -75,74 +80,118 @@ void setup()
 
 void loop() 
 {
-  //if()//외부 마스터로부터 시리얼을 받음
-  /*{
-    //if()//control
+  //외부 마스터로부터 시리얼을 받음
+  if(Serial2.available())
+  {
+    receivedFromOutMaster = Serial2.read();
+    
+    //  제어요청일 경우
+    // **************** 1단계 ******************
+    //  (GW) -----> (외부 마스터) -----> (FCU)
+    //                            -----> (내부 마스터)
+    //  GW의 제어요청에 맞게 FCU 상태 변화 및 내부마스터에게 알려줌
+
+    // **************** 2단계 ******************
+    //  (내부 마스터) -----상태 요청-----> (FCU) -----상태 응답-----> (내부 마스터)
+    //  내부 마스터가 FCU에게 현재 상태를 물어봄
+
+
+    // **************** 3단계 ******************
+    // 자신의 상태를 룸콘에게 전송하여 그 zone이 GW의 제어요청대로 변경되도록 함
+    // (내부 마스터) -----CONTROL_TO_RC-----> (룸콘) -----GW_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
+    //                                                                                        (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)  
+    //                                                                                                            룸콘에게는 ACK의 역할
+    //                                                                                                            다른 슬레이브에게는 RC_CONTROL_TO_SLAVE를 못받을경우에 대비
+    
+    if(receivedFromOutMaster == 1)
     {
       for(int i = 0;i < 10;i++)
         inputData[i] = state_request[i];
+
+      //FCU에게 현재 상태를 요청
       RS485_Write_Read();
-      for(int i = 0; i < 10;i++)
+
+      //현재 상태를 룸콘에게 전송하되, 상태응답이 아닌 변경요청(0xA5)로 보냄
+      outputData[0] = 0xA5;
+      outputData[9] = 0;
+
+      for(int i = 0; i < 9;i++)
+      {
+        outputData[9] ^= outputData[i];
         manager.temp_buf[i] = outputData[i];
+      }
+      manager.temp_buf[9] = outputData[9];
+
+      //룸콘에게 전송
       bool receiveACK = manager.sendToWaitAck(_thisAddress, 0x00, master_number, CONTROL_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
+
+      //룸콘으로부터 ACK을 받지 못함
       if(!receiveACK)
       {
         //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
+        Serial2.write(3);
       }
-      controlTime = millis();
-      timeout = true;
-      while(millis() - controlTime < 3000)
+      else
       {
-        manager.SetReceive();
-        if(manager.available())
+        controlTime = millis();
+        timeout = true;
+        // 룸콘이 slave에게 제어 요청을 보내길 기다림
+        
+        while(millis() - controlTime < 3000)
         {
-          if(manager.recvData(manager.temp_buf))
+          manager.SetReceive();
+          if(manager.available())
           {
-             _rxHeaderFrom = manager.headerFrom();
-            _rxHeaderTo = manager.headerTo();
-            _rxHeaderMaster = manager.headerMaster();
-            _rxHeaderType = manager.headerType();
-      
-            if(_rxHeaderMaster == master_number)
+            if(manager.recvData(manager.temp_buf))
             {
-             if(_rxHeaderType == GW_CONTROL_TO_SLAVE)
+              _rxHeaderFrom = manager.headerFrom();
+              _rxHeaderTo = manager.headerTo();
+              _rxHeaderMaster = manager.headerMaster();
+              _rxHeaderType = manager.headerType();
+        
+              if(_rxHeaderMaster == master_number)
               {
-                timeout = false;
-                manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
-                //control 끝났다고 외부마스터에게 시리얼통신
-              }
-              else if(_rxHeaderType == RC_CONTROL_TO_SLAVE)
-              {
-                for(int i = 0;i < 10;i++)
-                  inputData[i] = manager.temp_buf[i];
-                inputData[2] = 0x00;
-                inputData[9] = 0x00;
-                for(int i = 0;i < 9;i++)
-                  inputData[9] ^= inputData[i];
+               if(_rxHeaderType == GW_CONTROL_TO_SLAVE)
+                {
+                  timeout = false;
+                  manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
                   
-                manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
-                RS485_Write_Read();
+                  Serial2.write(4);
+                }
               }
             }
           }
         }
-      }
-      if(timeout)
-      {
-        //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
+        if(timeout)
+        {
+          Serial2.write(3);
+        } 
       }
     }
-    //else if()//scan
+
+    //  스캔요청일 경우
+    //                                                                                              실제 스캔 요청                                   스캔 응답
+    //  (GW) -----> (외부 마스터) -----> (내부 마스터) -----SCAN_REQUEST_TO_RC-----> (룸콘) -----SCAN_REQUEST_TO_SLAVE-----> (내부 마스터) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
+    //                                                                                                                                                                 (슬레이브 1) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
+    //                                                                                                                                                                                                           (슬레이브 2) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
+    
+    else if(receivedFromOutMaster == 2)
     {
+      //룸콘에게 전송
       bool receiveACK = manager.sendToWaitAck(_thisAddress, 0x00, master_number, SCAN_REQUEST_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
-      scanning = true;
+
+      //룸콘으로부터 ACK을 받지 못함
       if(!receiveACK)
       {
+        Serial2.write(3);
         //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
       }
-      controlTime = millis();
+
+      //전체 slave가 다 scan될 때까지 or 일정시간까지 반복문
+      
+      scanTime = millis();
       timeout = true;
-      while(millis() - controlTime < 10000)
+      while(millis() - scanTime < 10000)
       {
         manager.SetReceive();
         if(manager.available())
@@ -156,13 +205,7 @@ void loop()
       
             if(_rxHeaderMaster == master_number)
             {
-             if(_rxHeaderType == GW_CONTROL_TO_SLAVE)
-              {
-                timeout = false;
-                manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
-                //control 끝났다고 외부마스터에게 시리얼통신
-              }
-              else if(_rxHeaderType == SCAN_REQUEST_TO_SLAVE && _rxHeaderTo == _thisAddress)
+              if(_rxHeaderType == SCAN_REQUEST_TO_SLAVE && _rxHeaderTo == _thisAddress)
               {
                 for(int i = 0;i < 10;i++)
                   inputData[i] = manager.temp_buf[i];
@@ -178,11 +221,11 @@ void loop()
               else if(_rxHeaderType == SCAN_RESPONSE_TO_RC)
               {
                 slave_num = _rxHeaderFrom - 1;
-                slave_receive_time = millis();
+                
+                //전체 슬레이브가 전부 scan됨 (정상)
                 if(num_of_slave == _rxHeaderFrom)
                 {
-                  //scan끝났다고 외부마스터에게 시리얼통신
-                  scanning = false;
+                  Serial2.write(5);
                 }
               }
             }
@@ -191,10 +234,16 @@ void loop()
       }
       if(timeout)
       {
-        //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
+        Serial2.write(3);
       }
     }
-  }*/
+  }
+
+  // 룸콘으로부터 제어요청
+  // (룸콘) -----RC_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
+  //                                                 (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)  
+
+
   manager.SetReceive();
   if(manager.available())
   {
@@ -211,8 +260,10 @@ void loop()
         {
           for(int i = 0;i < 10;i++)
             inputData[i] = manager.temp_buf[i];
+            
           inputData[2] = 0x00;
           inputData[9] = 0x00;
+          
           for(int i = 0;i < 9;i++)
             inputData[9] ^= inputData[i];
             
