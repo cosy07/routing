@@ -27,7 +27,6 @@ byte inputData[10];
 byte outputData[10];
 byte state_request[10] {0xD5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-uint8_t slave_num;
 unsigned long slave_receive_time;
 
 unsigned long time = millis();
@@ -91,6 +90,7 @@ void loop()
     //                            -----> (내부 마스터)
     //  GW의 제어요청에 맞게 FCU 상태 변화 및 내부마스터에게 알려줌
 
+
     // **************** 2단계 ******************
     //  (내부 마스터) -----상태 요청-----> (FCU) -----상태 응답-----> (내부 마스터)
     //  내부 마스터가 FCU에게 현재 상태를 물어봄
@@ -115,6 +115,7 @@ void loop()
       outputData[0] = 0xA5;
       outputData[9] = 0;
 
+      //checksum 계산 및 전송 버퍼에 데이터 저장
       for(int i = 0; i < 9;i++)
       {
         outputData[9] ^= outputData[i];
@@ -135,39 +136,57 @@ void loop()
       {
         controlTime = millis();
         timeout = true;
-        // 룸콘이 slave에게 제어 요청을 보내길 기다림
-        
+       
+        // 룸콘이 slave에게 제어 요청을 보내길 기다림        
         while(millis() - controlTime < 3000)
         {
+
+          //receive 상태로 전환
           manager.SetReceive();
+
+          //패킷 수신
           if(manager.available())
           {
+
+            //받은 데이터를 저장
             if(manager.recvData(manager.temp_buf))
             {
+
+              //헤더 저장
               _rxHeaderFrom = manager.headerFrom();
               _rxHeaderTo = manager.headerTo();
               _rxHeaderMaster = manager.headerMaster();
               _rxHeaderType = manager.headerType();
-        
+
+              //내가 속한 zone으로부터의 패킷인 경우
               if(_rxHeaderMaster == master_number)
               {
+                //룸콘의 제어 요청 수신
                if(_rxHeaderType == GW_CONTROL_TO_SLAVE)
                 {
                   timeout = false;
                   manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
-                  
+
+                  //제어가 끝났음을 외부 마스터에게 알림
                   Serial2.write(4);
                 }
               }
             }
           }
         }
+        
+        //타임아웃 발생
         if(timeout)
         {
+          //외부마스터에게 에러상황을 알림
           Serial2.write(3);
         } 
       }
     }
+
+
+
+
 
     //  스캔요청일 경우
     //                                                                                              실제 스캔 요청                                   스캔 응답
@@ -183,8 +202,8 @@ void loop()
       //룸콘으로부터 ACK을 받지 못함
       if(!receiveACK)
       {
-        Serial2.write(3);
         //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
+        Serial2.write(3);
       }
 
       //전체 slave가 다 scan될 때까지 or 일정시간까지 반복문
@@ -198,33 +217,72 @@ void loop()
         {
           if(manager.recvData(manager.temp_buf))
           {
-             _rxHeaderFrom = manager.headerFrom();
+            _rxHeaderFrom = manager.headerFrom();
             _rxHeaderTo = manager.headerTo();
             _rxHeaderMaster = manager.headerMaster();
             _rxHeaderType = manager.headerType();
       
             if(_rxHeaderMaster == master_number)
             {
+
+              //룸콘으로부터 스캔요청을 수신
               if(_rxHeaderType == SCAN_REQUEST_TO_SLAVE && _rxHeaderTo == _thisAddress)
               {
                 for(int i = 0;i < 10;i++)
                   inputData[i] = manager.temp_buf[i];
-      
+                
                 num_of_slave = manager.temp_buf[10];
                 RS485_Write_Read();
                 
                 for(int i = 0;i < 10;i++)
                   manager.temp_buf[i] = outputData[i];
-                
+
+                //룸콘에게 스캔 응답
                 manager.send(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
               }
+
+              //다른 슬레이브의 스캔 응답을 수신
               else if(_rxHeaderType == SCAN_RESPONSE_TO_RC)
-              {
-                slave_num = _rxHeaderFrom - 1;
-                
+              { 
                 //전체 슬레이브가 전부 scan됨 (정상)
                 if(num_of_slave == _rxHeaderFrom)
                 {
+
+                  //scan이 끝났음을 외부 마스터에게 알리기 전에 2초간 여유를 두고 모든 룸콘이 제어 메시지를 송신할 수 있도록 함
+                  //내부 통신의 경우 TX Power를 조절하여 다른 zone의 패킷을 수신하지 못하도록 하는 것도 좋을 것 같음
+                  
+                  controlTime = millis();
+
+                  //2초간 대기하며 자기 zone의 룸콘의 제어 메시지가 있는지를 확인함
+                  while(millis() - controlTime < 2000)
+                  {
+                    manager.SetReceive();
+                    if(manager.available() && manager.recvData(manager.temp_buf))
+                    {
+                      _rxHeaderFrom = manager.headerFrom();
+                      _rxHeaderTo = manager.headerTo();
+                      _rxHeaderMaster = manager.headerMaster();
+                      _rxHeaderType = manager.headerType();
+
+                      //내 zone의 룸콘으로부터 제어메시지를 수신했을 경우
+                      if(_rxHeaderMaster == master_number && _rxHeaderType == RC_CONTROL_TO_SLAVE)
+                      {
+                        for(int i = 0;i < 10;i++)
+                          inputData[i] = manager.temp_buf[i];
+                          
+                        inputData[2] = 0x00;
+                        inputData[9] = 0x00;
+                        
+                        for(int i = 0;i < 9;i++)
+                          inputData[9] ^= inputData[i];
+                          
+                        manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
+                        RS485_Write_Read();
+                      }
+                    }
+                  }
+
+                  //scan이 완료됐음을 외부 마스터에게 알림
                   Serial2.write(5);
                 }
               }
@@ -234,6 +292,7 @@ void loop()
       }
       if(timeout)
       {
+        //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
         Serial2.write(3);
       }
     }
@@ -242,7 +301,6 @@ void loop()
   // 룸콘으로부터 제어요청
   // (룸콘) -----RC_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
   //                                                 (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)  
-
 
   manager.SetReceive();
   if(manager.available())
@@ -263,7 +321,8 @@ void loop()
             
           inputData[2] = 0x00;
           inputData[9] = 0x00;
-          
+
+          //checksum 계산
           for(int i = 0;i < 9;i++)
             inputData[9] ^= inputData[i];
             

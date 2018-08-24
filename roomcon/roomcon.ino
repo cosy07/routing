@@ -151,46 +151,72 @@ void loop()
       
       if(_rxHeaderMaster == master_number)
       {
+
+        //스캔 요청하라는 명령을 수신
         if(_rxHeaderType == SCAN_REQUEST_TO_RC)
         {
+          //ACK 전송
           manager.send(_thisAddress, _rxHeaderFrom, master_number, ACK, manager.temp_buf, sizeof(manager.temp_buf));  
           for(int j = 0;j < 10;j++)
             manager.temp_buf[j] = roomcon_request[0][j];
           manager.temp_buf[10] = num_of_slave;
+
+          //0번 슬레이브(내부 마스터)에게 스캔 요청
           manager.send(_thisAddress, 1, master_number, SCAN_REQUEST_TO_SLAVE, manager.temp_buf, sizeof(manager.temp_buf));
         }
+
+        //스캔 응답을 수신
         else if(_rxHeaderType == SCAN_RESPONSE_TO_RC)
         {
           byte temp = 0;
+
+          //checksum계산
           for(int i = 0;i < 9;i++)
             temp ^= manager.temp_buf[i];
+
+          //checksum이 맞을 경우에 스캔 응답 데이터를 저장
           if(manager.temp_buf[9] == temp)
           {
             for(int i = 0;i < 10;i++)
               slave_answer[_rxHeaderFrom - 1][i] = manager.temp_buf[i];
           }
         }
+
+        // 게이트 웨이가 제어 요청을 보냄
+        // (내부 마스터) -----CONTROL_TO_RC-----> (룸콘) -----GW_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
+        //                                                                                        (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)  
+        //                                                                                                            룸콘에게는 ACK의 역할
+        //
+        
         else if(_rxHeaderType == CONTROL_TO_RC)
         {
           for(int i = 0;i < 10;i++)
             slave_answer[0][i] = manager.temp_buf[i];
           unsigned long temp_time = millis();
           manager.send(_thisAddress, _rxHeaderFrom, master_number, ACK, manager.temp_buf, sizeof(manager.temp_buf));
-          while(temp_time > rs485_time[0]);   
+
+          // 내부 마스터에게 받은 상태대로 제어 요청을 보내기 위해서 실제 룸콘으로부터 제어 요청 데이터를 받기를 대기
+          // (내부 마스터의 통신 노드) -----CONTROL_TO_RC(에어텍 통신 프로토콜의 헤더 : 0xA5)-----> (룸콘의 통신 노드) -----에어텍 통신 프로토콜의 헤더 : 0xA5------> (룸콘) -----에어텍 통신 프로토콜의 헤더 : 0xC5-----> (룸콘의 통신 노드)
+          
+          while(temp_time > rs485_time[0]);  //rs485_time[x] : 실제 룸콘이 x번째 slave에게 보내야할 데이터를 룸콘의 통신 노드에게 전송한 시간을 저장
 
           for(int i = 0;i < 10;i++)
             manager.temp_buf[i] = roomcon_control[i]; 
           manager.sendToWaitAck(_thisAddress, 0xFF, master_number, GW_CONTROL_TO_SLAVE, manager.temp_buf, sizeof(manager.temp_buf));
+
+          while(millis() - controllingTime < 200);
           rc_control = false;
         }
       }
     }
   }
+
+  //사용자가 룸콘을 조작
   if(rc_control && millis() - controllingTime > 5000)
   {
     for(int i = 0;i < 10;i++)
-      manager.temp_buf[i] = roomcon_control[i]; 
-    manager.sendToWaitAck(_thisAddress, 0xFF, master_number, RC_CONTROL_TO_SLAVE, manager.temp_buf, sizeof(manager.temp_buf));
+      manager.temp_buf[i] = roomcon_control[i];
+    manager.sendToWaitAck(_thisAddress, 0xFF, master_number, RC_CONTROL_TO_SLAVE, manager.temp_buf, sizeof(manager.temp_buf), 70);
     rc_control = false;
   }
 }
