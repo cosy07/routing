@@ -19,8 +19,8 @@ uint8_t _rxHeaderTo;
 uint8_t _rxHeaderMaster;
 uint8_t _rxHeaderType;
 
-byte inputData[10];
-byte outputData[10];
+byte inputData[10]; // RS485 송신 버퍼
+byte outputData[10]; // RS485 수신 버퍼
 byte tempData[10] = {0xD5, 0x00, 0x02, 0x00, 0x03, 0x03, 0x19, 0x1E, 0x00, 0xD0}; //for test
 
 bool scanning = false;
@@ -85,18 +85,25 @@ void loop()
 {
   for(int i = 0;i < 10;i++)
     outputData[i] = 0;
-    
+
+  // 무선 통신 모듈 수신 상태로 전환
   manager.SetReceive();
+
+  //패킷 수신
   if(manager.available())
   {
+    //수신 데이터 저장
     if(manager.recvData(manager.temp_buf))
     {
       Serial.println(millis());
+
+      //헤더 저장
       _rxHeaderFrom = manager.headerFrom();
       _rxHeaderTo = manager.headerTo();
       _rxHeaderMaster = manager.headerMaster();
       _rxHeaderType = manager.headerType();
 
+      //내가 속한 zone의 메시지일 경우
       if(_rxHeaderMaster == master_number)
       {
         //다른 FCU의 scan응답을 들음
@@ -135,54 +142,56 @@ void loop()
             //룸콘에게 상태응답을 보냄
             manager.send(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
             scanning = false;
+            
+            while(millis() - scanTIme < 350);
+          }
+          
+          /*이전 주소의 응답은 들었지만 자기 바로 앞의 FCU의 응답 신호를 못들었을 경우*/
+          //  |--0번 FCU--|--1번 FCU--|--2번 FCU--|--3번 FCU--|
+          //  3번 FCU가 1번FCU의 응답은 들었지만 2번 FCU의 응답을 못듣는 경우에 대비해서
+          //  1번 FCU의 응답을 들은 시간을 저장해두고 2번 FCU가 보내야할 구간이 지나가면 자신의 응답을 보냄
+                  
+          if(scanning && (millis() - scanningTime > (_thisAddress - scanningAddress) * 350))
+          {
+            inputData[2] = _thisAddress - 1;
+            inputData[9] = 0x00;
+            
+            for(int i = 0;i < 9;i++)
+              inputData[9] ^= inputData[i];
+              
+            RS485_Write_Read();
+            
+            for(int i = 0;i < 10;i++)
+              manager.temp_buf[i] = outputData[i];
+            
+            manager.send(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
+            scanning = false;
           }
         }
 
         //상태변경 요청
-        //1. GW_CONTROL_TO_SLAVE : (게이트웨이) -----> (외부 마스터) -----> (내부 마스터) -----> (룸콘) ---/////^^/////---> (슬레이브, 내부 마스터 - broadcast)
-        //2. RC_CONTROL_TO_SLAVE : (룸콘) ---/////^^/////---> (슬레이브, 내부 마스터 - broadcast)
+        //1. GW_CONTROL_TO_SLAVE : (게이트웨이) -----> (외부 마스터) -----> (내부 마스터) -----> (룸콘) ---GW_CONTROL_TO_SLAVE---> (슬레이브, 내부 마스터 - broadcast)
+        //2. RC_CONTROL_TO_SLAVE : (룸콘) ---RC_CONTROL_TO_SLAVE---> (슬레이브, 내부 마스터 - broadcast)
         //3. CONTROL_RESPONSE_BROADCAST : (룸콘) -----> (슬레이브, 내부 마스터 - broadcast)
-        //                                                                     (내부마스터) ---/////^^/////---> (룸콘, 슬레이브)  
+        //                                                                     (내부마스터) ---CONTROL_RESPONSE_BROADCAST---> (룸콘, 슬레이브)  
         //                                                                      룸콘에게는 ACK의 역할
         //                                                                      다른 슬레이브에게는 RC_CONTROL_TO_SLAVE를 못받을경우에 대비
 
                   
         else if(_rxHeaderType == GW_CONTROL_TO_SLAVE || _rxHeaderType == RC_CONTROL_TO_SLAVE || _rxHeaderType == CONTROL_RESPONSE_BROADCAST)
         {
-            for(int i = 0;i < 10;i++)
-              inputData[i] = manager.temp_buf[i];
-            
-            inputData[2] = _thisAddress - 1;
-            inputData[9] = 0x00;
-            for(int i = 0;i < 9;i++)
-              inputData[9] ^= inputData[i];
-            
-            RS485_Write_Read();
+          for(int i = 0;i < 10;i++)
+            inputData[i] = manager.temp_buf[i];
+          
+          inputData[2] = _thisAddress - 1;
+          inputData[9] = 0x00;
+          for(int i = 0;i < 9;i++)
+            inputData[9] ^= inputData[i];
+          
+          RS485_Write_Read();
 
         }
       }
     }
-  }
-
-    /*이전 주소의 응답은 들었지만 자기 바로 앞의 FCU의 응답 신호를 못들었을 경우*/
-  //  |--0번 FCU--|--1번 FCU--|--2번 FCU--|--3번 FCU--|
-  //  3번 FCU가 1번FCU의 응답은 들었지만 2번 FCU의 응답을 못듣는 경우에 대비해서
-  //  1번 FCU의 응답을 들은 시간을 저장해두고 2번 FCU가 보내야할 구간이 지나가면 자신의 응답을 보냄
-          
-  if(scanning && (millis() - scanningTime > (_thisAddress - scanningAddress) * 350))
-  {
-    inputData[2] = _thisAddress - 1;
-    inputData[9] = 0x00;
-    
-    for(int i = 0;i < 9;i++)
-      inputData[9] ^= inputData[i];
-      
-    RS485_Write_Read();
-    
-    for(int i = 0;i < 10;i++)
-      manager.temp_buf[i] = outputData[i];
-    
-    manager.send(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
-    scanning = false;
   }
 }

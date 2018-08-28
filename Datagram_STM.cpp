@@ -319,6 +319,19 @@ void Datagram::checkRoutingTable()
 	printRoutingTable();
 }
 
+int Datagram::find_child_node(uint8_t* child_node)
+{
+	int cnt = 0;
+	for (int8_t i = 0; i < ROUTING_TABLE_SIZE; i++)
+	{
+		if (_routes[i].state == Valid && _routes[i].dest != (_thisAddress & 0x00))
+		{
+			child_node[cnt++] = _routes[i].dest;
+		}
+	}
+	return cnt;
+}
+
 //////////////////////////////////여기부터 라우팅 하는 코드//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //=====================================================================================================
 // 2017-04-26 ver.1
@@ -394,8 +407,6 @@ bool Datagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst,
 						return true;
 					}
 					if (type == CHECK_ROUTING && (_rxHeaderType == CHECK_ROUTING || _rxHeaderType == CHECK_ROUTING_ACK_REROUTING || SCAN_RESPONSE_TO_GATEWAY))
-						return true;
-					if (type == CONTROL_TO_MASTER && _rxHeaderType == CONTROL_RESPONSE_TO_GATEWAY)
 						return true;
 					if (type == SCAN_REQUEST_TO_MASTER && _rxHeaderType == SCAN_REQUEST_ACK_FROM_MASTER)
 						return true;
@@ -1026,7 +1037,8 @@ void Datagram::changeNextHop(uint8_t address, uint8_t hopCount)
 		{
 			Serial.println(hopCount);
 			Serial.println(getRouteTo(i)->hop);
-			addRouteTo(i, getRouteTo(address)->next_hop, Discovering, getRouteTo(i)->hop - hopCount);
+			addRouteTo(i, getRouteTo(address)->next_hop, Valid, getRouteTo(i)->hop - hopCount);
+			//addRouteTo(i, getRouteTo(address)->next_hop, Discovering, getRouteTo(i)->hop - hopCount);
 			changeNextHop(i, hopCount);
 		}
 	}

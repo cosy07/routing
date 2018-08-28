@@ -14,8 +14,8 @@
 IN_ELECHOUSE_CC1120 cc1120;
 InDatagram manager(cc1120, 0x01, 0x01);
 
-uint8_t     master_number;
-uint8_t     num_of_slave;
+uint8_t     master_number; // 내가 속한 zone의 외부 master 넘버
+uint8_t     num_of_slave; // 내가 속한 zone의 slave 개수
 
 uint8_t _thisAddress;
 uint8_t _rxHeaderFrom;
@@ -23,19 +23,20 @@ uint8_t _rxHeaderTo;
 uint8_t _rxHeaderMaster;
 uint8_t _rxHeaderType;
 
-byte inputData[10];
-byte outputData[10];
-byte state_request[10] {0xD5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte inputData[10]; // RS485 송신 버퍼
+byte outputData[10]; // RS485 수신 버퍼
+byte state_request[10] {0xD5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //에어텍 내부 통신 프로토콜 상태 요청 메시지
 
-unsigned long slave_receive_time;
-
-unsigned long time = millis();
+unsigned long rs485_time = millis();
 unsigned long controlTime;
 unsigned long scanTime;
 bool timeout = true;
 
 byte receivedFromOutMaster;
-  
+
+// RS485 통신 함수
+// inputData에 있는 데이터를 전송하여 outputData에 받은 데이터를 저장한다.
+// 에어텍 내부 통신 프로토콜에서 주고받는 데이터는 10 Bytes
 void RS485_Write_Read()
 {
   uint8_t num = 0;
@@ -45,8 +46,8 @@ void RS485_Write_Read()
   Serial1.flush();
   digitalWrite(SSerialTxControl, RS485Receive);
 
-  time = millis();
-  while(time + 3000 > millis())
+  rs485_time = millis();
+  while(rs485_time + 3000 > millis())
   {
     if(Serial1.available())
     {
@@ -103,7 +104,7 @@ void loop()
     //                                                                                                            룸콘에게는 ACK의 역할
     //                                                                                                            다른 슬레이브에게는 RC_CONTROL_TO_SLAVE를 못받을경우에 대비
     
-    if(receivedFromOutMaster == 1)
+    if(receivedFromOutMaster == INTERNAL_CONTROL)
     {
       for(int i = 0;i < 10;i++)
         inputData[i] = state_request[i];
@@ -129,8 +130,7 @@ void loop()
       //룸콘으로부터 ACK을 받지 못함
       if(!receiveACK)
       {
-        //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
-        Serial2.write(3);
+        Serial2.write(INTERNAL_COM_FAIL);
       }
       else
       {
@@ -168,7 +168,7 @@ void loop()
                   manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
 
                   //제어가 끝났음을 외부 마스터에게 알림
-                  Serial2.write(4);
+                  Serial2.write(INTERNAL_CONTROL_FINISH);
                 }
               }
             }
@@ -179,7 +179,7 @@ void loop()
         if(timeout)
         {
           //외부마스터에게 에러상황을 알림
-          Serial2.write(3);
+          Serial2.write(INTERNAL_COM_FAIL);
         } 
       }
     }
@@ -194,7 +194,7 @@ void loop()
     //                                                                                                                                                                 (슬레이브 1) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
     //                                                                                                                                                                                                           (슬레이브 2) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
     
-    else if(receivedFromOutMaster == 2)
+    else if(receivedFromOutMaster == INTERNAL_SCAN)
     {
       //룸콘에게 전송
       bool receiveACK = manager.sendToWaitAck(_thisAddress, 0x00, master_number, SCAN_REQUEST_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
@@ -202,26 +202,35 @@ void loop()
       //룸콘으로부터 ACK을 받지 못함
       if(!receiveACK)
       {
-        //외부 마스터에게 시리얼 보냄(INTERNAL_COM_FAIL)
-        Serial2.write(3);
+        //외부 마스터에게 시리얼 보냄
+        Serial2.write(INTERNAL_COM_FAIL);
       }
 
       //전체 slave가 다 scan될 때까지 or 일정시간까지 반복문
       
       scanTime = millis();
       timeout = true;
-      while(millis() - scanTime < 10000)
+      while(millis() - scanTime < 7000)
       {
+
+        //receive상태로 변환
         manager.SetReceive();
+
+        //패킷 수신
         if(manager.available())
         {
+
+          //수신된 데이터를 자신의 버퍼에 저장
           if(manager.recvData(manager.temp_buf))
           {
+
+            //read header
             _rxHeaderFrom = manager.headerFrom();
             _rxHeaderTo = manager.headerTo();
             _rxHeaderMaster = manager.headerMaster();
             _rxHeaderType = manager.headerType();
-      
+
+            //내가 속한 zone으로부터의 패킷인 경우
             if(_rxHeaderMaster == master_number)
             {
 
@@ -233,6 +242,7 @@ void loop()
                 
                 num_of_slave = manager.temp_buf[10];
                 RS485_Write_Read();
+                //FCU에게 현태 상태를 물어봄
                 
                 for(int i = 0;i < 10;i++)
                   manager.temp_buf[i] = outputData[i];
@@ -241,51 +251,50 @@ void loop()
                 manager.send(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
               }
 
-              //다른 슬레이브의 스캔 응답을 수신
-              else if(_rxHeaderType == SCAN_RESPONSE_TO_RC)
+              //룸콘으로부터 SCAN_FINISH를 받음
+              else if(_rxHeaderType == SCAN_FINISH_TO_MASTER)
               { 
-                //전체 슬레이브가 전부 scan됨 (정상)
-                if(num_of_slave == _rxHeaderFrom)
+                //ACK 전송
+                manager.send(_thisAddress, _rxHeaderFrom, master_number, ACK, manager.temp_buf, sizeof(manager.temp_buf));
+                
+                //scan이 끝났음을 외부 마스터에게 알리기 전에 2초간 여유를 두고 모든 룸콘이 제어 메시지를 송신할 수 있도록 함
+                //내부 통신의 경우 TX Power를 조절하여 다른 zone의 패킷을 수신하지 못하도록 하는 것도 좋을 것 같음
+  
+                timeout = false;
+                controlTime = millis();
+  
+                //2초간 대기하며 자기 zone의 룸콘의 제어 메시지가 있는지를 확인함
+                while(millis() - controlTime < 2000)
                 {
-
-                  //scan이 끝났음을 외부 마스터에게 알리기 전에 2초간 여유를 두고 모든 룸콘이 제어 메시지를 송신할 수 있도록 함
-                  //내부 통신의 경우 TX Power를 조절하여 다른 zone의 패킷을 수신하지 못하도록 하는 것도 좋을 것 같음
-                  
-                  controlTime = millis();
-
-                  //2초간 대기하며 자기 zone의 룸콘의 제어 메시지가 있는지를 확인함
-                  while(millis() - controlTime < 2000)
+                  manager.SetReceive();
+                  if(manager.available() && manager.recvData(manager.temp_buf))
                   {
-                    manager.SetReceive();
-                    if(manager.available() && manager.recvData(manager.temp_buf))
+                    _rxHeaderFrom = manager.headerFrom();
+                    _rxHeaderTo = manager.headerTo();
+                    _rxHeaderMaster = manager.headerMaster();
+                    _rxHeaderType = manager.headerType();
+  
+                    //내 zone의 룸콘으로부터 제어메시지를 수신했을 경우
+                    if(_rxHeaderMaster == master_number && _rxHeaderType == RC_CONTROL_TO_SLAVE)
                     {
-                      _rxHeaderFrom = manager.headerFrom();
-                      _rxHeaderTo = manager.headerTo();
-                      _rxHeaderMaster = manager.headerMaster();
-                      _rxHeaderType = manager.headerType();
-
-                      //내 zone의 룸콘으로부터 제어메시지를 수신했을 경우
-                      if(_rxHeaderMaster == master_number && _rxHeaderType == RC_CONTROL_TO_SLAVE)
-                      {
-                        for(int i = 0;i < 10;i++)
-                          inputData[i] = manager.temp_buf[i];
-                          
-                        inputData[2] = 0x00;
-                        inputData[9] = 0x00;
+                      for(int i = 0;i < 10;i++)
+                        inputData[i] = manager.temp_buf[i];
                         
-                        for(int i = 0;i < 9;i++)
-                          inputData[9] ^= inputData[i];
-                          
-                        manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
-                        RS485_Write_Read();
-                      }
+                      inputData[2] = 0x00;
+                      inputData[9] = 0x00;
+                      
+                      for(int i = 0;i < 9;i++)
+                        inputData[9] ^= inputData[i];
+                        
+                      manager.send(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, manager.temp_buf, sizeof(manager.temp_buf));
+                      RS485_Write_Read();
                     }
                   }
-
-                  //scan이 완료됐음을 외부 마스터에게 알림
-                  Serial2.write(5);
                 }
-              }
+  
+                //scan이 완료됐음을 외부 마스터에게 알림
+                Serial2.write(INTERNAL_SCAN_FINISH);
+              } // end of else if(_rxHeaderType == SCAN_FINISH_TO_MASTER) 
             }
           }
         }

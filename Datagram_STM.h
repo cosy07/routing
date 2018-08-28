@@ -56,10 +56,15 @@
 #define SCAN_RESPONSE_TO_RC				25
 
 #define SCAN_REQUEST_TO_SLAVE			26
-#define RC_CONTROL_TO_SLAVE				27
-#define GW_CONTROL_TO_SLAVE				28
+#define SCAN_FINISH_TO_MASTER			27
+#define RC_CONTROL_TO_SLAVE				28
+#define GW_CONTROL_TO_SLAVE				29
 
-#define INTERNAL_COM_FAIL				29
+#define INTERNAL_COM_FAIL				30
+#define INTERNAL_CONTROL				31
+#define INTERNAL_CONTROL_FINISH			32
+#define INTERNAL_SCAN					33
+#define INTERNAL_SCAN_FINISH			34
 
 
 #define NONE						0
@@ -147,6 +152,8 @@ public:
 	void clearRoutingTable();
 
 	void printRoutingTable();
+
+	int find_child_node(uint8_t* child_node);
 
 	void FromGatewayToMaster();
 
