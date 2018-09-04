@@ -325,6 +325,7 @@ TO_ELECHOUSE_CC1120(uint8_t mosi,uint8_t miso, uint8_t sclk, uint8_t cs,uint8_t 
 		
 		void Init(void);
 		void Init(byte f);
+
 		void SendData(byte *txBuffer, byte size);
 		void SetReceive(void);
 		byte CheckReceiveFlag(void);

@@ -117,7 +117,7 @@ From, To, Source, Type, Data, Flags, SeqNum are stored.
 byte  ToInDatagram::recvData(uint8_t* buf)
 {
 	byte size;
-	if (size = _driver.ReceiveData(buf))
+	if (size = _driver.inReceiveData(buf))
 	{
 		_rxHeaderFrom = headerFrom();
 		_rxHeaderTo = headerTo();
@@ -138,7 +138,7 @@ void ToInDatagram::send(uint8_t from, uint8_t to, uint8_t master, uint8_t type, 
 	setHeaderTo(to);
 	setHeaderMaster(master);
 	setHeaderType(type);
-	_driver.SendData(temp_buf, size);
+	_driver.inSendData(temp_buf, size);
 	sendingTime = millis();
 }
 bool ToInDatagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t master, uint8_t type, uint8_t* temp_buf, uint8_t size, unsigned long time)
@@ -157,7 +157,7 @@ bool ToInDatagram::sendToWaitAck(uint8_t from, uint8_t to, uint8_t master, uint8
 
 		Serial.print("retry : ");
 		Serial.println(i);
-		_driver.SendData(temp_buf, size);
+		_driver.inSendData(temp_buf, size);
 		sendingTime = millis();
 		startTime = millis();
 		while (millis() - startTime < TIME_TERM)
