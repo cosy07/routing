@@ -1,0 +1,679 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: •ÏVision V5.24.2.0
+Copyright (C) 2017 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: fi fi, fi, LIC=----
+ 
+Tool Versions:
+Toolchain:       MDK-Lite  Version: 5.24.1
+Toolchain Path:  C:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 5 (build 528)
+Assembler:       Armasm.exe V5.06 update 5 (build 528)
+Linker/Locator:  ArmLink.exe V5.06 update 5 (build 528)
+Library Manager: ArmAr.exe V5.06 update 5 (build 528)
+Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
+CPU DLL:         SARMCM3.DLL V5.24.1
+Dialog DLL:      DCM.DLL V1.16.0.0
+Target DLL:      UL2CM3.DLL V1.160.3.0
+Dialog DLL:      TCM.DLL V1.32.0.0
+ 
+<h2>Project:</h2>
+C:\Users\JH\Desktop\¡ﬂø‰«— πŸ≈¡»≠∏È\c_out_master_keil\c_out_master_keil.uvprojx
+Project File Date:  09/21/2018
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
+Rebuild target 'Target 1'
+compiling retarget_io.c...
+compiling spi.c...
+spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
+  void SPIx_Init();
+spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
+  void SPIx_EnableSlave();
+spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
+  void SPIx_DisableSlave();
+spi.c: 3 warnings, 0 errors
+compiling myTimer.c...
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+myTimer.c(19): warning:  #9-D: nested comment is not allowed
+  	/*for more accuracy irq priority should be higher, but now its default*/
+myTimer.c(5): warning:  #177-D: variable "timerInitStructure"  was declared but never referenced
+  	TIM_TimeBaseInitTypeDef timerInitStructure;
+myTimer.c: 4 warnings, 0 errors
+compiling printf.c...
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+printf.c(63): warning:  #1-D: last line of file ends without a newline
+  }
+printf.c: 2 warnings, 0 errors
+compiling main.c...
+spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
+  void SPIx_Init();
+spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
+  void SPIx_EnableSlave();
+spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
+  void SPIx_DisableSlave();
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
+  void e_setTxPowerTo5mW();
+cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
+  uint8_t  e_headerFrom(); //  
+cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
+  uint8_t  e_headerTo();  // return _rxHeaderTo  
+cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
+  uint8_t  e_headerSource();
+cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
+  uint8_t  e_headerDestination();
+cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
+  uint8_t  e_headerType();
+cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
+  uint8_t  e_headerData();
+cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
+  uint8_t  e_headerFlags();
+cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
+  uint8_t  e_headerSeqNum();
+cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
+  uint8_t  e_headerHop();
+cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
+  void e_ManualCalibration();
+cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
+  void e_PrintChannel();
+cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
+  void e_DisableLNA();
+cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
+  void e_EnableLNA();
+Datagram_STM.h(99): warning:  #1295-D: Deprecated declaration DGheaderTo - give arg types
+  uint8_t        DGheaderTo();
+Datagram_STM.h(100): warning:  #1295-D: Deprecated declaration DGheaderFrom - give arg types
+  uint8_t        DGheaderFrom();
+Datagram_STM.h(101): warning:  #1295-D: Deprecated declaration DGheaderSource - give arg types
+  uint8_t        DGheaderSource();
+Datagram_STM.h(102): warning:  #1295-D: Deprecated declaration DGheaderDestination - give arg types
+  uint8_t        DGheaderDestination();
+Datagram_STM.h(103): warning:  #1295-D: Deprecated declaration DGheaderType - give arg types
+  uint8_t        DGheaderType();
+Datagram_STM.h(104): warning:  #1295-D: Deprecated declaration DGheaderData - give arg types
+  uint8_t        DGheaderData();
+Datagram_STM.h(105): warning:  #1295-D: Deprecated declaration DGheaderSeqNum - give arg types
+  uint8_t   	   DGheaderSeqNum();
+Datagram_STM.h(106): warning:  #1295-D: Deprecated declaration DGheaderFlags - give arg types
+  uint8_t   	   DGheaderFlags();
+Datagram_STM.h(107): warning:  #1295-D: Deprecated declaration DGheaderHop - give arg types
+  uint8_t		   DGheaderHop();
+Datagram_STM.h(108): warning:  #1295-D: Deprecated declaration DGgetThisAddress - give arg types
+  uint8_t		   DGgetThisAddress();
+Datagram_STM.h(112): warning:  #1295-D: Deprecated declaration DGavailable - give arg types
+  bool           DGavailable();
+Datagram_STM.h(151): warning:  #1295-D: Deprecated declaration DGclearRoutingTable - give arg types
+  void DGclearRoutingTable();
+Datagram_STM.h(153): warning:  #1295-D: Deprecated declaration DGprintRoutingTable - give arg types
+  void DGprintRoutingTable();
+Datagram_STM.h(157): warning:  #1295-D: Deprecated declaration DGFromGatewayToMaster - give arg types
+  void DGFromGatewayToMaster();
+Datagram_STM.h(159): warning:  #1295-D: Deprecated declaration DGG_find_1stRow_master - give arg types
+  int8_t DGG_find_1stRow_master();
+Datagram_STM.h(167): warning:  #1295-D: Deprecated declaration DGM_findCandidateParents - give arg types
+  void DGM_findCandidateParents();
+Datagram_STM.h(169): warning:  #1295-D: Deprecated declaration DGM_find2ndRowMasters - give arg types
+  void DGM_find2ndRowMasters();
+Datagram_STM.h(171): warning:  #1295-D: Deprecated declaration DGM_masterSendRoutingReply - give arg types
+  void DGM_masterSendRoutingReply();
+Datagram_STM.h(183): warning:  #1295-D: Deprecated declaration DGprintRecvPacketHeader - give arg types
+  void DGprintRecvPacketHeader();
+Datagram_STM.h(185): warning:  #1295-D: Deprecated declaration DGprintPath - give arg types
+  void DGprintPath();
+Datagram_STM.h(187): warning:  #1295-D: Deprecated declaration DGprintTree - give arg types
+  void DGprintTree();
+Datagram_STM.h(199): warning:  #1295-D: Deprecated declaration DGnewMaster - give arg types
+  void DGnewMaster();
+Datagram_STM.h(201): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
+  void DGcheckRoutingTable();
+main.c(22): warning:  #68-D: integer conversion resulted in a change of sign
+  uint8_t priorPacketFrom = -1;
+main.c(23): warning:  #68-D: integer conversion resulted in a change of sign
+  uint8_t priorPacketType = -1;
+main.c(101): warning:  #192-D: unrecognized character escape sequence
+  				printf("%d : %d\: ", i, receivedNum[i]);
+main.c(121): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			if (DGrecvData(DGtemp_buf))
+main.c(156): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(196): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								|| !DGsendToWaitAck(_thisAddress, DGgetRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, 
+ONE, 
+ONE, 
+ONE, _rxHeaderHop + 1, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+main.c(204): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  									DGsendToWaitAck(_thisAddress, DGgetRouteTo(temp_source)->next_hop, _thisAddress, _thisAddress & 0x00, 
+ACK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(227): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
+EQUEST_ACK_TYPE, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(233): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  						DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(255): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(259): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  							DGsend(_thisAddress, realDst, _thisAddress & 0x00, realDst, _rxHeaderType, 
+ONE, 
+ONE, 
+ONE, _rxHeaderHop + 1, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(264): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								if (DGavailable() && DGrecvData(DGtemp_buf) && DGheaderFrom() == realDst && DGheaderTo() == _thisAddress && (DGheaderType() == REQUEST_MULTI_HOP_ACK || DGheaderType() == REQUEST_DIRECT_ACK))
+main.c(281): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  										DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _rxHeaderSource, _thisAddress & 0x00, _rxHeaderType, 1, 
+ONE, 
+ONE, _rxHeaderHop + 1, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(289): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  									DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+EQUEST_MULTI_HOP_ACK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(291): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  									DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+EQUEST_DIRECT_ACK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(308): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  									DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _thisAddress & 0x00, 
+EQUEST_DIRECT_ACK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(340): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+CAN_RESPONSE_TO_GATEWAY, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(356): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+HECK_ROUTING_ACK, newNodeCnt, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(374): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								if (DGsendToWaitAck(_thisAddress, rerouting_candidate, _thisAddress, _thisAddress & 0x00, 
+HECK_ROUTING_ACK_REROUTING, child_node_cnt, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+main.c(386): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+HECK_ROUTING_ACK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(402): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  						DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
+CK, 
+ONE, 
+ONE, 
+ONE, DGgetRouteTo(_thisAddress & 0x00)->hop, DGtemp_buf, sizeof(DGtemp_buf));
+main.c(423): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  						DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+CAN_REQUEST_ACK_FROM_MASTER, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(463): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+ONTROL_RESPONSE_TO_GATEWAY, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+main.c(468): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  							DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, 
+ONTROL_RESPONSE_TO_GATEWAY, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);  
+main.c(665): warning:  #1-D: last line of file ends without a newline
+  }
+main.c: 68 warnings, 0 errors
+compiling cc1120.c...
+spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
+  void SPIx_Init();
+spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
+  void SPIx_EnableSlave();
+spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
+  void SPIx_DisableSlave();
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
+  void e_setTxPowerTo5mW();
+cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
+  uint8_t  e_headerFrom(); //  
+cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
+  uint8_t  e_headerTo();  // return _rxHeaderTo  
+cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
+  uint8_t  e_headerSource();
+cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
+  uint8_t  e_headerDestination();
+cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
+  uint8_t  e_headerType();
+cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
+  uint8_t  e_headerData();
+cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
+  uint8_t  e_headerFlags();
+cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
+  uint8_t  e_headerSeqNum();
+cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
+  uint8_t  e_headerHop();
+cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
+  void e_ManualCalibration();
+cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
+  void e_PrintChannel();
+cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
+  void e_DisableLNA();
+cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
+  void e_EnableLNA();
+cc1120.c(257): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadReg" 
+  }
+cc1120.c(335): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadStatus" 
+  }
+cc1120.c(503): warning:  #550-D: variable "reserved"  was set but never used
+  	uint8_t reserved;
+cc1120.c(540): warning:  #550-D: variable "lqi"  was set but never used
+  	signed char lqi;
+cc1120.c(541): warning:  #550-D: variable "crc"  was set but never used
+  	uint8_t crc;
+cc1120.c(864): warning:  #940-D: missing return statement at end of non-void function "e_setSyncWords" 
+  }
+cc1120.c: 26 warnings, 0 errors
+compiling misc.c...
+compiling Datagram_STM.c...
+spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
+  void SPIx_Init();
+spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
+  void SPIx_EnableSlave();
+spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
+  void SPIx_DisableSlave();
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
+  void e_setTxPowerTo5mW();
+cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
+  uint8_t  e_headerFrom(); //  
+cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
+  uint8_t  e_headerTo();  // return _rxHeaderTo  
+cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
+  uint8_t  e_headerSource();
+cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
+  uint8_t  e_headerDestination();
+cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
+  uint8_t  e_headerType();
+cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
+  uint8_t  e_headerData();
+cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
+  uint8_t  e_headerFlags();
+cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
+  uint8_t  e_headerSeqNum();
+cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
+  uint8_t  e_headerHop();
+cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
+  void e_ManualCalibration();
+cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
+  void e_PrintChannel();
+cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
+  void e_DisableLNA();
+cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
+  void e_EnableLNA();
+Datagram_STM.h(99): warning:  #1295-D: Deprecated declaration DGheaderTo - give arg types
+  uint8_t        DGheaderTo();
+Datagram_STM.h(100): warning:  #1295-D: Deprecated declaration DGheaderFrom - give arg types
+  uint8_t        DGheaderFrom();
+Datagram_STM.h(101): warning:  #1295-D: Deprecated declaration DGheaderSource - give arg types
+  uint8_t        DGheaderSource();
+Datagram_STM.h(102): warning:  #1295-D: Deprecated declaration DGheaderDestination - give arg types
+  uint8_t        DGheaderDestination();
+Datagram_STM.h(103): warning:  #1295-D: Deprecated declaration DGheaderType - give arg types
+  uint8_t        DGheaderType();
+Datagram_STM.h(104): warning:  #1295-D: Deprecated declaration DGheaderData - give arg types
+  uint8_t        DGheaderData();
+Datagram_STM.h(105): warning:  #1295-D: Deprecated declaration DGheaderSeqNum - give arg types
+  uint8_t   	   DGheaderSeqNum();
+Datagram_STM.h(106): warning:  #1295-D: Deprecated declaration DGheaderFlags - give arg types
+  uint8_t   	   DGheaderFlags();
+Datagram_STM.h(107): warning:  #1295-D: Deprecated declaration DGheaderHop - give arg types
+  uint8_t		   DGheaderHop();
+Datagram_STM.h(108): warning:  #1295-D: Deprecated declaration DGgetThisAddress - give arg types
+  uint8_t		   DGgetThisAddress();
+Datagram_STM.h(112): warning:  #1295-D: Deprecated declaration DGavailable - give arg types
+  bool           DGavailable();
+Datagram_STM.h(151): warning:  #1295-D: Deprecated declaration DGclearRoutingTable - give arg types
+  void DGclearRoutingTable();
+Datagram_STM.h(153): warning:  #1295-D: Deprecated declaration DGprintRoutingTable - give arg types
+  void DGprintRoutingTable();
+Datagram_STM.h(157): warning:  #1295-D: Deprecated declaration DGFromGatewayToMaster - give arg types
+  void DGFromGatewayToMaster();
+Datagram_STM.h(159): warning:  #1295-D: Deprecated declaration DGG_find_1stRow_master - give arg types
+  int8_t DGG_find_1stRow_master();
+Datagram_STM.h(167): warning:  #1295-D: Deprecated declaration DGM_findCandidateParents - give arg types
+  void DGM_findCandidateParents();
+Datagram_STM.h(169): warning:  #1295-D: Deprecated declaration DGM_find2ndRowMasters - give arg types
+  void DGM_find2ndRowMasters();
+Datagram_STM.h(171): warning:  #1295-D: Deprecated declaration DGM_masterSendRoutingReply - give arg types
+  void DGM_masterSendRoutingReply();
+Datagram_STM.h(183): warning:  #1295-D: Deprecated declaration DGprintRecvPacketHeader - give arg types
+  void DGprintRecvPacketHeader();
+Datagram_STM.h(185): warning:  #1295-D: Deprecated declaration DGprintPath - give arg types
+  void DGprintPath();
+Datagram_STM.h(187): warning:  #1295-D: Deprecated declaration DGprintTree - give arg types
+  void DGprintTree();
+Datagram_STM.h(199): warning:  #1295-D: Deprecated declaration DGnewMaster - give arg types
+  void DGnewMaster();
+Datagram_STM.h(201): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
+  void DGcheckRoutingTable();
+Datagram_STM.c(72): warning:  #68-D: integer conversion resulted in a change of sign
+  	DGsendingTime = -60000;
+Datagram_STM.c(218): warning:  #1293-D: assignment in condition
+  	if (size = e_ReceiveData(buf))
+Datagram_STM.c(293): warning:  #120-D: return value type does not match the function type
+  			return &_routes[i];
+Datagram_STM.c(427): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  		e_SendData(DGbuffer, length);
+Datagram_STM.c(590): warning:  #1293-D: assignment in condition
+  		if ((number_of_unknown_node = DGG_find_2ndRow_master(unknown_node_list)))
+Datagram_STM.c(601): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  						if (DGsendToWaitAck(DG_thisAddress, address_i, DG_thisAddress, address_i, 
+EQUEST_DIRECT, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+Datagram_STM.c(647): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  		DGsend(DG_thisAddress, DGmasterBroadcastAddress, DG_thisAddress, DGmasterBroadcastAddress, 
+EQUEST_BROADCAST, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(657): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			DGsend(DG_thisAddress, dst, DG_thisAddress, dst, 
+EQUEST_TYPE, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(663): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == dst && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_ACK_TYPE)
+Datagram_STM.c(669): warning:  #181-D: argument is incompatible with corresponding format string conversion
+  						printf("%d", 
+_MASTER_SEND_NUM * 0.8);
+Datagram_STM.c(734): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  		if (!DGsendToWaitAck(DG_thisAddress, node_list[i], DG_thisAddress, node_list[i], 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+Datagram_STM.c(783): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				if (DGrecvData(DGtemp_buf))
+Datagram_STM.c(787): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  						DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(882): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  		if (!DGsendToWaitAck(DG_thisAddress, next_hop, DG_thisAddress, node_list[i], type, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+Datagram_STM.c(896): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				if (DGrecvData(DGtemp_buf) && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderDestination == DG_thisAddress)
+Datagram_STM.c(899): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  					DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(945): warning:  #1293-D: assignment in condition
+  		if (number_of_node = DGG_get_i_row_node_list(row_number, node_list))
+Datagram_STM.c(963): warning:  #514-D: pointless comparison of unsigned integer with a negative constant
+  	while (row_number > -1)
+Datagram_STM.c(977): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				DGsend(DG_thisAddress, address, DG_thisAddress, address, 
+EQUEST_DIRECT, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGbuffer, sizeof(DGbuffer));
+Datagram_STM.c(983): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  					if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == address && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_DIRECT_ACK)
+Datagram_STM.c(1013): warning:  #514-D: pointless comparison of unsigned integer with a negative constant
+  	if (row_number == -1)//hop count? ????? ?? ? ?? ??
+Datagram_STM.c(1082): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  		if (!DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, path[i], 
+HECK_ROUTING, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+Datagram_STM.c(1096): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			DGsend(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, DGgetRouteTo(path[i])->next_hop, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(1105): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				if (DGrecvData(DGtemp_buf) && DG_rxHeaderTo == DG_thisAddress)
+Datagram_STM.c(1109): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  						DGsend(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, DGgetRouteTo(path[i])->next_hop, 
+CK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(1198): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			DGsend(DG_thisAddress, unknown_address, DG_thisAddress & 0x00, unknown_address, 
+ONE, 
+ONE, 
+ONE, 1, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(1203): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == unknown_address && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == R2_REQUEST_ACK_TYPE)
+Datagram_STM.c(1226): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  	DGsendToWaitAck(DG_thisAddress, DG_thisAddress & 0x00, DG_thisAddress, DG_thisAddress & 0x00, 
+ONE, 
+ONE, 1, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+Datagram_STM.c(1257): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, type, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf));
+Datagram_STM.c(1276): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			if (DGrecvData(DGtemp_buf))
+Datagram_STM.c(1293): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  	while (!DGsendToWaitAck(DG_thisAddress, candidate_parent, DG_thisAddress, candidate_parent, 
+EW_NODE_REGISTER, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 1000))
+Datagram_STM.c(1300): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  				if (DGrecvData(DGtemp_buf))
+Datagram_STM.c(1328): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  			if (DGrecvData(DGtemp_buf))
+Datagram_STM.c(1332): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
+  					DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(DG_thisAddress & 0x00)->next_hop, DG_thisAddress, DG_thisAddress & 0x00, 
+HECK_ROUTING_ACK, 
+ONE, 
+ONE, 
+ONE, 
+ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+Datagram_STM.c(1268): warning:  #177-D: variable "hop"  was declared but never referenced
+  	uint8_t hop = 0;
+Datagram_STM.c(1342): warning:  #1-D: last line of file ends without a newline
+  //////////////////////
+Datagram_STM.c: 79 warnings, 0 errors
+compiling stm32f10x_rtc.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_spi.c...
+compiling stm32f10x_usart.c...
+assembling startup_stm32f10x_md.s...
+compiling stm32f10x_tim.c...
+compiling system_stm32f10x.c...
+compiling DMA_STM32F10x.c...
+compiling GPIO_STM32F10x.c...
+linking...
+Program Size: Code=19308 RO-data=552 RW-data=248 ZI-data=2304  
+FromELF: creating hex file...
+".\Objects\c_out_master_keil.axf" - 0 Error(s), 182 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.5.0.1.pack
+                ARM.CMSIS.5.0.1
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 5.0.1
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.ARM_Compiler.1.3.1.pack
+                Keil.ARM_Compiler.1.3.1
+                Keil ARM Compiler extensions for ARM Compiler 5 and ARM Compiler 6
+   * Component: STDOUT Variant: ITM Version: 1.2.0
+   * Component: STDIN Variant: ITM Version: 1.2.0
+   * Component: STDERR Variant: ITM Version: 1.2.0
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32F1xx_DFP.2.2.0.pack
+                Keil.STM32F1xx_DFP.2.2.0
+                STMicroelectronics STM32F1 Series Device Support, Drivers and Examples
+   * Component: USART Version: 3.5.0
+   * Component: TIM Version: 3.5.0
+   * Component: SPI Version: 3.5.0
+   * Component: RTC Version: 3.5.0
+   * Component: RCC Version: 3.5.0
+   * Component: GPIO Version: 3.5.0
+   * Component: Framework Version: 3.5.1
+   * Component: Startup Version: 1.0.0
+   * Component: GPIO Version: 1.3
+   * Component: DMA Version: 1.2
+
+<h2>Collection of Component include folders:</h2>
+  .\RTE\Device\STM32F103C8
+  .\RTE\_Target_1
+  C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include
+  C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include
+  C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc
+  C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\RTE_Driver
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: Keil::Device:StdPeriph Drivers:USART:3.5.0
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_usart.c
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_usart.h
+
+   * Component: Keil::Device:StdPeriph Drivers:TIM:3.5.0
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_tim.c
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_tim.h
+
+   * Component: Keil::Device:StdPeriph Drivers:SPI:3.5.0
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_spi.c
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_spi.h
+
+   * Component: Keil::Device:StdPeriph Drivers:RTC:3.5.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_rtc.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_rtc.c
+
+   * Component: Keil::Device:StdPeriph Drivers:RCC:3.5.0
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_rcc.c
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_rcc.h
+
+   * Component: Keil::Device:StdPeriph Drivers:GPIO:3.5.0
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_gpio.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_gpio.c
+
+   * Component: Keil::Device:StdPeriph Drivers:Framework:3.5.1
+      Include file:  Device\StdPeriph_Driver\inc\misc.h
+      Source file:   Device\StdPeriph_Driver\src\misc.c
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_it.c
+      Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
+
+   * Component: Keil::Device:Startup:1.0.0
+      Source file:   Device\Source\system_stm32f10x.c
+      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
+      Source file:   Device\Source\ARM\STM32F1xx_OPT.s
+      Include file:  RTE_Driver\Config\RTE_Device.h
+
+   * Component: Keil::Device:GPIO:1.3
+      Include file:  RTE_Driver\GPIO_STM32F10x.h
+      Source file:   RTE_Driver\GPIO_STM32F10x.c
+
+   * Component: Keil::Device:DMA:1.2
+      Include file:  RTE_Driver\DMA_STM32F10x.h
+      Source file:   RTE_Driver\DMA_STM32F10x.c
+
+   * Component: Keil.ARM Compiler::Compiler:I/O:STDOUT:ITM:1.2.0
+      Source file:   Source\retarget_io.c
+
+   * Component: Keil.ARM Compiler::Compiler:I/O:STDIN:ITM:1.2.0
+      Source file:   Source\retarget_io.c
+
+   * Component: Keil.ARM Compiler::Compiler:I/O:STDERR:ITM:1.2.0
+      Source file:   Source\retarget_io.c
+
+   * Component: ARM::CMSIS:CORE:5.0.1
+Build Time Elapsed:  00:00:02
+</pre>
+</body>
+</html>
