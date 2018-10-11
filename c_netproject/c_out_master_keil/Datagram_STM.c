@@ -427,7 +427,7 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t
 		e_SendData(DGbuffer, length);
 		DGsendingTime = millis();
 		DGstartTime = millis();
-		while (millis() - DGstartTime < TIME_TERM)
+		while (millis() - DGstartTime < TIME_TERM * 2)
 		{
 			DGSetReceive();
 			if (DGavailable())

@@ -317,7 +317,7 @@ static volatile uint8_t   e_txHeaderHop;
 //uint8_t   _mosi, _miso, _sclk, _cs, _gdo;
 
 
-static volatile signed char e_rssi;
+extern signed char e_rssi;
 
 
 void e_Init(uint8_t f);

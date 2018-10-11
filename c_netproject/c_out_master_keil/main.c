@@ -25,7 +25,7 @@ uint8_t priorPacketType = -1;
 bool newNode = false;
 bool rerouting = false;
 bool scanFinish = false;
-uint8_t receivedNum[33] = { 0 };
+uint8_t receivedNum[34] = { 0 };
 int8_t rerouting_candidate = -1;
 
 uint8_t check_cnt = 0;
@@ -55,6 +55,15 @@ bool timeout = true;
 byte receiveFromInMaster;
 bool routing_complete = false;
 
+bool DGcheckReceive[34];// = { false };
+RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
+int DGmaster_num;// = 2;
+int8_t DGparentMaster[34];// = { -1 };
+byte DGunRecvCnt[34];// = { 0 };
+byte DGtemp_buf[20];
+byte DGbuffer[20];
+
+signed char e_rssi;
 
 int main()
 {
@@ -96,7 +105,7 @@ int main()
 			printf("check_rerouting_time");
 			check_rerouting_time = millis();
 			int8_t max_receivedNum = 0;
-			for (uint8_t i = 0; i <= DGmaster_num; i++)
+			for (uint8_t i = 0; i <= 33; i++)
 			{
 				printf("%d : %d\: ", i, receivedNum[i]);
 
@@ -222,6 +231,7 @@ int main()
 						printf("receive row1 request");
 						DGprintRoutingTable();
 						DGaddRouteTo(_rxHeaderFrom, _rxHeaderFrom, Valid, 1, millis());
+						DGprintRoutingTable();
 						//from, to, src, dst, type, data, flags, seqnum, hop
 						for(uint8_t i = 0;i < R_MASTER_SEND_NUM;i++)
 							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, REQUEST_ACK_TYPE, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));

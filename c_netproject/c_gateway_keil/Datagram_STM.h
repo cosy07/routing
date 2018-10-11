@@ -212,16 +212,17 @@ void DGdeleteRoute(uint8_t index);
 
 
 
-static volatile RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
+extern RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
 
-static volatile bool DGcheckReceive[34];// = { false };
+extern bool DGcheckReceive[34];// = { false };
+
 static volatile uint8_t DGch;
-static volatile int DGmaster_num;// = 2;
+extern int DGmaster_num;// = 2;
 
-static volatile int8_t DGparentMaster[34];// = { -1 };
-static volatile byte DGunRecvCnt[34];// = { 0 };
-static volatile byte DGtemp_buf[20];
-static volatile byte DGbuffer[20];
+extern int8_t DGparentMaster[34];// = { -1 };
+extern byte DGunRecvCnt[34];// = { 0 };
+extern byte DGtemp_buf[20];
+extern byte DGbuffer[20];
 
 //ELECHOUSE_CC1120&   DG_driver;	   /// The Driver we are to use
 static volatile uint8_t         	DG_thisAddress;		/// The address of this node
@@ -251,6 +252,5 @@ static volatile uint8_t DGmasterBroadcastAddress;
 static volatile uint8_t DGgatewayNumber;// = 0;
 
 static volatile unsigned long	DGsendingTime;// = -60000;
-
 
 #endif

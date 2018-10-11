@@ -21,7 +21,7 @@ Target DLL:      UL2CM3.DLL V1.160.3.0
 Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
-C:\Users\JH\Desktop\중요한 바탕화면\c_gateway_keil\c_gateway_keil.uvprojx
+C:\Users\JH\Desktop\c_gateway_keil\c_gateway_keil.uvprojx
 Project File Date:  09/21/2018
 
 <h2>Output:</h2>
@@ -139,70 +139,7 @@ Datagram_STM.h(199): warning:  #1295-D: Deprecated declaration DGnewMaster - giv
   void DGnewMaster();
 Datagram_STM.h(201): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
   void DGcheckRoutingTable();
-main.c(120): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  					if (!DGsendToWaitAck(_thisAddress, DGgetRouteTo(address_i)->next_hop, _thisAddress, address_i, 
-ONTROL_TO_MASTER, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-main.c(145): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  								if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress)
-main.c(162): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  									DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-main.c(232): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (!DGsendToWaitAck(_thisAddress, DGgetRouteTo(address_i)->next_hop, _thisAddress, address_i, 
-CAN_REQUEST_TO_MASTER, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-main.c(264): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  					DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-main.c(280): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  							if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress)
-main.c(294): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  								DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-main.c(345): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			if (!DGsendToWaitAck(_thisAddress, DGgetRouteTo(address_i)->next_hop, _thisAddress, address_i, 
-HECK_ROUTING, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-main.c(374): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  						if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress)
-main.c(391): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-main.c(477): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-main.c: 54 warnings, 0 errors
-compiling misc.c...
+main.c: 43 warnings, 0 errors
 compiling cc1120.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
@@ -257,6 +194,7 @@ cc1120.c(541): warning:  #550-D: variable "crc"  was set but never used
 cc1120.c(864): warning:  #940-D: missing return statement at end of non-void function "e_setSyncWords" 
   }
 cc1120.c: 26 warnings, 0 errors
+compiling misc.c...
 compiling Datagram_STM.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
@@ -348,161 +286,36 @@ Datagram_STM.c(72): warning:  #68-D: integer conversion resulted in a change of 
   	DGsendingTime = -60000;
 Datagram_STM.c(218): warning:  #1293-D: assignment in condition
   	if (size = e_ReceiveData(buf))
-Datagram_STM.c(293): warning:  #120-D: return value type does not match the function type
-  			return &_routes[i];
-Datagram_STM.c(427): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  		e_SendData(DGbuffer, length);
 Datagram_STM.c(590): warning:  #1293-D: assignment in condition
   		if ((number_of_unknown_node = DGG_find_2ndRow_master(unknown_node_list)))
-Datagram_STM.c(601): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  						if (DGsendToWaitAck(DG_thisAddress, address_i, DG_thisAddress, address_i, 
-EQUEST_DIRECT, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-Datagram_STM.c(647): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  		DGsend(DG_thisAddress, DGmasterBroadcastAddress, DG_thisAddress, DGmasterBroadcastAddress, 
-EQUEST_BROADCAST, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(657): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			DGsend(DG_thisAddress, dst, DG_thisAddress, dst, 
-EQUEST_TYPE, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(663): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == dst && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_ACK_TYPE)
 Datagram_STM.c(669): warning:  #181-D: argument is incompatible with corresponding format string conversion
   						printf("%d", 
 _MASTER_SEND_NUM * 0.8);
-Datagram_STM.c(734): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  		if (!DGsendToWaitAck(DG_thisAddress, node_list[i], DG_thisAddress, node_list[i], 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-Datagram_STM.c(783): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (DGrecvData(DGtemp_buf))
-Datagram_STM.c(787): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  						DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(882): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  		if (!DGsendToWaitAck(DG_thisAddress, next_hop, DG_thisAddress, node_list[i], type, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-Datagram_STM.c(896): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (DGrecvData(DGtemp_buf) && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderDestination == DG_thisAddress)
-Datagram_STM.c(899): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  					DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
 Datagram_STM.c(945): warning:  #1293-D: assignment in condition
   		if (number_of_node = DGG_get_i_row_node_list(row_number, node_list))
 Datagram_STM.c(963): warning:  #514-D: pointless comparison of unsigned integer with a negative constant
   	while (row_number > -1)
-Datagram_STM.c(977): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				DGsend(DG_thisAddress, address, DG_thisAddress, address, 
-EQUEST_DIRECT, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGbuffer, sizeof(DGbuffer));
-Datagram_STM.c(983): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  					if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == address && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_DIRECT_ACK)
 Datagram_STM.c(1013): warning:  #514-D: pointless comparison of unsigned integer with a negative constant
   	if (row_number == -1)//hop count? ????? ?? ? ?? ??
-Datagram_STM.c(1082): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  		if (!DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, path[i], 
-HECK_ROUTING, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-Datagram_STM.c(1096): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			DGsend(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, DGgetRouteTo(path[i])->next_hop, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(1105): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (DGrecvData(DGtemp_buf) && DG_rxHeaderTo == DG_thisAddress)
-Datagram_STM.c(1109): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  						DGsend(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, DGgetRouteTo(path[i])->next_hop, 
-CK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(1198): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			DGsend(DG_thisAddress, unknown_address, DG_thisAddress & 0x00, unknown_address, 
-ONE, 
-ONE, 
-ONE, 1, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(1203): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == unknown_address && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == R2_REQUEST_ACK_TYPE)
-Datagram_STM.c(1226): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  	DGsendToWaitAck(DG_thisAddress, DG_thisAddress & 0x00, DG_thisAddress, DG_thisAddress & 0x00, 
-ONE, 
-ONE, 1, DGtemp_buf, sizeof(DGtemp_buf), 2000);
-Datagram_STM.c(1257): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, type, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf));
-Datagram_STM.c(1276): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			if (DGrecvData(DGtemp_buf))
-Datagram_STM.c(1293): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  	while (!DGsendToWaitAck(DG_thisAddress, candidate_parent, DG_thisAddress, candidate_parent, 
-EW_NODE_REGISTER, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 1000))
-Datagram_STM.c(1300): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  				if (DGrecvData(DGtemp_buf))
-Datagram_STM.c(1328): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  			if (DGrecvData(DGtemp_buf))
-Datagram_STM.c(1332): warning:  #167-D: argument of type "volatile uint8_t *" is incompatible with parameter of type "uint8_t *"
-  					DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(DG_thisAddress & 0x00)->next_hop, DG_thisAddress, DG_thisAddress & 0x00, 
-HECK_ROUTING_ACK, 
-ONE, 
-ONE, 
-ONE, 
-ONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
 Datagram_STM.c(1268): warning:  #177-D: variable "hop"  was declared but never referenced
   	uint8_t hop = 0;
 Datagram_STM.c(1342): warning:  #1-D: last line of file ends without a newline
   //////////////////////
-Datagram_STM.c: 79 warnings, 0 errors
+Datagram_STM.c: 52 warnings, 0 errors
 compiling stm32f10x_gpio.c...
 compiling stm32f10x_rtc.c...
 compiling stm32f10x_rcc.c...
-compiling stm32f10x_spi.c...
-compiling stm32f10x_tim.c...
-compiling stm32f10x_usart.c...
 assembling startup_stm32f10x_md.s...
-compiling system_stm32f10x.c...
+compiling stm32f10x_spi.c...
+compiling stm32f10x_usart.c...
 compiling DMA_STM32F10x.c...
+compiling stm32f10x_tim.c...
 compiling GPIO_STM32F10x.c...
+compiling system_stm32f10x.c...
 linking...
-Program Size: Code=21692 RO-data=652 RW-data=240 ZI-data=3384  
+Program Size: Code=21712 RO-data=652 RW-data=232 ZI-data=3200  
 FromELF: creating hex file...
-".\Objects\c_gateway_keil.axf" - 0 Error(s), 168 Warning(s).
+".\Objects\c_gateway_keil.axf" - 0 Error(s), 130 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -550,8 +363,8 @@ Package Vendor: Keil
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_usart.c
 
    * Component: Keil::Device:StdPeriph Drivers:TIM:3.5.0
-      Source file:   Device\StdPeriph_Driver\src\stm32f10x_tim.c
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_tim.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_tim.c
 
    * Component: Keil::Device:StdPeriph Drivers:SPI:3.5.0
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_spi.h
@@ -570,21 +383,21 @@ Package Vendor: Keil
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_gpio.c
 
    * Component: Keil::Device:StdPeriph Drivers:Framework:3.5.1
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
       Source file:   Device\StdPeriph_Driver\src\misc.c
       Source file:   Device\StdPeriph_Driver\templates\stm32f10x_it.c
       Include file:  Device\StdPeriph_Driver\inc\misc.h
-      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
       Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
 
    * Component: Keil::Device:Startup:1.0.0
-      Include file:  RTE_Driver\Config\RTE_Device.h
-      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
       Source file:   Device\Source\ARM\STM32F1xx_OPT.s
+      Include file:  RTE_Driver\Config\RTE_Device.h
       Source file:   Device\Source\system_stm32f10x.c
+      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
 
    * Component: Keil::Device:GPIO:1.3
-      Include file:  RTE_Driver\GPIO_STM32F10x.h
       Source file:   RTE_Driver\GPIO_STM32F10x.c
+      Include file:  RTE_Driver\GPIO_STM32F10x.h
 
    * Component: Keil::Device:DMA:1.2
       Source file:   RTE_Driver\DMA_STM32F10x.c
@@ -600,7 +413,7 @@ Package Vendor: Keil
       Source file:   Source\retarget_io.c
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:03
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

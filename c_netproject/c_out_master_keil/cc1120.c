@@ -594,7 +594,7 @@ uint8_t e_ReceiveData(uint8_t *rxBuffer)
 		printf("-----receive-----");
 		printf("%d\r\n", millis() / 1000);
 		for (i = 0; i<size; i++) {
-			printf("%x", temp[i]);
+			printf("%d", temp[i]);
 			//if ((i == 1) || (i == 3) || (i == 5) || ( i == 7) ||   (i > 7)) 
 			printf("   ");
 		}
