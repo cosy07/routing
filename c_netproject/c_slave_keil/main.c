@@ -31,6 +31,8 @@ unsigned long rs485_loop_time;
 unsigned long scanTime;
 byte scanningAddress;
 
+byte DGtemp_buf[20];
+
 void RS485_Write_Read();
 
 int main()

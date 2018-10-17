@@ -37,6 +37,8 @@ unsigned long controllingTime;
 unsigned long scanningTime;
 bool check_slave_scan_response[16];
 
+byte DGtemp_buf[20];
+
 void receiveFromRC();
 
 // scan??? ??? ??? ??

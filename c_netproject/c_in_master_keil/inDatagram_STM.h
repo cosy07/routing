@@ -113,7 +113,7 @@ void DGprintRecvPacketHeader();
 
 static volatile uint8_t DGch;
 
-static volatile byte DGtemp_buf[20];
+extern byte DGtemp_buf[20];
 
 static volatile uint8_t       DG_thisAddress;		/// The address of this node
 static volatile uint8_t  			DG_rxHeaderTo;
