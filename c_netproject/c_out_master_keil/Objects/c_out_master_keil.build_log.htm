@@ -21,7 +21,7 @@ Target DLL:      UL2CM3.DLL V1.160.3.0
 Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
-C:\Users\JH\Desktop\c_out_master_keil\c_out_master_keil.uvprojx
+C:\Users\JH\Documents\Arduino\libraries\Datagram_STM\routing\c_netproject\c_out_master_keil\c_out_master_keil.uvprojx
 Project File Date:  09/21/2018
 
 <h2>Output:</h2>
@@ -46,66 +46,6 @@ spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg
 spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
   void SPIx_DisableSlave();
 spi.c: 3 warnings, 0 errors
-compiling printf.c...
-printf.h(21): warning:  #1-D: last line of file ends without a newline
-  void PrintfInit(void);	
-printf.c(63): warning:  #1-D: last line of file ends without a newline
-  }
-printf.c: 2 warnings, 0 errors
-compiling cc1120.c...
-spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
-  void SPIx_Init();
-spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
-  void SPIx_EnableSlave();
-spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
-  void SPIx_DisableSlave();
-printf.h(21): warning:  #1-D: last line of file ends without a newline
-  void PrintfInit(void);	
-myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
-  void SysTick_Handler();
-myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
-  uint32_t millis();
-cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
-  void e_setTxPowerTo5mW();
-cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
-  uint8_t  e_headerFrom(); //  
-cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
-  uint8_t  e_headerTo();  // return _rxHeaderTo  
-cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
-  uint8_t  e_headerSource();
-cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
-  uint8_t  e_headerDestination();
-cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
-  uint8_t  e_headerType();
-cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
-  uint8_t  e_headerData();
-cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
-  uint8_t  e_headerFlags();
-cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
-  uint8_t  e_headerSeqNum();
-cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
-  uint8_t  e_headerHop();
-cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
-  void e_ManualCalibration();
-cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
-  void e_PrintChannel();
-cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
-  void e_DisableLNA();
-cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
-  void e_EnableLNA();
-cc1120.c(257): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadReg" 
-  }
-cc1120.c(335): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadStatus" 
-  }
-cc1120.c(503): warning:  #550-D: variable "reserved"  was set but never used
-  	uint8_t reserved;
-cc1120.c(540): warning:  #550-D: variable "lqi"  was set but never used
-  	signed char lqi;
-cc1120.c(541): warning:  #550-D: variable "crc"  was set but never used
-  	uint8_t crc;
-cc1120.c(864): warning:  #940-D: missing return statement at end of non-void function "e_setSyncWords" 
-  }
-cc1120.c: 26 warnings, 0 errors
 compiling main.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
@@ -197,11 +137,69 @@ main.c(22): warning:  #68-D: integer conversion resulted in a change of sign
   uint8_t priorPacketFrom = -1;
 main.c(23): warning:  #68-D: integer conversion resulted in a change of sign
   uint8_t priorPacketType = -1;
-main.c(110): warning:  #192-D: unrecognized character escape sequence
-  				printf("%d : %d\: ", i, receivedNum[i]);
-main.c(675): warning:  #1-D: last line of file ends without a newline
+main.c(707): warning:  #1-D: last line of file ends without a newline
   }
-main.c: 47 warnings, 0 errors
+main.c: 46 warnings, 0 errors
+compiling printf.c...
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+printf.c(63): warning:  #1-D: last line of file ends without a newline
+  }
+printf.c: 2 warnings, 0 errors
+compiling cc1120.c...
+spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
+  void SPIx_Init();
+spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
+  void SPIx_EnableSlave();
+spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
+  void SPIx_DisableSlave();
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
+  void e_setTxPowerTo5mW();
+cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
+  uint8_t  e_headerFrom(); //  
+cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
+  uint8_t  e_headerTo();  // return _rxHeaderTo  
+cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
+  uint8_t  e_headerSource();
+cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
+  uint8_t  e_headerDestination();
+cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
+  uint8_t  e_headerType();
+cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
+  uint8_t  e_headerData();
+cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
+  uint8_t  e_headerFlags();
+cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
+  uint8_t  e_headerSeqNum();
+cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
+  uint8_t  e_headerHop();
+cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
+  void e_ManualCalibration();
+cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
+  void e_PrintChannel();
+cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
+  void e_DisableLNA();
+cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
+  void e_EnableLNA();
+cc1120.c(257): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadReg" 
+  }
+cc1120.c(335): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadStatus" 
+  }
+cc1120.c(503): warning:  #550-D: variable "reserved"  was set but never used
+  	uint8_t reserved;
+cc1120.c(540): warning:  #550-D: variable "lqi"  was set but never used
+  	signed char lqi;
+cc1120.c(541): warning:  #550-D: variable "crc"  was set but never used
+  	uint8_t crc;
+cc1120.c(864): warning:  #940-D: missing return statement at end of non-void function "e_setSyncWords" 
+  }
+cc1120.c: 26 warnings, 0 errors
 compiling misc.c...
 compiling Datagram_STM.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
@@ -310,20 +308,20 @@ Datagram_STM.c(1268): warning:  #177-D: variable "hop"  was declared but never r
 Datagram_STM.c(1342): warning:  #1-D: last line of file ends without a newline
   //////////////////////
 Datagram_STM.c: 52 warnings, 0 errors
+compiling stm32f10x_rcc.c...
 compiling stm32f10x_gpio.c...
 compiling stm32f10x_rtc.c...
-compiling stm32f10x_rcc.c...
 assembling startup_stm32f10x_md.s...
 compiling stm32f10x_spi.c...
 compiling stm32f10x_usart.c...
 compiling stm32f10x_tim.c...
-compiling GPIO_STM32F10x.c...
 compiling DMA_STM32F10x.c...
+compiling GPIO_STM32F10x.c...
 compiling system_stm32f10x.c...
 linking...
-Program Size: Code=19304 RO-data=552 RW-data=240 ZI-data=2120  
+Program Size: Code=19616 RO-data=552 RW-data=240 ZI-data=2120  
 FromELF: creating hex file...
-".\Objects\c_out_master_keil.axf" - 0 Error(s), 134 Warning(s).
+".\Objects\c_out_master_keil.axf" - 0 Error(s), 133 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -367,12 +365,12 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: Keil::Device:StdPeriph Drivers:USART:3.5.0
-      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_usart.h
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_usart.c
+      Include file:  Device\StdPeriph_Driver\inc\stm32f10x_usart.h
 
    * Component: Keil::Device:StdPeriph Drivers:TIM:3.5.0
-      Source file:   Device\StdPeriph_Driver\src\stm32f10x_tim.c
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_tim.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_tim.c
 
    * Component: Keil::Device:StdPeriph Drivers:SPI:3.5.0
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_spi.c
@@ -392,24 +390,24 @@ Package Vendor: Keil
 
    * Component: Keil::Device:StdPeriph Drivers:Framework:3.5.1
       Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
-      Include file:  Device\StdPeriph_Driver\inc\misc.h
+      Source file:   Device\StdPeriph_Driver\src\misc.c
       Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
       Source file:   Device\StdPeriph_Driver\templates\stm32f10x_it.c
-      Source file:   Device\StdPeriph_Driver\src\misc.c
+      Include file:  Device\StdPeriph_Driver\inc\misc.h
 
    * Component: Keil::Device:Startup:1.0.0
       Source file:   Device\Source\ARM\startup_stm32f10x_md.s
+      Include file:  RTE_Driver\Config\RTE_Device.h
       Source file:   Device\Source\system_stm32f10x.c
       Source file:   Device\Source\ARM\STM32F1xx_OPT.s
-      Include file:  RTE_Driver\Config\RTE_Device.h
 
    * Component: Keil::Device:GPIO:1.3
-      Source file:   RTE_Driver\GPIO_STM32F10x.c
       Include file:  RTE_Driver\GPIO_STM32F10x.h
+      Source file:   RTE_Driver\GPIO_STM32F10x.c
 
    * Component: Keil::Device:DMA:1.2
-      Source file:   RTE_Driver\DMA_STM32F10x.c
       Include file:  RTE_Driver\DMA_STM32F10x.h
+      Source file:   RTE_Driver\DMA_STM32F10x.c
 
    * Component: Keil.ARM Compiler::Compiler:I/O:STDOUT:ITM:1.2.0
       Source file:   Source\retarget_io.c
@@ -421,7 +419,7 @@ Package Vendor: Keil
       Source file:   Source\retarget_io.c
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

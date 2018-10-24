@@ -1,6 +1,6 @@
 Dependencies for Project 'c_in_master_keil', Target 'Target 1': (DO NOT MODIFY !)
-F (.\main.c)(0x5BA4BD3C)(--c99 -c --cpu Cortex-M3 -D__EVAL -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\RTE_Driver-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F10X_MD-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
-I (inDatagram_STM.h)(0x5BA4BDFA)
+F (.\main.c)(0x5BD00FD3)(--c99 -c --cpu Cortex-M3 -D__EVAL -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\RTE_Driver-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F10X_MD-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (inDatagram_STM.h)(0x5BC4458E)
 I (incc1120.h)(0x5BA4A159)
 I (spi.h)(0x5BA05D1F)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include\stm32f10x.h)(0x58252A5C)
@@ -100,7 +100,7 @@ I (printf.h)(0x5BA0AF86)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5A41FFCE)
 I (myTimer.h)(0x5B8E9A92)
 F (.\inDatagram_STM.c)(0x5BA4BF8B)(--c99 -c --cpu Cortex-M3 -D__EVAL -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\RTE_Driver-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F10X_MD-o .\objects\indatagram_stm.o --omf_browse .\objects\indatagram_stm.crf --depend .\objects\indatagram_stm.d)
-I (inDatagram_STM.h)(0x5BA4BDFA)
+I (inDatagram_STM.h)(0x5BC4458E)
 I (incc1120.h)(0x5BA4A159)
 I (spi.h)(0x5BA05D1F)
 I (C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include\stm32f10x.h)(0x58252A5C)
@@ -123,7 +123,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5A41FFCE)
 I (myTimer.h)(0x5B8E9A92)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B7534)
 F (.\incc1120.h)(0x5BA4A159)()
-F (.\inDatagram_STM.h)(0x5BA4BDFA)()
+F (.\inDatagram_STM.h)(0x5BC4458E)()
 F (C:\Keil_v5\ARM\PACK\Keil\ARM_Compiler\1.3.1\Source\retarget_io.c)(0x584E1BAE)(--c99 -c --cpu Cortex-M3 -D__EVAL -g -O0 --apcs=interwork --split_sections-I.\RTE\Device\STM32F103C8-I.\RTE\_Target_1-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\StdPeriph_Driver\inc-IC:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\RTE_Driver-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F10X_MD-o .\objects\retarget_io.o --omf_browse .\objects\retarget_io.crf --depend .\objects\retarget_io.d)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B7534)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B7534)

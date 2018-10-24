@@ -84,30 +84,25 @@ int main()
 
 	while(1)
 	{
-		// if()//scan finish ??? ?? ?????? ??, ????? ???? ? ?
-		{
-			scanFinish = true;
-		}
-
-		// 10? ???? table update (???? ?? routing table? ?? ??)
+		// 10분 간격으로 table update (사용되지 않는 routing table의 행은 삭제)
 		if (routing_complete && check_table_time + 600000 < millis())
 		{
 			DGcheckRoutingTable();
 			check_table_time = millis();
 		}
 
-		// 10? ???? ?? ??? ?? ???? gateway? ? ??? ?? ??? ?? ?? ?? ??? ??
-		// ?? ??? ??? ?? hop count? ? ??? receivedNum ?? ????? (line ???)
-		// receivedNum ?? ?? ? ??? ?? ?? ??? ?
+		// 10분 간격으로 내가 선택한 부모 노드보다 gateway에 더 가까이 있는 노드가 있는 경우 다시 라우팅 해줌
+		// 다른 노드의 패킷을 보고 hop count가 더 좋다면 receivedNum 값을 증가시켜줌 (line ???)
+		// receivedNum 값이 제일 큰 노드가 후보 부모 노드가 됨
 		
-		if (check_rerouting_time + 60000 < millis())//10???..
+		if (check_rerouting_time + 600000 < millis())//10분으로..
 		{
 			printf("check_rerouting_time");
 			check_rerouting_time = millis();
 			int8_t max_receivedNum = 0;
 			for (uint8_t i = 0; i <= 33; i++)
 			{
-				printf("%d : %d\: ", i, receivedNum[i]);
+				printf("%d : %d\r\n: ", i, receivedNum[i]);
 
 				if (max_receivedNum < receivedNum[i])
 				{
@@ -119,18 +114,18 @@ int main()
 			}
 		}
 
-		// ?? ?? ???
+		// 수신 가능 상태로
 		DGSetReceive();
 
-		// ?? ??
+		// 패킷 수신
 		if (DGavailable())
 		{
 
-			// ?? ??? ??? ??
+			// 받은 데이터 버퍼에 저장
 			if (DGrecvData(DGtemp_buf))
 			{
 
-				// ??? ?? ??
+				// 헤더를 따로 저장
 				_rxHeaderTo = DGheaderTo();
 				_rxHeaderFrom = DGheaderFrom();
 				_rxHeaderSource = DGheaderSource();
@@ -141,41 +136,41 @@ int main()
 				_rxHeaderSeqNum = DGheaderSeqNum();
 				_rxHeaderHop = DGheaderHop();
 
-				// ??? ? ??? ?? or ??????? ??
+				// 나에게 온 패킷일 경우 or 브로드캐스트일 경우
 				if (_rxHeaderTo == _thisAddress || _rxHeaderTo == masterBroadcastAddress)
 				{
 					DGprintRecvPacketHeader();
 
-					// ???? ?? ?? ?? (relay ??)
+					// 목적지가 내가 아닐 경우(relay 상황)
 					if (_rxHeaderDestination != _thisAddress && _rxHeaderTo != masterBroadcastAddress)
 					{
 						uint8_t temp_source = _rxHeaderSource;
 						printf("receive relay");
 
-						// gateway? ???? ???? ?? ??, ?? ???? ?? ?? ??
+						// gateway가 테이블에 등록되어 있지 않음, 아직 라우팅이 되지 않은 노드 -> 아무것도 안함
 						if (DGgetRouteTo(_thisAddress & 0x00) == NULL)
 						{
 							DGprintRoutingTable();
 						}
 
-						// gateway? ???? ???? ??, ???? ??? ??
+						// gateway가 테이블에 등록되어 있음, 라우팅이 완료된 노드
 						else
 						{
-							// ACK?? (hop-to-hop?? ACK? ????)
+							// ACK전송 (hop-to-hop에도 ACK을 전송해줌)
 							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 
-							// routing?? ??? ?? (? ????? ???? ?, ??? ??? ???? ????)
+							// routing관련 응답을 수신 (내 자식노드가 생겼다는 뜻, 따라서 라우팅 테이블에 등록시킴) = 상향링크로의 패킷임
 							if (_rxHeaderType == REQUEST_MULTI_HOP_ACK || _rxHeaderType == REQUEST_DIRECT_ACK)
 							{
 								DGaddRouteTo(_rxHeaderSource, _rxHeaderFrom, Valid, _rxHeaderHop + 1, millis());
 								DGprintRoutingTable();
 							}
 
-							// ????? ?? ?, ?? ?? _rxHeaderData? ?? ??? ?? NEW_NODE? ??? ??, ??? ACK? ???? ? ????? ??? ??? ???? ??
-							// _rxHeaderData? ???? ? ????? ??? ??, temp_buf[10]?? ????? ??? ????
+							// 초기라우팅 완료 후, 운영 중에 _rxHeaderData에 값이 있다는 것은 NEW_NODE가 있음을의미, 나에게 ACK이 왔으므로 내 자식노드임 따라서 라우팅 테이블에 등록
+							// _rxHeaderData는 추가해야 할 자식노드의 개수를 의미, temp_buf[10]부터 자식노드의 주소가 들어있음 (temp_buf[0] ~ [9]는 에어텍 프로토콜)
 							else if (_rxHeaderType == CHECK_ROUTING_ACK && _rxHeaderData > 0)
 							{
-								// hop count ???
+								// hop count 재설정
 								DGaddRouteTo(_rxHeaderSource, _rxHeaderFrom, Valid, _rxHeaderHop + 1, millis());
 								for (uint8_t i = 0; i < _rxHeaderData; i++)
 								{
@@ -183,13 +178,13 @@ int main()
 								}
 							}
 
-							//?? ? ????? ????? rerouting ?? ? ?????.. ??? ??? ???? ????
+							//원래 내 자식노드가 아니었는데 rerouting 결과 내 자식노드로.. 따라서 라우팅 테이블에 등록해줌
 							else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
 							{
 								DGaddRouteTo(_rxHeaderSource, _rxHeaderFrom, Valid, _rxHeaderHop + 1, millis());
 								for(uint8_t i = 0;i < _rxHeaderData;i++)
 								{
-									DGaddRouteTo(DGtemp_buf[11 + i], _rxHeaderFrom, Valid, 0, millis()); // ????? hop count? ?? ???? ?? ?? 0?? ??? ??? ?? ??????? ??? ???? hop count?? setting
+									DGaddRouteTo(DGtemp_buf[11 + i], _rxHeaderFrom, Valid, 0, millis()); // 자식노드의 hop count는 별로 중요하지 않음 일단 0으로 해두고 다음에 해당 자식노드로부터 패킷을 받게되면 hop count에 맞게 setting
 								}
 							}
 
@@ -200,12 +195,12 @@ int main()
 									DGaddRouteTo(DGtemp_buf[i], DGtemp_buf[0], DGValid, _rxHeaderHop + 1);
 							}*/
 
-							// ??? ?? ???? ?? ???? ? ??? ???? ???? ?? || ?? ???? ???? ??? next_hop?? ??? ???? ACK? ?? ?? ??
+							// 패킷의 원래 목적지에 대한 데이터가 내 라우팅 테이블에 존재하지 않음 || 원래 목적지로 전송하기 위해서 next_hop으로 패킷을 보냈는데 ACK을 받지 못한 경우
 							if (DGgetRouteTo(_rxHeaderDestination) == NULL
 								|| !DGsendToWaitAck(_thisAddress, DGgetRouteTo(_rxHeaderDestination)->next_hop, _rxHeaderSource, _rxHeaderDestination, _rxHeaderType, NONE, NONE, NONE, _rxHeaderHop + 1, DGtemp_buf, sizeof(DGtemp_buf), 2000))
-									// sendToWaitAck? ?? ? ACK ??? ???, ACK? ?? ???? false? return
+									// sendToWaitAck은 전송 후 ACK 받기를 기다림, ACK을 받지 못했다면 false를 return
 							{
-								// relay??? ?? ??? gateway??? ???? ? gateway?? ????? ??? ????? ???
+								// relay되어야 하는 패킷이 gateway로부터 시작했을 때 gateway에게 목적지로의 전송이 안되었다고 알려줌
 								if (temp_source == (_thisAddress & 0x00))
 								{
 									printf("send NACK");
@@ -214,11 +209,11 @@ int main()
 								}
 							}
 						} //end of else
-					} // end of if (_rxHeaderDestination != _thisAddress && _rxHeaderTo != masterBroadcastAddress)
+					} // end of if (_rxHeaderDestination != _thisAddress && _rxHeaderTo != masterBroadcastAddress) //relay 상황
 
-					// ?? ??? ?? ???? ????? ?????????
+					// 아래의 경우는 실제 목적지가 자신이거나 브로드캐스트일 경우
 
-					///////////////////////////////////////////////////////////////////////////////////////////////////////////////??? ?? ??///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					///////////////////////////////////////////////////////////////////////////////////////////////////////////////라우팅 관련 패킷///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 					else if (_rxHeaderType == REQUEST_BROADCAST)
 					{
 						DGclearRoutingTable();
@@ -253,11 +248,11 @@ int main()
 					{
 						receivedRequestNum = 0;
 
-						//?? ?????? ?? ??? ??? payload? ??? ???? ???? ??
+						//실제 라우팅하고자 하는 노드의 주소는 payload의 첫번째 바이트에 저장되어 있음
 						
 						if (DGtemp_buf[0] != _thisAddress)
 						{
-							//?? routing ?? ???? ??? ?? ?? ??
+							//아직 routing 안된 노드에게 라우팅 요청 패킷 전송
 							
 							printf("received multihop request and send to unrouting Master");
 							uint8_t realDst = DGtemp_buf[0];
@@ -303,7 +298,7 @@ int main()
 						}
 						else
 						{
-							//routing ? ???? ??? ??
+							//routing 안되어있던 노드가 수신
 							printf("received multi hop request");
 							if(_rxHeaderType == REQUEST_MULTI_HOP)
 								DGM_masterSendRoutingReply();
@@ -324,17 +319,17 @@ int main()
 
 
 
-					////////////////////////////////////////////////////////////////////////////////////////////////////////////operate ?? ??///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					////////////////////////////////////////////////////////////////////////////////////////////////////////////operate 관련 패킷///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-					// gateway??? master scan ?? ??
+					// gateway로부터 master scan 요청 수신 (외부 마스터들만 scan)
 					else if (_rxHeaderType == CHECK_ROUTING)
 					{
 						receivedRequestNum = 0;
-						routing_complete = true;
 						
-						// gateway? ??? ???? ???? ?? ????(???? ??? ??? ????? ?? ?????)
+						// gateway가 라우팅 테이블에 등록되어 있을 경우에만(재부팅된 노드는 라우팅부터 다시 시작해야함)
 						if (DGgetRouteTo(_thisAddress & 0x00) != NULL)
 						{ 
+							routing_complete = true;
 							for(int i = 0;i < 10;i++)
 								inputData[i] = DGtemp_buf[i];
 								
@@ -343,14 +338,14 @@ int main()
 							for(int i = 0;i < 10;i++)
 								DGtemp_buf[i] = outputData[i];
 
-							// ??? scan? ?? + master scan ?? ??? ??????? ??
+							// 내부의 scan이 끝남 + master scan 완료 패킷을 게이트웨이에게 전송
 							if(scanFinish)
 							{
 								DGgetRouteTo(_thisAddress & 0x00)->hop = _rxHeaderHop + 1;
 								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, SCAN_RESPONSE_TO_GATEWAY, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
 							}
 							
-							// ??? ??? ??? ???? ??? + scan ?? ??? ??????? ??
+							// 새로운 노드가 라우팅 테이블에 추가됨 + scan 완료 패킷을 게이트웨이에게 전송
 							else if (newNode)
 							{
 								int newNodeCnt = 0;
@@ -363,18 +358,29 @@ int main()
 									}
 								}
 								newNode = false;
-								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CHECK_ROUTING_ACK, newNodeCnt, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+								if(!DGsendToWaitAck(_thisAddress, 
+									DGgetRouteTo(_thisAddress & 0x00)->next_hop, 
+								_thisAddress, 
+								_thisAddress & 0x00, 
+								CHECK_ROUTING_ACK, 
+								newNodeCnt, 
+								NONE, 
+								NONE, 
+								NONE, 
+								DGtemp_buf, 
+								sizeof(DGtemp_buf), 2000))
+									
+								newNode = true; //gateway에게 전달이 안됐으면 다음에 다시 보냄
 							}
 							
-							// ??? ??? ????? + scan ?? ??? ??????? ??
+							// 새로운 부모가 선택되었음 + scan 완료 패킷을 게이트웨이에게 전송
 							else if (rerouting || _rxHeaderFrom != DGgetRouteTo(_thisAddress & 0x00)->next_hop)
 							{
-								// ??????? ?? ?? ??? ???? ??? ?? ??? ????? ??? payload? ????
-								// ????? ????? ??? ????? ???? hop count? ???? ??? ? ? ???? ?? ????? ?
+								// 게이트웨이에게 나의 부모 노드를 알려주기 위해서 내가 선택한 부모노드의 주소를 payload에 추가해줌
 								
 								DGtemp_buf[10] = rerouting_candidate;
 
-								// ?? ???? ?? ??? ?? ???? ??? ???? ????? ?? ??? ?? ???? payload? ??
+								// 조상 노드들이 현재 노드의 자식 노드들을 라우팅 테이블에 등록시키게 하기 위해서 자식 노드들도 payload에 추가
 								uint8_t child_node[10];
 								uint8_t child_node_cnt = DGfind_child_node(child_node);
 
@@ -388,7 +394,7 @@ int main()
 								rerouting = false;
 							}
 
-							// ?? scan ?? ?? ??
+							// 일반 scan 완료 패킷 전송
 							else
 							{
 								// hop count update
@@ -396,19 +402,19 @@ int main()
 								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CHECK_ROUTING_ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
 							}
 						}
-						// gateway? ??? ???? ???? ?? ??(reset? ??)
+						// gateway가 라우팅 테이블에 등록되어 있지 않음(reset된 상태)
 						else
 							DGprintRoutingTable();
 							
 					} // end of else if (_rxHeaderType == CHECK_ROUTING)
 
-					// ??? ??? ?? ?? ?? ??
+					// 새로운 노드가 자식 노드 설정 요청
 					else if (_rxHeaderType == NEW_NODE_REGISTER && DGgetRouteTo(_thisAddress & 0x00) != NULL)
 					{
-						// ??? ???? ??, ??? Discovering?? ?? new node?? ??
+						// 라우팅 테이블에 추가, 상태를 Discovering으로 하여 new node임을 표시
 						DGaddRouteTo(_rxHeaderFrom, _rxHeaderFrom, Discovering, 1, millis());
 
-						// ACK??
+						// ACK전송
 						DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, DGgetRouteTo(_thisAddress & 0x00)->hop, DGtemp_buf, sizeof(DGtemp_buf));
 						newNode = true;
 					}
@@ -423,21 +429,25 @@ int main()
 				 
 
 
-					// ?? ?? zone? scan ??
+					// 내가 속한 zone의 scan 요청
 					else if(_rxHeaderType == SCAN_REQUEST_TO_MASTER && DGgetRouteTo(_thisAddress & 0x00) != NULL)
 					{
-						// hop count ????
+						// hop count 업데이트
 						DGgetRouteTo(_thisAddress & 0x00)->hop = _rxHeaderHop + 1;
 
-						// ?? zone scan ??? ? ???? ??? ??
+						// 내부 zone scan 명령을 잘 받았다고 응답을 보냄
 						DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, SCAN_REQUEST_ACK_FROM_MASTER, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
 
+						USART_ITConfig(USART3, USART_IT_RXNE, DISABLE);
 						//send scan to internal master in serial		
 						USART_SendData(USART3, INTERNAL_SCAN);
 						while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
 						
+						USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+						
 					}
 					
+					//제어 요청
 					else if(_rxHeaderType == CONTROL_TO_MASTER && DGgetRouteTo(_thisAddress & 0x00) != NULL)
 					{
 						byte temp[2];
@@ -452,14 +462,15 @@ int main()
 						
 						for(int i = 0;i < 10;i++)
 							DGtemp_buf[i] = outputData[i];
-							
+						
+						USART_ITConfig(USART3, USART_IT_RXNE, DISABLE);
 						//send control to internal master in serial
 						USART_SendData(USART3, INTERNAL_CONTROL);
 						while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
 						
 						
 						timeout = true;
-						//?? ?????? ?? ?? ??? ????? ???? ?????? ??
+						//내부 마스터로부터 제어 명령 전송이 완료됐는지 데이터를 수신하기까지 대기
 						
 						unsigned long send_ctrl_to_in_master_time = millis();
 						while(send_ctrl_to_in_master_time - millis() < 5000)
@@ -470,10 +481,14 @@ int main()
 								while(USART_GetFlagStatus(USART3, USART_FLAG_RXNE) == RESET);
 								
 								receiveFromInMaster = USART_ReceiveData(USART3);
-								DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CONTROL_RESPONSE_TO_GATEWAY, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
-								timeout = false;
+								if(receivedFromInMaster == INTERNAL_CONTROL_FINISH)
+								{
+									DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CONTROL_RESPONSE_TO_GATEWAY, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+									timeout = false;
+								}
 							}
 						}
+						USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 						if(timeout)
 							DGsendToWaitAck(_thisAddress, DGgetRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, CONTROL_RESPONSE_TO_GATEWAY, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);  
 					}  
@@ -499,7 +514,7 @@ int main()
 					}
 				} // end of type check
 			} // end of if (DGrecvData(DGtemp_buf))
-		} // end of if (DGavailable()) ??? ??
+		} // end of if (DGavailable()) 데이터 수신
 	}
 	
 }
@@ -623,9 +638,26 @@ void USART3_Configuration(void)
   
   /* Configure the USARTx */ 
 	USART_Init(USART3, &USART_InitStructure);
-
+	/* Enable USART3 Receive interrupts */
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
   /* Enable the USARTx */
 	USART_Cmd(USART3, ENABLE);
+}
+
+/**
+  * @brief  Interrupt handler
+  * @param  None
+  * @retval : None
+  */
+void USART3_IRQHandler(void)
+{
+	if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) 
+	{
+		USART_ClearITPendingBit(USART3, USART_IT_RXNE);
+		byte temp = USART_ReceiveData(USART3);
+		if(temp == INTERNAL_SCAN_FINISH)
+			scanFinish = true;
+	}
 }
 
 void RS485_Write_Read()
@@ -644,7 +676,7 @@ void RS485_Write_Read()
 	GPIO_ResetBits(GPIOA, GPIO_Pin_1);
 	
 	rs485_loop_time = millis();
-	while(rs485_loop_time + 3000 > millis())
+	while(rs485_loop_time + 2000 > millis())
 	{
 		if(USART_GetFlagStatus(USART2, USART_FLAG_RXNE))
 		{

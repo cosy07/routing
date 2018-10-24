@@ -7,13 +7,6 @@
 #define  GPIO_TxPin_R               GPIO_Pin_2
 #define  GPIO_RxPin_R               GPIO_Pin_3
 
-//#define  USARTxR                    USART2
-//#define  RCC_APB1Periph_USARTxR     RCC_APB1Periph_USART2
-//#define  GPIOxR                     GPIOA
-//#define  RCC_APB2Periph_GPIOxR      RCC_APB2Periph_GPIOA
-//#define  GPIO_TxPin_R               GPIO_Pin_2
-//#define  GPIO_RxPin_R               GPIO_Pin_3
-
 /* Private function prototypes -----------------------------------------------*/
 void RCC_Configuration(void);
 void GPIO_Configuration(void);
@@ -23,6 +16,7 @@ void NVIC_Configuration(void);
 void RS485_Write_Read(void);
 
 uint8_t master_number;
+uint8_t num_of_slave;
 
 uint8_t _thisAddress;
 uint8_t _rxHeaderFrom;
@@ -30,22 +24,22 @@ uint8_t _rxHeaderTo;
 uint8_t _rxHeaderMaster;
 uint8_t _rxHeaderType;
 
-byte inputData[10]; // RS485 ?? ??
-byte outputData[10]; // RS485 ?? ??
-byte tempData[10] = {0xD5, 0x00, 0x02, 0x00, 0x03, 0x03, 0x19, 0x1E, 0x00, 0xD0}; //for test
+byte inputData[10]; // RS485 송신 버퍼
+byte outputData[10]; // RS485 수신 버퍼
+byte state_request[10] = {0xD5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //에어텍 내부 통신 프로토콜 상태 요청 메시지
 
-bool scanning = false;
 unsigned long rs485_loop_time;
+unsigned long controlTime;
 unsigned long scanTime;
-byte scanningAddress;
+bool timeout = true;
 
 byte DGtemp_buf[20];
 
 int main()
 {
-	DGInit(0x01, 0x03, 15);
+	DGInit(0x01, 0x01, 15); // zone의 외부마스터 번호, 내 주소, 채널
 	_thisAddress = DGgetThisAddress();
-	//master_number = DGgetMasterNumber();
+	master_number = DGgetMasterNumber();
 
 	//PrintfInit();
 	/* System Clocks Configuration */
@@ -60,113 +54,40 @@ int main()
 
 	while(1)
 	{
-		for(int i = 0;i < 10;i++)
-			outputData[i] = 0;
-
-		// ?? ?? ?? ?? ??? ??
+		
+		// 룸콘으로부터 제어요청
+		// (룸콘) -----RC_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
+		//                                            (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)
+		//																													 룸콘에게는 ACK의 역할, 
+		//                                                           슬레이브에게는 혹시 RC_CONTROL_TO_SLAVE를 못받았을 경우에 대비
 		DGSetReceive();
 
-		//?? ??
 		if(DGavailable())
 		{
-			//?? ??? ??
 			if(DGrecvData(DGtemp_buf))
 			{
 				printf("%d\r\n", millis());
 
-				//?? ??
 				_rxHeaderFrom = DGheaderFrom();
 				_rxHeaderTo = DGheaderTo();
 				_rxHeaderMaster = DGheaderMaster();
 				_rxHeaderType = DGheaderType();
 
-				//?? ?? zone? ???? ??
 				if(_rxHeaderMaster == master_number)
 				{
-					//?? FCU? scan??? ??
-					//?? ??? ?? ?? scan??? ??
-					if(_rxHeaderType == SCAN_RESPONSE_TO_RC)
-					{
-						//??? ?? ????? ??? ??
-						/*?? ??? ??? ???? ?? ?? ?? FCU? ?? ??? ???? ??*/
-						//  |--0? FCU--|--1? FCU--|--2? FCU--|--3? FCU--|
-						//  3? FCU? 1?FCU? ??? ???? 2? FCU? ??? ??? ??? ????
-						//  1? FCU? ??? ?? ??? ????? 2? FCU? ???? ??? ???? ??? ??? ??
-						
-						scanningAddress = _rxHeaderFrom;  //3? FCU? 0? FCU? ??? ??, 1,2?? ??? ?? ??? ?? ?? ??? ??? ??? ?? ??? ?? ??? ??
-						scanTime = millis();  //?? FCU? ??? ?? ??? ??
-						scanning = true;  //scan ??? ??
-						
-						for(int i = 0;i < 10;i++)
-							inputData[i] = DGtemp_buf[i];
-
-						 /*?? ?? ? ?? FCU? ??? ??*/
-						if(_rxHeaderFrom == _thisAddress - 1)
-						{
-							//?? FCU? ???? ????? ?? ??(?? ??? FCU? ??? ??? ??)
-							inputData[2] = _thisAddress - 1;
-							inputData[9] = 0x00;
-							
-							for(int i = 0;i < 9;i++)
-								inputData[9] ^= inputData[i];
-
-							//FCU?? ?? ??? ???
-							RS485_Write_Read();
-							
-							for(int i = 0;i < 10;i++)
-								DGtemp_buf[i] = outputData[i];
-
-							//???? ????? ??
-							DGsend(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, DGtemp_buf, sizeof(DGtemp_buf));
-							scanning = false;
-							
-							while(millis() - scanTime < 350);
-						}
-						
-						/*?? ??? ??? ???? ?? ?? ?? FCU? ?? ??? ???? ??*/
-						//  |--0? FCU--|--1? FCU--|--2? FCU--|--3? FCU--|
-						//  3? FCU? 1?FCU? ??? ???? 2? FCU? ??? ??? ??? ????
-						//  1? FCU? ??? ?? ??? ????? 2? FCU? ???? ??? ???? ??? ??? ??
-										
-						if(scanning && (millis() - scanTime > (_thisAddress - scanningAddress) * 350))
-						{
-							inputData[2] = _thisAddress - 1;
-							inputData[9] = 0x00;
-							
-							for(int i = 0;i < 9;i++)
-								inputData[9] ^= inputData[i];
-								
-							RS485_Write_Read();
-							
-							for(int i = 0;i < 10;i++)
-								DGtemp_buf[i] = outputData[i];
-							
-							DGsend(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, DGtemp_buf, sizeof(DGtemp_buf));
-							scanning = false;
-						}
-					}
-
-					//???? ??
-					//1. GW_CONTROL_TO_SLAVE : (?????) -----> (?? ???) -----> (?? ???) -----> (??) ---GW_CONTROL_TO_SLAVE---> (????, ?? ??? - broadcast)
-					//2. RC_CONTROL_TO_SLAVE : (??) ---RC_CONTROL_TO_SLAVE---> (????, ?? ??? - broadcast)
-					//3. CONTROL_RESPONSE_BROADCAST : (??) -----> (????, ?? ??? - broadcast)
-					//                                                                     (?????) ---CONTROL_RESPONSE_BROADCAST---> (??, ????)  
-					//                                                                      ????? ACK? ??
-					//                                                                      ?? ??????? RC_CONTROL_TO_SLAVE? ?????? ??
-
-										
-					else if(_rxHeaderType == GW_CONTROL_TO_SLAVE || _rxHeaderType == RC_CONTROL_TO_SLAVE || _rxHeaderType == CONTROL_RESPONSE_BROADCAST)
+					if(_rxHeaderType == RC_CONTROL_TO_SLAVE)
 					{
 						for(int i = 0;i < 10;i++)
 							inputData[i] = DGtemp_buf[i];
 						
-						inputData[2] = _thisAddress - 1;
+						inputData[2] = 0x00;
 						inputData[9] = 0x00;
+						
 						for(int i = 0;i < 9;i++)
 							inputData[9] ^= inputData[i];
 						
+						DGsend(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, DGtemp_buf, sizeof(DGtemp_buf));
 						RS485_Write_Read();
-
 					}
 				}
 			}
@@ -294,14 +215,248 @@ void USART3_Configuration(void)
   
   /* Configure the USARTx */ 
 	USART_Init(USART3, &USART_InitStructure);
-
+	/* Enable USART3 Receive interrupts */
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
   /* Enable the USARTx */
 	USART_Cmd(USART3, ENABLE);
+}
+
+/**
+  * @brief  Interrupt handler
+  * @param  None
+  * @retval : None
+  */
+void USART3_IRQHandler(void)
+{
+	if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) 
+	{
+		USART_ClearITPendingBit(USART2, USART_IT_RXNE);
+		byte temp = USART_ReceiveData(USART3);
+		
+		// 제어요청일 경우
+		// ************ 1단계 ************
+		// (GW) -----> (외부 마스터) -----> (FCU)
+		//                       -----> (내부 마스터)
+		//  GW의 제어요청에 맞게 FCU 상태 변화 및 내부마스터에게 알려줌
+		
+		
+		// ************ 2단계 ************
+		// (내부 마스터) -----상태 요청-----> (FCU) -----상태 응답-----> (내부 마스터)
+		//  내부 마스터가 FCU에게 현재 상태를 물어봄
+		
+		// ************ 3단계 ************
+		// 자신의 상태를 룸콘에게 전송하여 그 zone이 GW의 제어요청대로 변경되도록 함
+		// (내부 마스터) -----CONTROL_TO_RC-----> (룸콘) -----GW_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
+		//                                                                              (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)
+		//                                                                                             룸콘에게는 ACK의 역할
+		//																																							  							다른 슬레이브에게는 RC_CONTROL_TO_SLAVE를 못받을 경우에 대비
+		USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+		if(temp == INTERNAL_CONTROL)
+		{
+			for(int i = 0;i < 10;i++)
+        inputData[i] = state_request[i];
+
+      //FCU에게 현재 상태를 요청
+      RS485_Write_Read();
+
+      //현재 상태를 룸콘에게 전송하되, 상태응답이 아닌 변경요청(0xA5)으로 보냄
+      outputData[0] = 0xA5;
+      outputData[9] = 0;
+
+      //checksum 계산 및 전송 버퍼에 데이터 저장
+      for(int i = 0; i < 9;i++)
+      {
+        outputData[9] ^= outputData[i];
+        DGtemp_buf[i] = outputData[i];
+      }
+      DGtemp_buf[9] = outputData[9];
+
+      //룸콘에게 전송
+      bool receiveACK = DGsendToWaitAck(_thisAddress, 0x00, master_number, CONTROL_TO_RC, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+
+      //룸콘으로부터 ACK을 받지 못함
+      if(!receiveACK)
+      {
+				USART_SendData(USART3, INTERNAL_COM_FAIL);
+				while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+      }
+      else
+      {
+        controlTime = millis();
+        timeout = true;
+       
+        // 룸콘이 slave에게 제어 요청을 보내길 기다림       
+        while(millis() - controlTime < 3000)
+        {
+
+          //receive 상태로 전환
+          DGSetReceive();
+
+          if(DGavailable())
+          {
+
+            if(DGrecvData(DGtemp_buf))
+            {
+
+              _rxHeaderFrom = DGheaderFrom();
+              _rxHeaderTo = DGheaderTo();
+              _rxHeaderMaster = DGheaderMaster();
+              _rxHeaderType = DGheaderType();
+
+              if(_rxHeaderMaster == master_number)
+              {
+               if(_rxHeaderType == GW_CONTROL_TO_SLAVE)
+                {
+                  timeout = false;
+                  DGsend(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, DGtemp_buf, sizeof(DGtemp_buf));
+
+                  //제어가 끝났음을 외부 마스터에게 알림
+									USART_SendData(USART3, INTERNAL_CONTROL_FINISH);
+									while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+                }
+              }
+            }
+          }
+        }
+        
+        if(timeout)
+        {
+          USART_SendData(USART3, INTERNAL_COM_FAIL);
+					while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+        } 
+      }
+		}
+		
+		
+		
+		// 스캔요청일 경우
+		//                                                                                     실제 스캔 요청                                   스캔 응답
+		// (GW) -----> (외부 마스터) -----> (내부 마스터) -----SCAN_REQUEST_TO_RC-----> (룸콘) -----SCAN_REQUEST_TO_SLAVE-----> (내부 마스터) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
+		//                                                                                                                                                  (슬레이브 1) -----SCAN_RESPONSE_TO_RC----->(룸콘)
+		//                                                                                                                                                                                        (슬레이브 2) -----SCAN_RESPONSE_TO_RC-----> (룸콘)
+		
+		else if(temp == INTERNAL_SCAN)
+		{
+			//룸콘에게 전송
+      bool receiveACK = DGsendToWaitAck(_thisAddress, 0x00, master_number, SCAN_REQUEST_TO_RC, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+
+      //룸콘으로부터 ACK을 받지 못함
+      if(!receiveACK)
+      {
+        //외부 마스터에게 시리얼 보냄
+        USART_SendData(USART3, INTERNAL_COM_FAIL);
+				while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+      }
+
+      //전체 slave가 다 scan 될 때까지 or 일정시간까지 반복문
+      
+      scanTime = millis();
+      timeout = true;
+      while(millis() - scanTime < 10000)
+      {
+
+        //receive상태로 변환
+        DGSetReceive();
+
+        //패킷 수신
+        if(DGavailable())
+        {
+
+          //수신된 데이터를 자신의 버퍼에 저장
+          if(DGrecvData(DGtemp_buf))
+          {
+
+            //read header
+            _rxHeaderFrom = DGheaderFrom();
+            _rxHeaderTo = DGheaderTo();
+            _rxHeaderMaster = DGheaderMaster();
+            _rxHeaderType = DGheaderType();
+
+            //내가 속한 zone으로부터의 패킷인 경우
+            if(_rxHeaderMaster == master_number)
+            {
+
+              //룸콘으로부터 스캔요청을 수신
+              if(_rxHeaderType == SCAN_REQUEST_TO_SLAVE && _rxHeaderTo == _thisAddress)
+              {
+                for(int i = 0;i < 10;i++)
+                  inputData[i] = DGtemp_buf[i];
+                
+                num_of_slave = DGtemp_buf[10];
+                RS485_Write_Read();
+                //FCU에게 현재 상태를 물어봄
+                
+                for(int i = 0;i < 10;i++)
+                  DGtemp_buf[i] = outputData[i];
+
+                //룸콘에게 스캔 응답
+                DGsend(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, DGtemp_buf, sizeof(DGtemp_buf));
+              }
+
+              //룸콘으로부터 SCAN_FINISH를 받음
+              else if(_rxHeaderType == SCAN_FINISH_TO_MASTER)
+              { 
+                //ACK 전송
+                DGsend(_thisAddress, _rxHeaderFrom, master_number, ACK, DGtemp_buf, sizeof(DGtemp_buf));
+                
+                //scan이 끝났음을 외부 마스터에게 알리기 전에 2초간 여유를 두고 모든 룸콘이 제어 메시지를 송신할 수 있도록 함
+                //내부 통신의 경우 TX Power를 조절하여 다른 zone의 패킷을 수신하지 못하도록 하는 것도 좋을 것 같음
+  
+                timeout = false;
+                controlTime = millis();
+  
+                //2초간 대기하며 자기 zone의 룸콘의 제어 메시지가 있는지를 확인함
+                while(millis() - controlTime < 2000)
+                {
+                  DGSetReceive();
+                  if(DGavailable() && DGrecvData(DGtemp_buf))
+                  {
+                    _rxHeaderFrom = DGheaderFrom();
+                    _rxHeaderTo = DGheaderTo();
+                    _rxHeaderMaster = DGheaderMaster();
+                    _rxHeaderType = DGheaderType();
+  
+                    //내 zone의 룸콘으로부터 제어메시지를 수신했을 경우
+                    if(_rxHeaderMaster == master_number && _rxHeaderType == RC_CONTROL_TO_SLAVE)
+                    {
+                      for(int i = 0;i < 10;i++)
+                        inputData[i] = DGtemp_buf[i];
+                        
+                      inputData[2] = 0x00;
+                      inputData[9] = 0x00;
+                      
+                      for(int i = 0;i < 9;i++)
+                        inputData[9] ^= inputData[i];
+                        
+                      DGsend(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, DGtemp_buf, sizeof(DGtemp_buf));
+                      RS485_Write_Read();
+                    }
+                  }
+                }
+  
+                //scan이 완료됐음을 외부 마스터에게 알림
+								USART_SendData(USART3, INTERNAL_SCAN_FINISH);
+								while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+              } // end of else if(_rxHeaderType == SCAN_FINISH_TO_MASTER) 
+            }
+          }
+        }
+      }
+      if(timeout)
+      {
+        //외부 마스터에게 내부 통신 에러임을 알림(INTERNAL_COM_FAIL)
+        USART_SendData(USART3, INTERNAL_COM_FAIL);
+				while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
+      }
+		}
+	}
+	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
 void RS485_Write_Read()
 {
 	uint8_t num = 0, checkSum = 0;
+	uint8_t receivedData[10];
 	
 	GPIO_SetBits(GPIOA, GPIO_Pin_1);
 
@@ -321,24 +476,24 @@ void RS485_Write_Read()
 		{
 			//printf("hi");
 			while(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == RESET);
-			outputData[num++] = USART_ReceiveData(USART2);
+			receivedData[num++] = USART_ReceiveData(USART2);
 		}
 		if(num == 10)
 			break;
 	}
 	printf("-----receive-----\r\n");
 	for(int i = 0;i < 10;i++)
-		printf("%x ", outputData[i]);
+		printf("%x ", receivedData[i]);
 	printf("\r\n");
 	for(int i = 0;i < 9;i++)
 	{
-		checkSum ^= outputData[i];
+		checkSum ^= receivedData[i];
 	}
-	if(checkSum == outputData[9])
+	if(checkSum == receivedData[9])
 	{
 		for(int i = 0;i < 10;i++)
 		{
-			outputData[i] = outputData[i];
+			outputData[i] = receivedData[i];
 			printf("%x ", outputData[i]);
 		}
 	}

@@ -46,7 +46,7 @@ void send_and_wait_for_scan();
 
 int main()
 {
-	DGInit(0x01, 0x00, 15);
+	DGInit(0x01, 0x00, 15); //zone의 외부 마스터 번호, 내 주소, 채널
 	_thisAddress = DGgetThisAddress();
 	DGSetReceive();
 
@@ -91,27 +91,27 @@ int main()
 				if(_rxHeaderMaster == master_number)
 				{
 
-					//?? ????? ??? ??
+					//스캔 요청하라는 명령을 수신
 					if(_rxHeaderType == SCAN_REQUEST_TO_RC)
 					{
-						//ACK ??
+						//ACK 전송
 						DGsend(_thisAddress, _rxHeaderFrom, master_number, ACK, DGtemp_buf, sizeof(DGtemp_buf));
 
-						//?? slave??? ??? ???? check?? ?? ?? ???
+						//어떤 slave로부터 응답을 받았는지 check하기 위한 배열 초기화
 						for(int j = 0;j <= num_of_slave;j++)
 							check_slave_scan_response[j] = false;
 
-						//?????? ??? ?? ???(??? ???? ???? ?? ?? ???) ??
+						//무선통신모듈 버퍼에 보낼 데이터(에어텍 내부통신 프로토콜 상태 요청 메시지) 저장
 						for(int j = 0;j < 10;j++)
 							DGtemp_buf[j] = roomcon_request[0][j];
 
-						//slave??? ???
+						//slave개수도 보내줌
 						DGtemp_buf[10] = num_of_slave;
 
-						//?? ??? ???
+						//스캔 메시지 송수신
 						send_and_wait_for_scan();
 
-						//????? ??? ?? slave? ??? ? ? ? ??? ??? scan ??
+						//스캔 응답을 보내지 않은 slave가 있다면 한 번 더 전체에 대하여 scan 요청
 						for(int j = 0;j <= num_of_slave;j++)
 						{
 							if(!check_slave_scan_response[j])
@@ -125,16 +125,15 @@ int main()
 							}
 						}
 
-						//?? ????? ??? ???? ??
+						//내부 마스터에게 스캔이 끝났음을 알림
 						DGsendToWaitAck(_thisAddress, 0x01, master_number, SCAN_FINISH_TO_MASTER, DGtemp_buf, sizeof(DGtemp_buf), 2000);              
 					}
 
-
 					
-					// ??? ??? ?? ??? ??
-					// (?? ???) -----CONTROL_TO_RC-----> (??) -----GW_CONTROL_TO_SLAVE-----> (????, ?? ???)
-					//                                                                                        (?? ???) -----CONTROL_RESPONSE_BROADCAST-----> (??, ????)  
-					//                                                                                                            ????? ACK? ??
+					// 게이트웨이가 제어요청을 보냄
+					// (내부 마스터) -----CONTROL_TO_RC-----> (룸콘) -----GW_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
+					//                                                                               (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)  
+					//                                                                                                   룸콘에게는 ACK의 역할
 					//
 					
 					else if(_rxHeaderType == CONTROL_TO_RC)
@@ -143,18 +142,18 @@ int main()
 							slave_answer[0][i] = DGtemp_buf[i];
 						unsigned long temp_time = millis();
 
-						//ACK ??
+						//ACK 전송
 						DGsend(_thisAddress, _rxHeaderFrom, master_number, ACK, DGtemp_buf, sizeof(DGtemp_buf));
 
-						// ?? ????? ?? ???? ?? ??? ??? ??? ?? ?????? ?? ?? ???? ??? ??
-						// (?? ???? ?? ??) -----CONTROL_TO_RC(??? ?? ????? ?? : 0xA5)-----> (??? ?? ??) -----??? ?? ????? ?? : 0xA5------> (??) -----??? ?? ????? ?? : 0xC5-----> (??? ?? ??)
+						// 내부 마스터에게 받은 상태대로 제어 요청을 보내기 위해서 실제 룸콘으로부터 제어 요청 데이터를 받기를 대기
+						// (내부 마스터의 통신 노드) -----CONTROL_TO_RC(에어텍 통신 프로토콜의 헤더 : 0xA5)-----> (룸콘의 통신 노드) -----에어텍 통신 프로토콜의 헤더 : 0xA5------> (룸콘) -----에어텍 통신 프로토콜의 헤더 : 0xC5-----> (룸콘의 통신 노드)
 						
-						while(temp_time > rs485_time[0]);  //rs485_time[x] : ?? ??? x?? slave?? ???? ???? ??? ?? ???? ??? ??? ??
+						while(temp_time > rs485_time[0]);  //rs485_time[x] : 실제 룸콘이 x번째 slave에게 보내야할 데이터를 룸콘의 통신노드에게 전송한 시간을 저장
 
 						for(int i = 0;i < 10;i++)
 							DGtemp_buf[i] = roomcon_control[i]; 
 
-						//broadcast? slave??? ???? ??? ??
+						//broadcast로 slave들에게 제어요청 메시지 전송
 						DGsendToWaitAck(_thisAddress, 0xFF, master_number, GW_CONTROL_TO_SLAVE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
 
 						rc_control = false;
@@ -162,16 +161,16 @@ int main()
 				}
 			}
 		}
-		//????????? ???? ? ???? ??, ???? ?? ??? ??? ?? ???? ???? ???
+		//게이트웨이로부터의 상태요청 및 제어요청 동안, 사용자가 직접 룸콘을 조작할 때의 제어요청 메시지는 미뤄짐
 
-		//???? ??? ??
+		//사용자가 룸콘을 조작
 		if(rc_control && millis() - controllingTime > 5000)
 		{
 			if(!DGavailable())
 			{
 				for(int i = 0;i < 10;i++)
 					DGtemp_buf[i] = roomcon_control[i];
-				DGsendToWaitAck(_thisAddress, 0xFF, master_number, RC_CONTROL_TO_SLAVE, DGtemp_buf, sizeof(DGtemp_buf), 70);
+				DGsendToWaitAck(_thisAddress, 0xFF, master_number, RC_CONTROL_TO_SLAVE, DGtemp_buf, sizeof(DGtemp_buf), 1000);
 				rc_control = false;
 			}
 		}
@@ -183,8 +182,8 @@ void send_and_wait_for_scan()
   DGsend(_thisAddress, 1, master_number, SCAN_REQUEST_TO_SLAVE, DGtemp_buf, sizeof(DGtemp_buf));
   scanningTime = millis();
 
-  //7??? slave? ?? ???? ??
-  while(millis() - scanningTime < 7000)
+  //10초동안 slave의 응답 메시지를 대기
+  while(millis() - scanningTime < 10000)
   {
     DGSetReceive();
     if(DGavailable())
@@ -200,11 +199,11 @@ void send_and_wait_for_scan()
         {
           byte temp = 0;
 
-          //checksum??
+          //checksum 계산
           for(int i = 0;i < 9;i++)
             temp ^= DGtemp_buf[i];
 
-          //checksum? ?? ??? ?? ?? ???? ??
+          //checksum이 맞을 경우에 스캔 응답 데이터를 저장
           if(DGtemp_buf[9] == temp)
           {
             for(int i = 0;i < 10;i++)
