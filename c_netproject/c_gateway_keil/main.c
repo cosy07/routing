@@ -65,11 +65,11 @@ unsigned long controlTime = 0;
 unsigned long waitTime = 0;
 
 
-bool DGcheckReceive[34];
+bool DGcheckReceive[34]; //1번 index부터 값이 들어감
 RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
 int DGmaster_num;
-int8_t DGparentMaster[34];
-byte DGunRecvCnt[34];
+int8_t DGparentMaster[34]; //1번 index부터 값이 들어감
+byte DGunRecvCnt[34]; //1번 index부터 값이 들어감
 byte DGtemp_buf[20];
 byte DGbuffer[20];
 
@@ -97,21 +97,21 @@ int main()
 		DGprintTree();
 		
 		// 내부 scan 명령을 내린 마스터로부터 10분 안에 응답을 받지 못하면 다음 마스터의 scan으로 넘어가도록
-		if(scanTime + 600000 < millis())
+		if(!nextScan && scanTime + 600000 < millis())
 		{ 
 			// scanMasterNum이 속한 zone의 에러
 			// 어떤 에러인지는 알아서..
 			nextScan = true;
-			if(++scanMasterNum > 32) //DGmaster_num)
+			if(++scanMasterNum >= 33) //DGmaster_num)
 				scanMasterNum = 1;
-		}nextScan = false; // for test
+		}//nextScan = false; // for test
 
 
 		//*****************************************************************************************************************제어 명령**********************************************************************************************************************************************
 		//slave 스캔 중이 아닐 때만 제어 메시지 전송, beControl이 set되어 있으면 해당 마스터에게 제어 메시지를 보냄
 		if(nextScan)
 		{
-			for(int beControlIndex = 0;beControlIndex <= 32;beControlIndex++) // 마스터 번호(유선 통신) : 0 ~ 0x1F, 무선통신 주소 : 1 ~ 0x20
+			for(int beControlIndex = 0;beControlIndex < 32;beControlIndex++) // 마스터 번호(유선 통신) : 0 ~ 0x1F, 무선통신 주소 : 1 ~ 0x20
 			{
 				if(beControl[beControlIndex])
 				{
@@ -234,7 +234,7 @@ int main()
 		//*****************************************************************************************************************내부 zone scan 명령**********************************************************************************************************************************************
 		// nextScan default value : true, 마스터로부터 내부 zone의 scan이 끝났다는 패킷을 받거나, 내부 zone으로부터 일정 시간이 지나도 scan 완료 패킷을 받지 못한다면 true로 set됨
 		// 각 zone의 scan 요청
-		// scanMasterNum : 현재 scan할 zone의 마스터 번호
+		// scanMasterNum : 현재 scan할 zone의 마스터 번호(무선 통신 주소)
 		
 		if(nextScan)
 		{
@@ -284,8 +284,8 @@ int main()
 					// ACK 전송
 					DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 					
-					nextScan = false;
-					scanTime = millis();
+					nextScan = false; //현재 내부 존 스캔 중임
+					scanTime = millis(); //내부 존 스캔 응답이 안 올 경우 다음 존 스캔을 위해서 timeout여부를 확인하기 위함
 				}
 				else if (DGgetRouteTo(address_i)->hop != 1)
 				{
@@ -466,7 +466,7 @@ int main()
 								// scan 완료 + 해당 zone의 내부 scan 완료
 								else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
 								{
-									if(++scanMasterNum > 32)//DGmaster_num)
+									if(++scanMasterNum >= 33)//DGmaster_num)
 										scanMasterNum = 1;
 									nextScan = true;
 								}
@@ -525,7 +525,7 @@ int main()
 				}
 				else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
 				{
-					if(++scanMasterNum > 32) //DGmaster_num)
+					if(++scanMasterNum >= 33) //DGmaster_num)
 						scanMasterNum = 1;
 					nextScan = true;
 				}
@@ -543,7 +543,7 @@ int main()
 
 
 		//다음 마스터 check
-		if(++checkMasterNum > 32) //DGmaster_num)
+		if(++checkMasterNum >= 33) //DGmaster_num)
 			checkMasterNum = 1;
 	}
 	

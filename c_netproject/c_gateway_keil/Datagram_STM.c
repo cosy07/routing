@@ -450,7 +450,7 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t
 						{
 							DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 							if (DGgetRouteTo(DG_rxHeaderDestination) != NULL)
-								DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(DG_rxHeaderDestination)->next_hop, DG_rxHeaderSource, DG_rxHeaderDestination, DG_rxHeaderType, NONE, NONE, NONE, DG_rxHeaderHop + 1, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+								DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(DG_rxHeaderDestination)->next_hop, DG_rxHeaderSource, DG_rxHeaderDestination, DG_rxHeaderType, NONE, NONE, NONE, DG_rxHeaderHop + 1, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM);
 						}
 						return true;
 					}
@@ -598,7 +598,7 @@ void DGFromGatewayToMaster() {
 					{
 						address_i = i;
 						DGtemp_buf[0] = address_i;
-						if (DGsendToWaitAck(DG_thisAddress, address_i, DG_thisAddress, address_i, REQUEST_DIRECT, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+						if (DGsendToWaitAck(DG_thisAddress, address_i, DG_thisAddress, address_i, REQUEST_DIRECT, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 						{
 							DGprintRecvPacketHeader();
 							printf("%d", i); //Serial.println("master is 1 hop node");
@@ -731,7 +731,7 @@ int8_t DGG_find_2ndRow_master(uint8_t* unknown_node_list)
 
 
 		//1hop? ?? ???..test ??? ?? ??? ???? ???? ?? ??.
-		if (!DGsendToWaitAck(DG_thisAddress, node_list[i], DG_thisAddress, node_list[i], R2_REQUEST_TYPE, number_of_unknown_node, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+		if (!DGsendToWaitAck(DG_thisAddress, node_list[i], DG_thisAddress, node_list[i], R2_REQUEST_TYPE, number_of_unknown_node, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 		{//from, to, src, dst, type, data, flags, seqnum, hop, payload, size of payload, timeout
 		 //DGdeleteRouteTo(node_list[i]);
 			DGcheckReceive[node_list[i]] = false;
@@ -879,7 +879,7 @@ bool DGG_request_path_one_by_one(uint8_t unknown_address, uint8_t row_number, ui
 
 		uint8_t next_hop = DGgetRouteTo(node_list[i])->next_hop;
 
-		if (!DGsendToWaitAck(DG_thisAddress, next_hop, DG_thisAddress, node_list[i], type, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+		if (!DGsendToWaitAck(DG_thisAddress, next_hop, DG_thisAddress, node_list[i], type, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 		{
 			DGcheckReceive[next_hop] = false;
 			DGparentMaster[next_hop] = -1;
@@ -1079,7 +1079,7 @@ void DGG_find_error_node(uint8_t address)
 	}
 	for (int i = DGgetRouteTo(address)->hop - 1; i >= 0; i--)
 	{
-		if (!DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, path[i], CHECK_ROUTING, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000))
+		if (!DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, path[i], CHECK_ROUTING, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 		{
 			//DGdeleteRouteTo(path[i]);
 			if (DGunRecvCnt[path[i]]++ > MAX_UN_RECV)
@@ -1223,7 +1223,7 @@ void DGM_find2ndRowMasters()
 		//DGtemp_buf[i * 2 + 1] = lowByte(childNodeList[i]);
 	}
 	//from, to, src, dst, type, data, flags, seqnum, hop
-	DGsendToWaitAck(DG_thisAddress, DG_thisAddress & 0x00, DG_thisAddress, DG_thisAddress & 0x00, R2_REQUEST_ACK_TYPE, child_node_num, NONE, NONE, 1, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+	DGsendToWaitAck(DG_thisAddress, DG_thisAddress & 0x00, DG_thisAddress, DG_thisAddress & 0x00, R2_REQUEST_ACK_TYPE, child_node_num, NONE, NONE, 1, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM);
 }
 /****************************************************************
 *FUNCTION NAME:M_masterSendRoutingReply( )
@@ -1290,7 +1290,7 @@ void DGnewMaster()
 		}
 	}
 
-	while (!DGsendToWaitAck(DG_thisAddress, candidate_parent, DG_thisAddress, candidate_parent, NEW_NODE_REGISTER, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 1000))
+	while (!DGsendToWaitAck(DG_thisAddress, candidate_parent, DG_thisAddress, candidate_parent, NEW_NODE_REGISTER, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 	{
 		while (millis() - waitTime < 10000)
 		{
@@ -1329,7 +1329,7 @@ void DGnewMaster()
 			{
 				if (DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == CHECK_ROUTING)
 				{
-					DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(DG_thisAddress & 0x00)->next_hop, DG_thisAddress, DG_thisAddress & 0x00, CHECK_ROUTING_ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), 2000);
+					DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(DG_thisAddress & 0x00)->next_hop, DG_thisAddress, DG_thisAddress & 0x00, CHECK_ROUTING_ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM);
 					receiveFromG = true;
 					break;
 				}
