@@ -9,67 +9,26 @@
 
 ////////////////////////////////////////////////////////////////////
 // Public methods
-/*void DatagramInit(uint8_t gatewayNumber, uint8_t thisAddress)
+
+
+/****************************************************************
+*FUNCTION NAME : DGInit(uint8_t gatewayNumber, uint8_t thisAddress, byte ch)
+*FUNCTION      : 주소 변수에 주소 넣기, 채널 설정과 같은 초기화
+*INPUT         : gatewayNumber(층 번호), thisAddress(층에서 내 주소), ch(사용할 채널)
+*OUTPUT        : NONE
+****************************************************************/
+void DGInit(uint8_t gatewayNumber, uint8_t thisAddress, byte ch)
 {
-	//DG_driver = driver;
 	DG_thisAddress = thisAddress;
 	DGgatewayNumber = gatewayNumber;
-
-
-	DGmaster_num = 2;
-	DGcandidateAddress = 0;
-	DGcandidateRSSI = 0;
-
-	DGreceivedType = 0;//To avoid receiving from Master that has same hop
-
-	DGgatewayNumber = 0;
-
-	DGsendingTime = -60000;
-	for (int i = 0; i < 34; i++)
-	{
-		DGcheckReceive[i] = false;
-		DGparentMaster[i] = -1;
-		DGunRecvCnt[i] = 0;
-	}
-
-
-
-
-	//_retransmissions = 0;
-	DGclearRoutingTable();
-	//DGgatewayNumber = thisAddress >> 10;
-	DGmasterBroadcastAddress = 0xFF;//= convertToAddress(DGgatewayNumber, 31, 0);
-
-
-	for (int i = 0; i < 34; i++)
-	{
-		DGcheckReceive[i] = false;
-		DGparentMaster[i] = -1;
-		DGunRecvCnt[i] = 0;
-	}
-
-	DGsetThisAddress(DG_thisAddress);
-	e_Init();
-
-}*/
-////////////////////////////////////////////////////////////////////
-// Public methods
-void DGInit(uint8_t gatewayNumber, uint8_t thisAddress, byte ch)  // Setup Channel number
-{
-	//DG_driver = driver;
-	DG_thisAddress = thisAddress;
-	DGgatewayNumber = gatewayNumber;
-
 
 	DGmaster_num = 1;
 	DGcandidateAddress = 0;
 	DGcandidateRSSI = 0;
-
-	DGreceivedType = 0;//To avoid receiving from Master that has same hop
-
+	DGreceivedType = 0;
 	DGgatewayNumber = 0;
-
 	DGsendingTime = -60000;
+	
 	for (int i = 0; i < 34; i++)
 	{
 		DGcheckReceive[i] = false;
@@ -77,21 +36,20 @@ void DGInit(uint8_t gatewayNumber, uint8_t thisAddress, byte ch)  // Setup Chann
 		DGunRecvCnt[i] = 0;
 	}
 
-
-
-
-	//_retransmissions = 0;
 	DGclearRoutingTable();
-	//DGgatewayNumber = thisAddress >> 10;
-	DGmasterBroadcastAddress = 0xFF;//= convertToAddress(DGgatewayNumber, 31, 0);
+	DGmasterBroadcastAddress = 0xFF;
 
 	DGsetThisAddress(DG_thisAddress);
-	e_Init(ch);
-	ch = ch;
+	e_Init(ch);// Setup Channel number
 }
 
-////////////////////////////////////////////////////////////////////
-// Public methods
+
+/****************************************************************
+*FUNCTION NAME : DGSetReceive()
+*FUNCTION      : 통신 모듈(cc1120)을 수신가능 상태로
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGSetReceive()
 {
 	e_SetReceive();
@@ -189,30 +147,30 @@ uint8_t DGgetThisAddress()
 {
 	return DG_thisAddress;
 }
+
+
+/****************************************************************
+*FUNCTION NAME : DGavailable()
+*FUNCTION      : 패킷을 수신중인지 확인
+*INPUT         : NONE
+*OUTPUT        : 수신 중이라면 true return
+****************************************************************/
 bool DGavailable()
 {
-	/////test?/////
-	//return true;
-	/////test?/////
-
-	if (e_CheckReceiveFlag()) {
+	if (e_CheckReceiveFlag())
 		return true;
-	}
-	else {
+	else
 		return false;
-	}
-
 }
-////////////////////////////////////////////////////////////////////
-/****************************************************************
-*FUNCTION NAME:  recvData (OLD recvfrom(buf, len, &_from, &_to, &_id, &_flags)) )
-*FUNCTION     : It receives data and stores data into buf,
-From, To, Source, Type, Data, Flags, SeqNum are stored.
-*INPUT        :none
-*OUTPUT       : The size of received data excluding headers
-****************************************************************/
 
-byte  DGrecvData(uint8_t* buf)
+
+/****************************************************************
+*FUNCTION NAME : DGrecvData(uint8_t* buf)
+*FUNCTION      : It receives data and stores data into buf
+*INPUT         : NONE
+*OUTPUT        : The size of received data excluding headers
+****************************************************************/
+byte DGrecvData(uint8_t* buf)
 {
 	byte size;
 	if (size = e_ReceiveData(buf))
@@ -228,14 +186,16 @@ byte  DGrecvData(uint8_t* buf)
 		DG_rxHeaderHop = DGheaderHop();
 		return (size - CC1120_HEADER_LEN);
 	}
-	//routing ????? ??? ?? ack????(type ?? routing type? ??? ?? operation message)
-	//?? node?? ??? node? ??? ??..
 	return 0;
 }
 
-////////////////////////////////////////////////////////////////////
-// Public methods
 
+/****************************************************************
+*FUNCTION NAME : DGaddRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8_t hop, unsigned long lastTime)
+*FUNCTION      : dest를 라우팅 테이블에 등록
+*INPUT         : dest(목적지), next_hop, state, hop(hop count), lastTime
+*OUTPUT        : NONE
+****************************************************************/
 void DGaddRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8_t hop, unsigned long lastTime)
 {
 	uint8_t i;
@@ -282,7 +242,13 @@ void DGaddRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8_t hop, 
 	}
 }
 
-////////////////////////////////////////////////////////////////////
+
+/****************************************************************
+*FUNCTION NAME : DGgetRouteTo(uint8_t  dest)
+*FUNCTION      : 라우팅 테이블에서 dest에 해당하는 행을 찾아줌
+*INPUT         : dest(목적지)
+*OUTPUT        : 라우팅 테이블에서 dest에 해당하는 행의 주소
+****************************************************************/
 RoutingTableEntry* DGgetRouteTo(uint8_t  dest)
 {
 	uint8_t i;
@@ -295,36 +261,50 @@ RoutingTableEntry* DGgetRouteTo(uint8_t  dest)
 	return NULL;
 }
 
-////////////////////////////////////////////////////////////////////
+
+/****************************************************************
+*FUNCTION NAME : DGdeleteRoute(uint8_t index)
+*FUNCTION      : 라우팅 테이블 엔트리를 지움
+*INPUT         : 지우고자 하는 행의 index
+*OUTPUT        : NONE
+****************************************************************/
 void DGdeleteRoute(uint8_t index)
 {
 	// Delete a route by copying following routes on top of it
-	//memcpy(&_routes[index], &_routes[index + 1], sizeof(RoutingTableEntry) * (ROUTING_TABLE_SIZE - index - 1));
-	uint8_t i;
-	for(i = index;i < ROUTING_TABLE_SIZE;i++)
-	{
-		_routes[i].dest = _routes[i+1].dest;
-		_routes[i].next_hop = _routes[i+1].next_hop;
-		_routes[i].hop = _routes[i+1].hop;
-		_routes[i].state = _routes[i+1].state;
-		_routes[i].lastTime = _routes[i+1].lastTime;
-	}
+	memcpy(&_routes[index], &_routes[index + 1], 
+					sizeof(RoutingTableEntry) * (ROUTING_TABLE_SIZE - index - 1));
 	_routes[ROUTING_TABLE_SIZE - 1].state = Invalid;
 }
 
-////////////////////////////////////////////////////////////////////
+
+/****************************************************************
+*FUNCTION NAME : DGprintRoutingTable()
+*FUNCTION      : 라우팅 테이블 전체를 출력
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGprintRoutingTable()
 {
-	//#ifdef HAVE_SERIAL
 	uint8_t i;
 	for (i = 0; i < ROUTING_TABLE_SIZE; i++)
 	{
-		printf("%d Dest: %d Next Hop: %d State: %d Hop: %d Last Time: %d\r\n", i, _routes[i].dest, _routes[i].next_hop, _routes[i].state, _routes[i].hop, _routes[i].lastTime);
+		printf("%d Dest: %d Next Hop: %d State: %d Hop: %d Last Time: %d\r\n", 
+						i, 
+						_routes[i].dest, 
+						_routes[i].next_hop, 
+						_routes[i].state, 
+						_routes[i].hop, 
+						_routes[i].lastTime);
 	}
-	//#endif
 }
 
-////////////////////////////////////////////////////////////////////
+
+/****************************************************************
+*FUNCTION NAME : DGdeleteRouteTo(uint8_t dest)
+*FUNCTION      : 라우팅 테이블에서 dest를 지움
+*INPUT         : dest (지우고자 하는 주소)
+*OUTPUT        : 성공 여부
+****************************************************************/
 bool DGdeleteRouteTo(uint8_t dest)
 {
 	uint8_t i;
@@ -340,7 +320,13 @@ bool DGdeleteRouteTo(uint8_t dest)
 	return false;
 }
 
-////////////////////////////////////////////////////////////////////
+
+/****************************************************************
+*FUNCTION NAME : DGclearRoutingTable()
+*FUNCTION      : 라우팅 테이블 clear
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGclearRoutingTable()
 {
 	uint8_t i;
@@ -353,7 +339,13 @@ void DGclearRoutingTable()
 	}
 }
 
-////////////////////////////////////////////////////////////////////
+
+/****************************************************************
+*FUNCTION NAME : DGcheckRoutingTable()
+*FUNCTION      : 오랜기간 동안 사용되지 않는 라우팅 테이블의 엔트리는 지움
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGcheckRoutingTable()
 {
 	printf("checkRoutingTable()\r\n");
@@ -369,26 +361,29 @@ void DGcheckRoutingTable()
 	DGprintRoutingTable();
 }
 
-int DGfind_child_node(uint8_t* child_node)
-{
-	int cnt = 0;
-	for (int8_t i = 0; i < ROUTING_TABLE_SIZE; i++)
-	{
-		if (_routes[i].state == Valid && _routes[i].dest != (DG_thisAddress & 0x00))
-		{
-			child_node[cnt++] = _routes[i].dest;
-		}
-	}
-	return cnt;
-}
-//////////////////////////////////???? ??? ?? ??//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//=====================================================================================================
-// 2017-04-26 ver.1
+
+/****************************************************************
+*FUNCTION NAME : DGsend(uint8_t from, 
+												uint8_t to, 
+												uint8_t src, 
+												uint8_t dst, 
+												uint8_t type, 
+												uint8_t data, 
+												uint8_t flags, 
+												uint8_t seqNum, 
+												uint8_t hop, 
+												uint8_t* DGtemp_buf, 
+												uint8_t size)
+
+*FUNCTION      : 데이터 전송
+*INPUT         : from, to, src, dst, type, data, flags, seqNum, hop, DGtemp_buf, size
+*OUTPUT        : NONE
+****************************************************************/
 void DGsend(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* DGtemp_buf, uint8_t size)
 {
 	if (type >= 10 && DGgetRouteTo(dst) == NULL)
 		return;
-	while (millis() - DGsendingTime < 1000);//??? ?? 20?? ??? reset???? DGsendingTime ?? int?? ???
+	while (millis() - DGsendingTime < 1000); // 20일에 한 번씩 reset된다고 하면 sendingTime의 type은 int여도 됨
 	DGsetHeaderFrom(from);
 	DGsetHeaderTo(to);
 	DGsetHeaderSource(src);
@@ -401,6 +396,26 @@ void DGsend(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, ui
 	e_SendData(DGtemp_buf, size);
 	DGsendingTime = millis();
 }
+
+//보류
+/****************************************************************
+*FUNCTION NAME : DGsendToWaitAck(uint8_t from, 
+																 uint8_t to, 
+																 uint8_t src, 
+																 uint8_t dst, 
+																 uint8_t type, 
+																 uint8_t data, 
+																 uint8_t flags, 
+																 uint8_t seqNum, 
+																 uint8_t hop, 
+																 uint8_t* DGtemp_buf, 
+																 uint8_t size, 
+																 unsigned long time)
+
+*FUNCTION      : 전송 후 hop to hop ACK을 받을 때까지 대기
+*INPUT         : from, to, src, dst, type, data, flags, seqNum, hoop, DGtemp_buf, size, time
+*OUTPUT        : ACK받았는지 유무
+****************************************************************/
 bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t type, uint8_t data, uint8_t flags, uint8_t seqNum, uint8_t hop, uint8_t* DGtemp_buf, uint8_t size, unsigned long time)
 {
 	if (type >= 11 && DGgetRouteTo(dst) == NULL)
@@ -421,7 +436,6 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t
 	for (int i = 0; i < DEFAULT_RETRIES; i++)
 	{
 		while (millis() - DGsendingTime < 1000);
-		//DGsendingTime = millis();//??? ?? 20?? ??? reset???? DGsendingTime ?? int?? ???, TIME_TERM? 1000 ???? ?? ??? ??? ACK ?? ? send???? ??? ?? ? ?? ?? ??? ???? ??
 
 		printf("retry : %d", i);
 		e_SendData(DGbuffer, length);
@@ -440,13 +454,13 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t
 							DGaddRouteTo(DG_rxHeaderFrom, DG_rxHeaderFrom, Valid, 1, millis());
 						return true;
 					}
-					if (type == R2_REQUEST_TYPE && DG_rxHeaderType == R2_REQUEST_REAL_TYPE)//gateway?? round2??? 1hop master?? ?? master? gateway?? ack? ????, ??? ?? ??
+					if (type == R2_REQUEST_TYPE	 && DG_rxHeaderType == R2_REQUEST_REAL_TYPE)//gateway에서 R2요청을 1hop master에게 하고 master가 gateway에게 ACK을 보냈는데 못받았을 경우 대비
 						return true;
 					if (type == REQUEST_MULTI_HOP && DG_rxHeaderType == REQUEST_MULTI_HOP)
 						return true;
 					if ((DG_rxHeaderType == CHECK_ROUTING_ACK || DG_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY) && type == CHECK_ROUTING)
 					{
-						if (DG_thisAddress != (DG_thisAddress & 0x00))//master?
+						if (DG_thisAddress != (DG_thisAddress & 0x00))//master면
 						{
 							DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 							if (DGgetRouteTo(DG_rxHeaderDestination) != NULL)
@@ -465,6 +479,14 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t src, uint8_t dst, uint8_t
 	}
 	return false;
 }
+
+
+/****************************************************************
+*FUNCTION NAME : DGprintRecvPacketHeader()
+*FUNCTION      : 패킷 헤더 출력
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGprintRecvPacketHeader()
 {
 	printf("-----------------------------------------------------------------------------\r\n");
@@ -478,6 +500,14 @@ void DGprintRecvPacketHeader()
 	printf("DG_rxHeaderSeqNum : %d\r\n", DG_rxHeaderSeqNum);
 	printf("DG_rxHeaderHop : %d\r\n", DG_rxHeaderHop);
 }
+
+
+/****************************************************************
+*FUNCTION NAME : DGprintPath()
+*FUNCTION      : 게이트웨이가 각 노드로 가기까지의 경로 출력
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGprintPath()
 {
 	uint8_t temp_address;
@@ -486,17 +516,29 @@ void DGprintPath()
 	for (uint8_t i = 1; i <= DGmaster_num; i++)
 	{
 		printf("%d master : ", i);
-		temp_address = i;// convertToAddress(DGgatewayNumber, i, 0);
+		temp_address = i;
 		while (temp_address != DG_thisAddress)
 		{
 			printf("%d -> ", temp_address);
-			index = temp_address;// convertToMasterNumber(temp_address);
+			index = temp_address;
 			temp_address = DGparentMaster[index];
 		}
 		printf("%d\r\n", DG_thisAddress);
 	}
 	printf("--------------\r\n");
 }
+
+
+/****************************************************************
+*FUNCTION NAME : DGgetPath(uint8_t address, uint8_t* path)
+*FUNCTION      : address로 가기까지의 경로를 path에 저장, G가 사용
+								 if G -> M1 -> M2 -> M3 일 때 address가 M3라면
+								 path[0] : M3
+								 path[1] : M2
+								 path[2] : M1
+*INPUT         : address, path
+*OUTPUT        : NONE
+****************************************************************/
 void DGgetPath(uint8_t address, uint8_t* path)
 {
 	uint8_t temp_address = address;
@@ -505,59 +547,34 @@ void DGgetPath(uint8_t address, uint8_t* path)
 	while (temp_address != DG_thisAddress)
 	{
 		path[cnt++] = temp_address;
-		index = temp_address;// convertToMasterNumber(temp_address);
+		index = temp_address;
 		temp_address = DGparentMaster[index];
 	}
 }
+
+
+/****************************************************************
+*FUNCTION NAME : DGprintTree()
+*FUNCTION      : tree형태로 출력시켜주는 tool사용을 위한 함수
+*INPUT         : NONE
+*OUTPUT        : NONE
+****************************************************************/
 void DGprintTree()
 {
-	printf("abcde %d\r\n", 0);// convertToAddress(DGgatewayNumber, 0, 0));
+	printf("printTree %d\r\n", 0);
 	for (uint8_t i = 1; i <= DGmaster_num; i++)
 	{
 		if (DGcheckReceive[i])
-		{
-			printf("edcba %d %d\r\n", DGparentMaster[i], i);// convertToAddress(DGgatewayNumber, i, 0));
-		}
+			printf("treeComponent %d %d\r\n", DGparentMaster[i], i);
 	}
 }
-/****************************************************************
-*FUNCTION NAME:  convertToAddress(uint8_t DGgatewayNumber, uint8_t masterNumber,uint8_t slaveNumber)
-*FUNCTION     :  2 ??? ??? ??? ??
-*INPUT        : ??? ??, ??? ?? ??, ???? ??
-*OUTPUT       : 2???  ?? ??
-****************************************************************/
-/*uint16_t convertToAddress(uint8_t DGgatewayNumber, uint8_t masterNumber, uint8_t slaveNumber)
-{
-if (DGgatewayNumber > 64 || masterNumber > 31 || slaveNumber > 16)
-return -1;
 
-uint16_t address;
-address = DGgatewayNumber << 5;
-address = address | masterNumber;
-address = address << 5;
-address = address | slaveNumber;
-return address;
 
-}*/
 /****************************************************************
-*FUNCTION NAME:  convertToMasterNumber(uint16_t address)
-*FUNCTION     :  ???? ??? ??? ??? ??
-*INPUT        : 2??? ?? ??
-*OUTPUT       : ??? ??
-****************************************************************/
-/*uint16_t convertToMasterNumber(uint16_t address)
-{
-uint16_t masterNum;
-address = address & 0x03FF;
-masterNum = (uint16_t)address >> 5;
-return masterNum;
-}*/
-/****************************************************************
-*FUNCTION NAME: G_get_i_row_node_list(uint8_t row_number, uint16_t *node_list )
-*FUNCTION     : Gatway gets the list of node on the i_th row
-
-*INPUT        : row number
-*OUTPUT       : return value: number of node on the i_th row
+*FUNCTION NAME : DGG_get_i_row_node_list(uint8_t row_number, uint8_t *node_list)
+*FUNCTION      : Gatway gets the list of node on the i_th row
+*INPUT         : row number
+*OUTPUT        : return value: number of node on the i_th row
 ****************************************************************/
 uint8_t DGG_get_i_row_node_list(uint8_t row_number, uint8_t *node_list)
 {
@@ -572,11 +589,17 @@ uint8_t DGG_get_i_row_node_list(uint8_t row_number, uint8_t *node_list)
 	}
 	return j;
 }
+
+
 /****************************************************************
-*FUNCTION NAME:FromGatewatyToMaster
-*FUNCTION     :
-*INPUT        :
-*OUTPUT       :
+*FUNCTION NAME : DGFromGatewayToMaster()
+*FUNCTION      : 게이트웨이가 초기 라우팅과정을 수행하는 함수
+								 DGG_find_1stRow_master()
+								 DGG_find_2ndRow_master()
+								 DGG_find_multihop_node()
+								 를 차례로 호출하며 hop count가 작은 노드부터 찾아 나간다.
+*INPUT         : NONE
+*OUTPUT        : NONE
 ****************************************************************/
 void DGFromGatewayToMaster() {
 	uint8_t address_i;
@@ -591,36 +614,42 @@ void DGFromGatewayToMaster() {
 		{
 			if (DGG_find_multihop_node(number_of_unknown_node, unknown_node_list))
 			{
+				
+				// multi hop 라우팅 요청후에도 경로 설정이 되지 않은 노드들에게는 1hop요청 메시지부터 전송하여 다시 경로 설정을 요청함
 				printf("REQUEST_DIRECT-------------------------------\r\n");
 				for (int i = 1; i <= DGmaster_num; i++)
 				{
-					if (!DGcheckReceive[i])
+					if (!DGcheckReceive[i]) //경로 설정이 되지 않은 노드
 					{
 						address_i = i;
 						DGtemp_buf[0] = address_i;
+						
+						// 1hop으로 가정하고 direct로 물어봄
 						if (DGsendToWaitAck(DG_thisAddress, address_i, DG_thisAddress, address_i, REQUEST_DIRECT, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 						{
 							DGprintRecvPacketHeader();
-							printf("%d", i); //Serial.println("master is 1 hop node");
+							printf("%d", i);
 							DGcheckReceive[i] = true;
 							DGparentMaster[i] = DG_thisAddress;
 							DGaddRouteTo(DG_rxHeaderFrom, DG_rxHeaderFrom, Valid, 1, millis());
 							DGprintRoutingTable();
 						}
+						
+						// 1hop요청 후에 응답이 안오면 1hop 노드들부터 차례대로 요청
 						else
 						{
-							uint8_t row_number = 1;
+							uint8_t row_number = 1; // 처음엔 1hop노드들을 알아와서 그 노드들에게 물어봄
 							uint8_t number_of_node;
 							uint8_t node_list[34] = { 0 };
 
-							number_of_node = DGG_get_i_row_node_list(row_number, node_list);  // the gateway needs the list of 2nd row masters which will send Multi_HOP_REQUEST
-																							// to unknown nodes.
-							while (number_of_node != 0)
+							number_of_node = DGG_get_i_row_node_list(row_number, node_list);
+																			
+							while (number_of_node != 0) 
 							{
 								if (DGG_request_path_one_by_one(address_i, row_number, node_list, number_of_node, REQUEST_DIRECT))
 									break;
-								number_of_node = DGG_get_i_row_node_list(row_number, node_list);
 								row_number++;
+								number_of_node = DGG_get_i_row_node_list(row_number, node_list);
 							}
 						}
 					}
@@ -629,73 +658,80 @@ void DGFromGatewayToMaster() {
 		}
 	}
 }
+
+
 /****************************************************************
-*FUNCTION NAME:  G_find_1stRow_master( )
-*FUNCTION     : Gateway? broadcast? master??? ??? ?? ???? ??
-??? ????.
-- ??? ????, ??? ???? ??
-*INPUT        : none
-*OUTPUT       : 1 hop ???? ??
+*FUNCTION NAME : DGG_find_1stRow_master()
+*FUNCTION      : Gateway가 1hop 노드들을 찾음 
+								 라우팅 시작 메세지를 R_GATEWAY_SEND_NUM만큼 전송 후
+                 각 master들에게 1:1로 라우팅 요청 패킷을 전송
+								 master로부터 응답이 도착하면 패킷 수신율을 고려하여 라우팅 테이블에 삽입
+*INPUT         : NONE
+*OUTPUT        : 라우팅이 완료된 1 hop 노드들의 갯수
 ****************************************************************/
 int8_t DGG_find_1stRow_master()
 {
 	uint8_t num_of_routed_nodes = 0;
 	printf("send broadcast request message\r\n");
 	printf("%d\r\n", DGmasterBroadcastAddress);
-	for (int i = 0; i < R_GATEWAY_SEND_NUM; i++)
+	for (int i = 0; i < R_GATEWAY_SEND_NUM; i++) // 마스터들의 패킷 수신율 계산을 위해서 R_GATEWAY_SEND_NUM번 라우팅 시작 패킷을 전송
 	{
 		DGsend(DG_thisAddress, DGmasterBroadcastAddress, DG_thisAddress, DGmasterBroadcastAddress, REQUEST_BROADCAST, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 	}
 	for (int i = 1; i <= DGmaster_num; i++)
 	{
-		/////////??? ???? ?? ?????? ack 5? ?? ? ?? ??? ???..?? ???, master 2 hop???? ??? ????? 2hop?? 5? ??? ??,,
-		uint8_t dst = i;// convertToAddress(DGgatewayNumber, i, 0);
+		uint8_t dst = i;
 		uint8_t recvAckNum = 0;
-		for (int j = 0; j < 1; j++)//DEFAULT_RETRIES; j++)
+		DGsend(DG_thisAddress, dst, DG_thisAddress, dst, REQUEST_TYPE, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
+		// 각 노드들에게 1:1로 경로 설정을 요청
+		
+		DGstartTime = millis();
+		recvAckNum = 0;
+		while (millis() - DGstartTime < TIME_TERM * R_MASTER_SEND_NUM)
 		{
-			printf("retry : %d", j);
-			DGsend(DG_thisAddress, dst, DG_thisAddress, dst, REQUEST_TYPE, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
-			DGstartTime = millis();
-			recvAckNum = 0;
-			while (millis() - DGstartTime < TIME_TERM * 5)//?? TIME_TERM??? ???? ???? ???? ?????? ??? ???? ??????? ??? ?? ?? ???? ??? ??? ????? ?????? ??..
+			DGSetReceive();
+			if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == dst && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_ACK_TYPE)
 			{
-				DGSetReceive();
-				if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == dst && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_ACK_TYPE)
+				recvAckNum++; // 수신된 응답 패킷 개수를 카운트함
+				if (recvAckNum >= R_MASTER_SEND_NUM * 0.8) // 라우팅 응답 패킷 수신율이 80%이상일 경우에만 라우팅 테이블에 등록시킴
 				{
-					recvAckNum++;
-					if (recvAckNum >= R_MASTER_SEND_NUM * 0.8)
-					{
-						printf("%d", recvAckNum);
-						printf("%d", R_MASTER_SEND_NUM * 0.8);
-						DGaddRouteTo(DG_rxHeaderFrom, DG_rxHeaderFrom, Valid, 1, millis());
-						DGprintRecvPacketHeader();
-						printf("%d master is 1 hop node", i);
-						DGcheckReceive[i] = true;
-						DGparentMaster[i] = DG_thisAddress;
-						DGprintRoutingTable();
-						DGprintTree();
-						num_of_routed_nodes++;
-						j = DEFAULT_RETRIES;
-						break;
-					}
+					printf("%d", recvAckNum);
+					printf("%f", R_MASTER_SEND_NUM * 0.8);
+					DGaddRouteTo(DG_rxHeaderFrom, DG_rxHeaderFrom, Valid, 1, millis());
+					DGprintRecvPacketHeader();
+					printf("%d master is 1 hop node", i);
+					DGcheckReceive[i] = true;
+					DGparentMaster[i] = DG_thisAddress;
+					DGprintRoutingTable();
+					DGprintTree();
+					num_of_routed_nodes++;
+					break;
 				}
 			}
-			delay(TIME_TERM);
 		}
+		delay(TIME_TERM);
 	}
 	return num_of_routed_nodes;
 }
-/****************************************************************
-*FUNCTION NAME:  G_find_2ndRow_master( )
-*FUNCTION     :  Gateway?  1 hop ?????, ???? ?? ???? ??? ????? ???? ???.
 
-*INPUT        : unknown_node for next hop
-*OUTPUT       : routing ?? ??? ??
+
+/****************************************************************
+*FUNCTION NAME : DGG_find_2ndRow_master(uint8_t* unknown_node_list)
+*FUNCTION      : Gateway가 1hop 노드들에게 라우팅이 안된 노드들의 주소를 payload에 넣어 전송함
+*INPUT         : unknown_node_list (라우팅이 되지 낳은 노드의 주소를 담은 패열)
+*OUTPUT        : routing안된 노드의 개수
 ****************************************************************/
+// <2hop>
+// 1. (G) -----R2_REQUEST_TYPE-----> (1hop master)
+// 2. (G) <-----------ACK----------- (1hop master)
+// 3.                                (1hop master) -----R2_REQUEST_REAL_TYPE-----> (2hop master)
+// 4.                                (1hop master) <-----R2_REQUEST_ACK_TYPE------ (2hop master)
+// 5. (G) <--R2_REQUEST_ACK_TYPE---- (1hop master)
+
 int8_t DGG_find_2ndRow_master(uint8_t* unknown_node_list)
 {
+	//row2 : 1hop인 master들에게 아직 라우팅이 안된 노드들의 주소를 보내서 근처에 노드들이 있는지 찾아달라고 요청
 	printf("[row2]\r\n");
-	//row2 : 1hop? master??? ?? ???? ?? ???? ??? ??? ??? ???? ??? ???
 
 	uint8_t node_list[34] = { 0 };
 	uint8_t number_of_node;
@@ -705,95 +741,57 @@ int8_t DGG_find_2ndRow_master(uint8_t* unknown_node_list)
 
 	printf("1hop's num : %d\r\n", number_of_node);
 
-	for (uint8_t i = 0; i < number_of_node; i++)//1hop node??? ??
+	for (uint8_t i = 0; i < number_of_node; i++) // 1hop node들에게 2hop 노드들을 찾아달라고 요청
 	{
 		number_of_unknown_node = 0;
-		for (int i = 1; i <= DGmaster_num; i++)
+		/*for (int i = 1; i <= DGmaster_num; i++)
 		{
 			printf("%d ", DGcheckReceive[i]);
 		}
-		printf("\r\n");
-		for (uint8_t j = 1; j <= DGmaster_num; j++)//routing? ?? ???? ??? table? ??? ???
+		printf("\r\n");*/
+		for (uint8_t j = 1; j <= DGmaster_num; j++) // routing이 안된 노드들의 주소를 라우팅 테이블을 뒤져서 알아냄
 		{
 			if (!DGcheckReceive[j])
 			{
-				uint8_t address = j;// convertToAddress(DGgatewayNumber, j, 0);
-									//routing? ?? ??? ??? ???? ??? ???.
+				uint8_t address = j;
 				printf("unreceive : %d\r\n", address);
-				DGtemp_buf[number_of_unknown_node] = address;
-				//DGtemp_buf[number_of_unknown_node * 2 + 1] = (uint8_t)(0x00FF & address);
+				DGtemp_buf[number_of_unknown_node] = address; // 라우팅이 안된 노드의 주소를 payload에 적음
 				number_of_unknown_node++;
 			}
 		}
 		if (number_of_unknown_node == 0)
 			return 0;
+		
 		printf("send to %d\r\n", node_list[i]);
 
-
-		//1hop? ?? ???..test ??? ?? ??? ???? ???? ?? ??.
-		if (!DGsendToWaitAck(DG_thisAddress, node_list[i], DG_thisAddress, node_list[i], R2_REQUEST_TYPE, number_of_unknown_node, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
-		{//from, to, src, dst, type, data, flags, seqnum, hop, payload, size of payload, timeout
-		 //DGdeleteRouteTo(node_list[i]);
+													//from, to, src, dst, type, data, flags, seqnum, hop, payload, size of payload, timeout
+		if (!DGsendToWaitAck(DG_thisAddress, node_list[i], DG_thisAddress, node_list[i], R2_REQUEST_TYPE	, number_of_unknown_node, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
+		{ //1hop인 노드에게 요청을 했으나 ACK을 받지 못했을 경우
 			DGcheckReceive[node_list[i]] = false;
 			DGparentMaster[node_list[i]] = 0;
-			/*for (uint8_t j = 0; j < i; j++)
-			{
-			DGtemp_buf[0] = (uint8_t)node_list[i] >> 8;
-			DGtemp_buf[1] = (uint8_t)(0x00FF & node_list[i]);
-			if (DGcheckReceive[convertToMasterNumber(node_list[j])] && sendToWaitAck(DG_thisAddress, node_list[j], DG_thisAddress, node_list[j], R2_REQUEST_TYPE, 1, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf)))
-			{
-			//DGstartTime = millis();
-			//while (millis() - DGstartTime < 10 * TIME_TERM)
-			while(1)//???? ???? ?? ????? ??? ???? ??? ??..but ??? 1hop??? ??? ??? while? ?? ?.
-			{
-			DGSetReceive();
-			if (DGavailable())
-			{
-			if (DGrecvData(DGtemp_buf) && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == R2_REQUEST_ACK_TYPE && DG_rxHeaderFrom == node_list[j])
-			{
-			send(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
-			if (DG_rxHeaderData != 0)
-			{
-			printRecvPacketHeader();
-			DGaddRouteTo(node_list[i], node_list[j], Valid, 2);
-			uint16_t masterNum = convertToMasterNumber(node_list[i]);
-			DGparentMaster[masterNum] = DG_rxHeaderFrom;
-			delay(100);
-			DGcheckReceive[masterNum] = true;
-			}
-			break;
-			}
-			}
-			}
-			if (DGcheckReceive[convertToMasterNumber(node_list[i])])
-			break;
-			}
-			}*/
 			continue;
 		}
 
-		//DGstartTime = millis();
-		//while ((millis() - DGstartTime) < number_of_unknown_node * 10 * TIME_TERM)
-
-		while (1)//???? ???? ?? ????? ??? ???? ??? ??..but ??? 1hop??? ??? ??? while? ?? ?.
+		while (1)
 		{
 			DGSetReceive();
 			if (DGavailable())
 			{
-				if (DGrecvData(DGtemp_buf))
+				if (DGrecvData(DGtemp_buf)) // 1hop인 노드로부터 요청에 대한 응답을 수신
 				{
 					if (DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == R2_REQUEST_ACK_TYPE && DG_rxHeaderFrom == node_list[i])
 					{
 						DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 						DGprintRecvPacketHeader();
+						
+						// _rxHeaderData에 찾은 노드의 개수가 들어 있음
 						for (uint8_t j = 0; j < DG_rxHeaderData; j++)
 						{
-							uint8_t temp_addr = DGtemp_buf[j];// word(DGtemp_buf[j * 2], DGtemp_buf[j * 2 + 1]);
+							uint8_t temp_addr = DGtemp_buf[j];
 							DGaddRouteTo(temp_addr, DG_rxHeaderFrom, Valid, 2, millis());
-							uint8_t masterNum = temp_addr;// convertToMasterNumber(temp_addr);
-							DGparentMaster[masterNum] = DG_rxHeaderFrom;
-							DGcheckReceive[masterNum] = true;
-							printf("%d \r\n%d \r\n", masterNum, DGcheckReceive[masterNum]);
+							DGparentMaster[temp_addr] = DG_rxHeaderFrom;
+							DGcheckReceive[temp_addr] = true;
+							printf("%d \r\n%d \r\n", temp_addr, DGcheckReceive[temp_addr]);
 						}
 						DGprintRoutingTable();
 						DGprintTree();
@@ -803,25 +801,29 @@ int8_t DGG_find_2ndRow_master(uint8_t* unknown_node_list)
 			}
 		}
 	}
+	
 	number_of_unknown_node = 0;
 	for (uint8_t i = 1; i <= DGmaster_num; i++)
 	{
 		if (!DGcheckReceive[i])
 		{
-			unknown_node_list[number_of_unknown_node++] = i;// convertToAddress(DGgatewayNumber, i, 0);
+			unknown_node_list[number_of_unknown_node++] = i;
 		}
 	}
 	return number_of_unknown_node;
 }
+
+
 /****************************************************************
-*FUNCTION NAME: G_find_multihop_node ()
-*FUNCTION     :  Gateway finished the routing discovery upto 2nd row.
+*FUNCTION NAME : DGG_find_multihop_node(uint8_t number_of_unknown_node, uint8_t* unknown_node_list)
+*FUNCTION      :  Gateway finished the routing discovery upto 2nd row.
 Gateway tries to find the 3rd and more row nodes.
-- ?? 2nd row node?? ???, ?? routing? ?? ??? ???  payload? ???? ????.
-- 3rd row ???? ?????, routing? ?? ??? ???  payload? ????
-??? ?? row? ?????  multihop routing ?? ???? ????.
-*INPUT        :
-*OUTPUT       :
+- 먼저 2nd row node들에게 아직 라우팅이 안된 노드의 주소를 payload에 포함하여 전송한다.
+- 3rd row node를 구한 후에는, 3rd row node에게 요청한다.
+(최근에 구한 row의 노드들에게 multi hop 라우팅 요청 메시지를 전송)
+*INPUT         : number_of_unknown_node(라우팅이 안된 노드의 개수)
+								 unknown_node_list(라우팅이 안 된 노드들의 주소)
+*OUTPUT        : 라우팅 안된 노드의 개수
 ****************************************************************/
 int8_t DGG_find_multihop_node(uint8_t number_of_unknown_node, uint8_t* unknown_node_list)
 {
@@ -836,8 +838,7 @@ int8_t DGG_find_multihop_node(uint8_t number_of_unknown_node, uint8_t* unknown_n
 	}
 	printf("\r\n");
 
-	number_of_node = DGG_get_i_row_node_list(row_number, node_list);  // the gateway needs the list of 2nd row masters which will send Multi_HOP_REQUEST
-																	// to unknown nodes.
+	number_of_node = DGG_get_i_row_node_list(row_number, node_list);
 
 	printf("[MULTI_HOP]\r\n");
 	while (number_of_node != 0)
@@ -854,18 +855,27 @@ int8_t DGG_find_multihop_node(uint8_t number_of_unknown_node, uint8_t* unknown_n
 	}
 	return number_of_unknown_node;
 }
-/****************************************************************
-*FUNCTION NAME:  G_request_path_one_by_one(uint16_t unknown_address, byte row_number, uint16_t* node_list, byte number_of_node, uint8_t type)
-*FUNCTION     :	 node_list? ?? ????? ??? unknown_address? ??? ??? ??? ???
 
-*INPUT        :  ??? ??
-*OUTPUT       :  ?? ??
+
+/****************************************************************
+*FUNCTION NAME : DGG_request_path_one_by_one(uint8_t unknown_address, 
+																						 uint8_t row_number, 
+																						 uint8_t* node_list, 
+																						 byte number_of_node, 
+																						 uint8_t type)
+*FUNCTION      : node_list에 있는 노드들에게 주소가 unknown_address인 노드가 인접해 있는지 물어봄
+*INPUT         : unknown_address (목적지 주소) -> 경로 설정을 해야 할 노드
+								 row_number (요청하는 메시지를 보낼 노드들의 hop count)
+								 node_list (요청할 노드들의 주소) 
+								 -> 경로 설정이 된 노드들 즉, unknown_address 노드가 주변에 있는지 찾아야 할 노드
+								 number_of_node (node_list에 들어있는 노드의 개수)
+								 type (node_list들이 unknown_address에게 전송할 패킷의 type)
+*OUTPUT        : 성공 여부
 ****************************************************************/
 bool DGG_request_path_one_by_one(uint8_t unknown_address, uint8_t row_number, uint8_t* node_list, byte number_of_node, uint8_t type)
 {
-	//e_Init(ch);
 	printf("G_request_path_one_by_one\r\n");
-	uint8_t masterNum = unknown_address;// convertToMasterNumber(unknown_address);
+	uint8_t masterNum = unknown_address;
 
 	for (uint8_t i = 0; i < number_of_node; i++)
 	{
@@ -873,9 +883,8 @@ bool DGG_request_path_one_by_one(uint8_t unknown_address, uint8_t row_number, ui
 			continue;
 		if (!DGcheckReceive[node_list[i]])
 			continue;
+		
 		DGtemp_buf[0] = unknown_address;
-		// (uint8_t)(unknown_address >> 8);
-		//DGtemp_buf[1] = (uint8_t)(0x00FF & unknown_address);
 
 		uint8_t next_hop = DGgetRouteTo(node_list[i])->next_hop;
 
@@ -900,7 +909,7 @@ bool DGG_request_path_one_by_one(uint8_t unknown_address, uint8_t row_number, ui
 					if (DG_rxHeaderSource == unknown_address && (DG_rxHeaderType == REQUEST_MULTI_HOP_ACK || DG_rxHeaderType == REQUEST_DIRECT_ACK) && DG_rxHeaderFrom == next_hop)
 					{
 						DGaddRouteTo(DG_rxHeaderSource, DG_rxHeaderFrom, Valid, DG_rxHeaderHop + 1, millis());
-						DGparentMaster[masterNum] = DGtemp_buf[0];// word(DGtemp_buf[0], DGtemp_buf[1]);
+						DGparentMaster[masterNum] = DGtemp_buf[0];
 						DGcheckReceive[masterNum] = true;
 						DGprintRoutingTable();
 						DGprintTree();
@@ -909,8 +918,7 @@ bool DGG_request_path_one_by_one(uint8_t unknown_address, uint8_t row_number, ui
 					else if (DG_rxHeaderType == NACK)
 					{
 						printf("receive NACK\r\n");
-						uint8_t reroutingAddr = DGtemp_buf[0]; //word(DGtemp_buf[0], DGtemp_buf[1]);
-															 //DGdeleteRouteTo(reroutingAddr);
+						uint8_t reroutingAddr = DGtemp_buf[0];
 						DGcheckReceive[reroutingAddr] = false;
 						DGparentMaster[reroutingAddr] = -1;
 						DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
@@ -924,25 +932,31 @@ bool DGG_request_path_one_by_one(uint8_t unknown_address, uint8_t row_number, ui
 	}
 	return false;
 }
-/////??? routing ?? ???///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/****************************************************************
-*FUNCTION NAME:  G_discoverNewPath(uint16_t address, uint8_t row_number, bool child)
-*FUNCTION     :	 ?? routing ??
 
-*INPUT        :
-*OUTPUT       :
+
+
+////////////////////////////////////////////운영중 routing 문제 발생 시//////////////////////////////////////////////////////////////
+
+
+
+/****************************************************************
+*FUNCTION NAME : DGG_discoverNewPath(uint8_t address, int8_t row_number)
+*FUNCTION      : 다시 경로 설정함
+*INPUT         : address (목적지 주소)
+								 row_number(목적지 주소의 원래 hop count)
+*OUTPUT        : 성공 여부
 ****************************************************************/
-bool DGG_discoverNewPath(uint8_t address, uint8_t row_number)//, bool child)
+bool DGG_discoverNewPath(uint8_t address, int8_t row_number)
 {
 	printf("G_discoverNewPath : %d\r\n", address);
 	uint8_t cpy_row_number = row_number;
 	uint8_t number_of_node;
 	uint8_t node_list[34] = { 0 };
 
-	//row_number = getRouteTo(address)->hop;
 	if (row_number != DGgetRouteTo(address)->hop)
 	{
-		if (number_of_node = DGG_get_i_row_node_list(row_number, node_list))
+		number_of_node = DGG_get_i_row_node_list(row_number, node_list);
+		if (number_of_node)
 		{
 			if (DGG_request_path_one_by_one(address, row_number, node_list, number_of_node, REQUEST_DIRECT))
 				return true;
@@ -953,22 +967,20 @@ bool DGG_discoverNewPath(uint8_t address, uint8_t row_number)//, bool child)
 				DGG_discoverNewPath(address, row_number + 1);
 			}
 		}
-		else
+		else // 경로 찾기 실패
 		{
 			printf("#######################################routing fail###########################################\r\n");
-			return false;//?? ??? ?? ???..
+			return false;
 		}
 	}
 
 	while (row_number > -1)
 	{
 		number_of_node = DGG_get_i_row_node_list(row_number, node_list);
-		/*if (number_of_node == 1 && node_list[0] == address)//address? ?? hop count? ?? ??? ??, ??? G_request_path_one_by_one?? ??
-		row_number--;
-		else */if (row_number == 0)
+
+		if (row_number == 0)
 		{
 			DGtemp_buf[0] = address;
-			//DGtemp_buf[1] = (uint8_t)(0x00FF & address);
 			uint8_t recvAckNum = 0;
 			for (byte i; i < sizeof(DGtemp_buf); i++)
 				DGbuffer[i] = DGtemp_buf[i];
@@ -977,7 +989,7 @@ bool DGG_discoverNewPath(uint8_t address, uint8_t row_number)//, bool child)
 				DGsend(DG_thisAddress, address, DG_thisAddress, address, REQUEST_DIRECT, NONE, NONE, NONE, NONE, DGbuffer, sizeof(DGbuffer));
 				DGstartTime = millis();
 				recvAckNum = 0;
-				while (millis() - DGstartTime < TIME_TERM * 5)//?? TIME_TERM??? ???? ???? ???? ?????? ??? ???? ??????? ??? ?? ?? ???? ??? ??? ????? ?????? ??..
+				while (millis() - DGstartTime < TIME_TERM * 5)
 				{
 					DGSetReceive();
 					if (DGavailable() && DGrecvData(DGtemp_buf) && DG_rxHeaderFrom == address && DG_rxHeaderTo == DG_thisAddress && DG_rxHeaderType == REQUEST_DIRECT_ACK)
@@ -1010,7 +1022,7 @@ bool DGG_discoverNewPath(uint8_t address, uint8_t row_number)//, bool child)
 			row_number--;
 		}
 	}
-	if (row_number == -1)//hop count? ????? ?? ? ?? ??
+	if (row_number == -1) // hop count를 증가시켜야 찾을 수 있는 경우
 	{
 		DGcheckReceive[address] = false;
 		DGparentMaster[address] = -1;
@@ -1022,10 +1034,8 @@ bool DGG_discoverNewPath(uint8_t address, uint8_t row_number)//, bool child)
 		printf("%d-th node is error\r\n", address);
 	}
 
-	//if (!child)
-	//{
 	number_of_node = DGG_get_i_row_node_list(cpy_row_number, node_list);
-	for (int i = 1; i <= DGmaster_num; i++)//address? ??? path ?? ??
+	for (int i = 1; i <= DGmaster_num; i++) // address의 자식의 path 경로 설정
 	{
 		//Serial.println("child node rerouting!!");
 		if (DGparentMaster[i] == address)
@@ -1033,17 +1043,27 @@ bool DGG_discoverNewPath(uint8_t address, uint8_t row_number)//, bool child)
 			uint8_t temp_address = i;
 			DGcheckReceive[temp_address] = false;
 			DGparentMaster[temp_address] = -1;
-			DGG_discoverNewPath(temp_address, DGgetRouteTo(temp_address)->hop);// , true);
+			DGG_discoverNewPath(temp_address, DGgetRouteTo(temp_address)->hop);
 			DGunRecvCnt[temp_address] = 0;
+			
 			//changeNextHop(temp_address);
 			//G_request_path_one_by_one(convertToAddress(DGgatewayNumber, i, 0), cpy_row_number, node_list, number_of_node, REQUEST_DIRECT);
 		}
 	}
-	//}
+	
 	printf("%d\r\nwhere?\r\n", address);
 	DGprintTree();
 	return true;
 }
+
+
+/****************************************************************
+*FUNCTION NAME : DGchangeNextHop(uint8_t address, uint8_t hopCount)
+*FUNCTION      : 라우팅 테이블에서 address의 next_hop을 바꿔줌
+*INPUT         : address (주소)
+								 hopCount (원래 address의 hop count에서 새로운 hop count를 뺀 값)
+*OUTPUT        : NONE
+****************************************************************/
 void DGchangeNextHop(uint8_t address, uint8_t hopCount)
 {
 	//Serial.println("changeNextHop");
@@ -1059,14 +1079,17 @@ void DGchangeNextHop(uint8_t address, uint8_t hopCount)
 			DGchangeNextHop(i, hopCount);
 		}
 	}
-	//DGprintRoutingTable();
+	DGprintRoutingTable();
 }
-/****************************************************************
-*FUNCTION NAME:  G_find_error_node(uint16_t address)
-*FUNCTION     :	 error_node ??? rerouting?? ??
 
-*INPUT        :
-*OUTPUT       :
+
+/****************************************************************
+*FUNCTION NAME : DGG_find_error_node(uint8_t address)
+*FUNCTION      : error_node를 찾아서 rerouting 함수 호출 
+							   (time out이 발생할 경우 어떤 노드에서 전송실패가 발생했는지 찾아서 
+									그 노드를 다시 라우팅 해줌)
+*INPUT         : address로 가는 도중에 전송이 끊김
+*OUTPUT        : NONE
 ****************************************************************/
 void DGG_find_error_node(uint8_t address)
 {
@@ -1081,7 +1104,6 @@ void DGG_find_error_node(uint8_t address)
 	{
 		if (!DGsendToWaitAck(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, path[i], CHECK_ROUTING, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 		{
-			//DGdeleteRouteTo(path[i]);
 			if (DGunRecvCnt[path[i]]++ > MAX_UN_RECV)
 			{
 				DGcheckReceive[path[i]] = false;
@@ -1108,8 +1130,7 @@ void DGG_find_error_node(uint8_t address)
 					{
 						DGsend(DG_thisAddress, DGgetRouteTo(path[i])->next_hop, DG_thisAddress, DGgetRouteTo(path[i])->next_hop, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
 						printf("NACK\r\n");
-						//DGdeleteRouteTo(path[i]);
-						uint8_t temp_address = DGtemp_buf[0];// word(DGtemp_buf[0], DGtemp_buf[1]);
+						uint8_t temp_address = DGtemp_buf[0];
 						if (DGunRecvCnt[temp_address]++ > MAX_UN_RECV)
 						{
 							DGcheckReceive[temp_address] = false;
@@ -1127,11 +1148,10 @@ void DGG_find_error_node(uint8_t address)
 
 
 /****************************************************************
-*FUNCTION NAME:  M_findCandidateParents( )   20180308?? ?
-*FUNCTION     :
-
-*INPUT        :
-*OUTPUT       :
+*FUNCTION NAME : DGM_findCandidateParents()
+*FUNCTION      : 마스터가 패킷 수신율 or rssi를 고려하여 후보 부모 노드를 선택
+*INPUT         : NONE
+*OUTPUT        : NONE
 ****************************************************************/
 void DGM_findCandidateParents()
 {
@@ -1164,12 +1184,13 @@ void DGM_findCandidateParents()
 		}
 	}
 }
-/****************************************************************
-*FUNCTION NAME:  M_find2ndRowMasters( )
-*FUNCTION     :
 
-*INPUT        :
-*OUTPUT       :
+
+/****************************************************************
+*FUNCTION NAME : DGM_find2ndRowMasters()
+*FUNCTION      : 1hop master node가 2hop master node를 찾음
+*INPUT         : NONE
+*OUTPUT        : NONE
 ****************************************************************/
 void DGM_find2ndRowMasters()
 {
@@ -1181,17 +1202,14 @@ void DGM_find2ndRowMasters()
 	uint8_t count = DG_rxHeaderData;
 	uint8_t child_node_num = 0;
 
-	for (int8_t i = 0; i < count; i++)//DGtemp_buf? ???? data? ?? ????? temp? ???????
-	{
+	for (int8_t i = 0; i < count; i++) // DGtemp_buf에 수신되는 data가 계속 들어오므로 temp에 복사해두어야함
 		temp[i] = DGtemp_buf[i];
-		//temp[i * 2 + 1] = DGtemp_buf[i * 2 + 1];
-	}
 	for (int8_t i = 0; i < count; i++)
 	{
 		printf("send R2 reequest to 2 hop\r\n");
-		unknown_address = temp[i];// * 2], temp[i * 2 + 1]);
+		unknown_address = temp[i];
 		uint8_t recvAckNum = 0;
-		for (int j = 0; j < 1; j++)//DEFAULT_RETRIES; j++)
+		for (int j = 0; j < 1; j++)
 		{
 			printf("retry : %d\r\n", j);
 			recvAckNum = 0;
@@ -1218,19 +1236,19 @@ void DGM_find2ndRowMasters()
 		}
 	}
 	for (int8_t i = 0; i < child_node_num; i++)
-	{
 		DGtemp_buf[i] = childNodeList[i];
-		//DGtemp_buf[i * 2 + 1] = lowByte(childNodeList[i]);
-	}
-	//from, to, src, dst, type, data, flags, seqnum, hop
+									//from, to, src, dst, type, data, flags, seqnum, hop
 	DGsendToWaitAck(DG_thisAddress, DG_thisAddress & 0x00, DG_thisAddress, DG_thisAddress & 0x00, R2_REQUEST_ACK_TYPE, child_node_num, NONE, NONE, 1, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM);
 }
-/****************************************************************
-*FUNCTION NAME:M_masterSendRoutingReply( )
-*FUNCTION     :
 
-*INPUT        :
-*OUTPUT       :
+
+/****************************************************************
+*FUNCTION NAME : DGM_masterSendRoutingReply()
+*FUNCTION      : 2hop 이상인 노드들이 자신이 정한 후보 부모 노드로부터 라우팅 요청 메시지를
+								 받거나 정해놓은 후보 부모 노드가 없을 경우에 해당 노드에게 응답을 보냄 
+								 (R_MASTER_SEND_NUM번 보냄)
+*INPUT         : NONE
+*OUTPUT        : NONE
 ****************************************************************/
 void DGM_masterSendRoutingReply()
 {
@@ -1249,16 +1267,20 @@ void DGM_masterSendRoutingReply()
 		{
 			type = REQUEST_MULTI_HOP_ACK;
 			DGtemp_buf[0] = DG_rxHeaderFrom;
-			//DGtemp_buf[1] = (uint8_t)(0x00FF & DG_rxHeaderFrom);
 		}
 		//from, to, src, dst, type, data, flags, seqnum, hop
 		for (uint8_t i = 0; i < R_MASTER_SEND_NUM; i++)
-		{
 			DGsend(DG_thisAddress, DG_rxHeaderFrom, DG_thisAddress, DG_rxHeaderFrom, type, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
-		}
 	}
 }
 
+
+/****************************************************************
+*FUNCTION NAME: DGnewMaster()
+*FUNCTION     : 운영 중 새로운 마스터가 추가될 때 그 마스터가 경로설정을 위해 호출
+*INPUT        : NONE
+*OUTPUT       : NONE
+****************************************************************/
 void DGnewMaster()
 {
 	unsigned long waitTime = millis();
@@ -1267,20 +1289,15 @@ void DGnewMaster()
 	uint8_t maxReceiveNum = 0;
 	uint8_t hop = 0;
 
-	while (millis() - waitTime < 10000)
+	while (millis() - waitTime < 10000) //일정 시간동안 패킷을 수신해보고 누구의 패킷을 많이 받았는지 카운트 함
 	{
 		DGSetReceive();
 		if (DGavailable())
-		{
-
 			if (DGrecvData(DGtemp_buf))
-			{
 				receivedNum[DG_rxHeaderFrom]++;
-			}
-		}
 	}
 
-	for (uint8_t i = 1; i <= 34; i++)
+	for (uint8_t i = 1; i <= 34; i++) // 가장 패킷을 많이 수신할 수 있었던 노드를 게이트웨이로 가는 후보 부모 노드로 설정
 	{
 		if (maxReceiveNum < receivedNum[i])
 		{
@@ -1290,18 +1307,17 @@ void DGnewMaster()
 		}
 	}
 
+	// 후보 부모 노드에게 패킷을 보내봄
 	while (!DGsendToWaitAck(DG_thisAddress, candidate_parent, DG_thisAddress, candidate_parent, NEW_NODE_REGISTER, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), TIME_TERM))
 	{
+		
+		// 선택한 후보 부모 노드로부터 응답을 못받았으면 위의 과정을 반복함
 		while (millis() - waitTime < 10000)
 		{
 			DGSetReceive();
 			if (DGavailable())
-			{
 				if (DGrecvData(DGtemp_buf))
-				{
 					receivedNum[DG_rxHeaderFrom]++;
-				}
-			}
 		}
 
 		for (uint8_t i = 1; i <= 34; i++)
@@ -1314,9 +1330,12 @@ void DGnewMaster()
 		}
 	}
 
+	// 선택한 후보 부모노드에게 응답을 받았으면 후보 부모 노드를 라우팅 테이블에 등록
 	DGaddRouteTo(DG_thisAddress & 0x00, candidate_parent, Valid, DG_rxHeaderHop + 1, millis());//master? hop count ??? ??..????...
 	DGprintRoutingTable();
 
+	
+	// 다른 마스터처럼 게이트웨이로부터 외부 스캔 요청 메시지를 받을 수 있는지 여부 확인
 	waitTime = millis();
 	bool receiveFromG = false;
 
@@ -1336,7 +1355,7 @@ void DGnewMaster()
 			}
 		}
 	}
-	if (!receiveFromG)
+	
+	if (!receiveFromG) // 10분이 지나도 받지 못할 경우 이 함수를 다시 호출시켜 새로운 후보 부모 노드를 찾음
 		DGnewMaster();
 }
-//////////////////////

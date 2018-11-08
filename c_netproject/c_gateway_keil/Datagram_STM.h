@@ -6,53 +6,82 @@
 #include "cc1120.h"
 #include <string.h>
 
-#define byte uint8_t
-/// the default retry timeout in milliseconds
-#define DEFAULT_TIMEOUT 100
-
-
-/// The default number of retries
-#define DEFAULT_RETRIES 3//??? 5? ??3
-#define MAX_master_num				31		//0 ~ 30, 31 is broadcast
-
-// The default size of the routing table we keep
-#define ROUTING_TABLE_SIZE 5  //////////////////////////////////////////////////////////////////////////////////////////////////////////??
-#define ROUTER_MAX_MESSAGE_LEN 48
-#define R_MASTER_SEND_NUM 5
-#define R_GATEWAY_SEND_NUM 10
-
-//===============================================================
-//	2017-04-26	ver.1
 /****************************************************************
 #define
 ****************************************************************/
-#define REQUEST_BROADCAST							0
-#define REQUEST_TYPE									1
-#define REQUEST_ACK_TYPE							2
+#define byte uint8_t
+
+#define DEFAULT_RETRIES 							3			// The default number of retries
+
+#define ROUTING_TABLE_SIZE 						31  	
+#define ROUTER_MAX_MESSAGE_LEN 				48
+#define R_MASTER_SEND_NUM 						5			// G <----- 1hop Master or Master 간의 패킷 수신육 측정을 위해서 보내는 패킷 개수
+#define R_GATEWAY_SEND_NUM 						10		// G -----> 1hop Master 의 패킷 수신율 측정을 위해서 보내는 패킷 개수
+
+#define NONE													0
+
+#define TIME_TERM											1700	// hop to hop ACK을 받기 위해서 기다리는 시간(단위 ms)
+#define MAX_UN_RECV										3			// 패킷에 대한 응답을 MAX_UN_RECV만큼 받지 못했다면 그 노드는 다시 라우팅해줌
+
+/*****************************패킷 type****************************/
+
+/////////////////////////////// 외부 ///////////////////////////////
+// 초기 라우팅시 사용되는 type
+
+// <1hop>
+// 1. (G) -----REQUEST_BROADCAST---> (All master)
+// 2. (G) -------REQUEST_TYPE------> (1hop master)
+// 3. (G) <----REQUEST_ACK_TYPE----- (1hop master)
+#define REQUEST_BROADCAST							0			// G가 라우팅 시작 시 사용
+#define REQUEST_TYPE									1			// G가 1hop을 찾기 위해 각 M에게 1:1로 물어봄
+#define REQUEST_ACK_TYPE							2			// 1hop인 M의 REQUEST_TYPE에 대한 응답
+
+// <2hop>
+// 1. (G) -----R2_REQUEST_TYPE-----> (1hop master)
+// 2. (G) <-----------ACK----------- (1hop master)
+// 3.                                (1hop master) -----R2_REQUEST_REAL_TYPE-----> (2hop master)
+// 4.                                (1hop master) <-----R2_REQUEST_ACK_TYPE------ (2hop master)
+// 5. (G) <--R2_REQUEST_ACK_TYPE---- (1hop master)
 #define R2_REQUEST_TYPE								3
 #define R2_REQUEST_REAL_TYPE					4
 #define R2_REQUEST_ACK_TYPE						5
+
+// multi hop
 #define REQUEST_MULTI_HOP							6
 #define REQUEST_MULTI_HOP_ACK					7
+
+// multi hop을 위한 라우팉요청 후에도 응답이 없는 노드들에게 한 번 더 요청
 #define REQUEST_DIRECT								8	
 #define REQUEST_DIRECT_ACK						9
+
+// 새로운 노드가 자신을 알리고자 보내는 패킷의 type
 #define NEW_NODE_REGISTER							10
 
-#define CHECK_ROUTING									11
-#define CHECK_ROUTING_ACK							12
-#define CHECK_ROUTING_ACK_REROUTING		13
-#define ACK														14
-#define NACK													15
-#define ROUTING_TABLE_UPDATE					16
+// Master scan시 사용되는 type
+#define CHECK_ROUTING									11 			// G의 scan 요청
+#define CHECK_ROUTING_ACK							12 			// M의 scan 응답
+#define CHECK_ROUTING_ACK_REROUTING		13 			// M의 scan 응답 + 부모 노드 변경
 
-#define SCAN_REQUEST_TO_MASTER				17
-#define SCAN_REQUEST_ACK_FROM_MASTER	18
-#define SCAN_RESPONSE_TO_GATEWAY			19
-#define CONTROL_TO_MASTER							20
+
+#define ACK														14			// hop-to-hop ACK
+#define NACK													15			// dst까지 패킷이 전달되지 못할 때 src에게 어떤 링크에서 전송이 끊어졌는지를 알려줄 때 사용
+
+#define ROUTING_TABLE_UPDATE					16			// G가 M에게 라우팅 테이블 업데이트 명령을 내림(사용 안함)
+
+// 내부 zone scan시 사용되는 type
+#define SCAN_REQUEST_TO_MASTER				17			// G가 내부 zone scan 요청
+#define SCAN_REQUEST_ACK_FROM_MASTER	18			// SCAN_REQUEST_TO_MASTER에 대한 src to dst의 ACK
+#define SCAN_RESPONSE_TO_GATEWAY			19			// M이 내부 zone scan 완료를 통보
+
+// G가 M에게 제어 명령을 내릴 때 사용되는 type
+#define CONTROL_TO_MASTER							20			
 #define CONTROL_RESPONSE_TO_GATEWAY		21
 
-#define SCAN_REQUEST_TO_RC						22
-#define CONTROL_TO_RC									23		
+/////////////////////////////// 내부 ///////////////////////////////
+
+//내부 마스터가 룸콘에게
+#define SCAN_REQUEST_TO_RC						22			
+#define CONTROL_TO_RC									23
 
 #define CONTROL_RESPONSE_BROADCAST		24
 #define SCAN_RESPONSE_TO_RC						25
@@ -62,6 +91,7 @@
 #define RC_CONTROL_TO_SLAVE						28
 #define GW_CONTROL_TO_SLAVE						29
 
+//내부 마스터와 외부 마스터끼리의 통신
 #define INTERNAL_COM_FAIL							30
 #define INTERNAL_CONTROL							31
 #define INTERNAL_CONTROL_FINISH				32
@@ -69,79 +99,58 @@
 #define INTERNAL_SCAN_FINISH					34
 
 
-#define NONE						0
+// Values for the possible states for routes
+typedef enum
+{
+	Invalid = 0,          										  // No valid route is known
+	Discovering,           										  // Discovering a route
+	Valid                  										  // Route is valid
+} RouteState;
 
-#define TIME_TERM					1700
-#define TIME_HOP					400
-#define TIME_CONTROL				5000
+// Defines an entry in the routing table
+typedef struct
+{
+	int8_t					dest;      								  // Destination node address
+	int8_t					next_hop;  								  // Send via this next hop address
+	int8_t					state;     								  // State of this route, one of RouteState
+	int8_t					hop;			 								  // hop count
+	unsigned long		lastTime;									  // last used time
+} RoutingTableEntry;
 
-//#define NUM_OF_MASTER				17
-#define MAX_UN_RECV					2//?? 0??
+/****************************************************************
+function
+****************************************************************/
 
-
-//Datagram(ELECHOUSE_CC1120& driver, uint8_t gatewayNumber, uint8_t thisAddress = 0);// , uint8_t master_num);//?? 16bit ??
-//void	DatagramInit(uint8_t gatewayNumber, uint8_t thisAddress);
 void 	DGInit(uint8_t gatewayNumber, uint8_t thisAddress, byte ch);
 void 	DGSetReceive(void);
 
+void DGsetThisAddress(uint8_t thisAddress);
+void DGsetHeaderTo(uint8_t to);
+void DGsetHeaderFrom(uint8_t from);
+void DGsetHeaderSource(uint8_t address);
+void DGsetHeaderDestination(uint8_t address);
+void DGsetHeaderType(uint8_t type);
+void DGsetHeaderData(uint8_t data);
+void DGsetHeaderSeqNum(uint8_t seq);
+void DGsetHeaderFlags(uint8_t flags);
+void DGsetHeaderHop(uint8_t hop);
 
-void 	DGsetThisAddress(uint8_t thisAddress);
-void 	DGsetHeaderTo(uint8_t to);
-void 	DGsetHeaderFrom(uint8_t from);
-void 	DGsetHeaderSource(uint8_t address);
-void	DGsetHeaderDestination(uint8_t address);
-void 	DGsetHeaderType(uint8_t type);
-void 	DGsetHeaderData(uint8_t data);
-void	DGsetHeaderSeqNum(uint8_t seq);
-void	DGsetHeaderFlags(uint8_t flags);
-void	DGsetHeaderHop(uint8_t hop);
-
-uint8_t        DGheaderTo();
-uint8_t        DGheaderFrom();
-uint8_t        DGheaderSource();
-uint8_t        DGheaderDestination();
-uint8_t        DGheaderType();
-uint8_t        DGheaderData();
-uint8_t   	   DGheaderSeqNum();
-uint8_t   	   DGheaderFlags();
-uint8_t		   DGheaderHop();
-uint8_t		   DGgetThisAddress();
-
+uint8_t DGheaderTo();
+uint8_t DGheaderFrom();
+uint8_t DGheaderSource();
+uint8_t DGheaderDestination();
+uint8_t DGheaderType();
+uint8_t DGheaderData();
+uint8_t DGheaderSeqNum();
+uint8_t DGheaderFlags();
+uint8_t	DGheaderHop();
+uint8_t	DGgetThisAddress();
 
 
-bool           DGavailable();
+bool DGavailable();
 
+byte DGrecvData(uint8_t* buf);
 
-//void           MainSendControlToSlave();
-//void           RCSendControlToMain();
-
-
-//void           sendto(uint8_t* buf, uint8_t len, uint8_t address);
-byte           DGrecvData(uint8_t* buf);
-
-
-/// Values for the possible states for routes
-typedef enum
-{
-	Invalid = 0,           ///< No valid route is known
-	Discovering,           ///< Discovering a route
-	Valid                  ///< Route is valid
-} RouteState;
-
-/// Defines an entry in the routing table
-typedef struct
-{
-	int8_t				dest;      ///< Destination node address
-	int8_t				next_hop;  ///< Send via this next hop address
-	int8_t				state;     ///< State of this route, one of RouteState
-	int8_t				hop;
-	unsigned long		lastTime;
-} RoutingTableEntry;
-
-/// \param[in] thisAddress The address to assign to this node. Defaults to 0
-
-
-//void DGaddRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state = Valid, uint8_t hop = 0, unsigned long lastTime = 0);
 void DGaddRouteTo(uint8_t  dest, uint8_t  next_hop, uint8_t state, uint8_t hop, unsigned long lastTime);
 
 RoutingTableEntry* DGgetRouteTo(uint8_t  dest);
@@ -151,8 +160,6 @@ bool DGdeleteRouteTo(uint8_t  dest);
 void DGclearRoutingTable();
 
 void DGprintRoutingTable();
-
-int DGfind_child_node(uint8_t* child_node);
 
 void DGFromGatewayToMaster();
 
@@ -188,7 +195,7 @@ void DGprintTree();
 
 bool DGG_request_path_one_by_one(uint8_t address, byte row_number, uint8_t* node_list, byte number_of_node, uint8_t type);
 
-bool DGG_discoverNewPath(uint8_t address, uint8_t row_number);// , bool child = false);
+bool DGG_discoverNewPath(uint8_t address, int8_t row_number);
 
 void DGG_find_error_node(uint8_t address);
 
@@ -205,52 +212,45 @@ void DGdeleteRoute(uint8_t index);
 
 
 
+/****************************************************************
+variable
+****************************************************************/
 
 
+extern RoutingTableEntry _routes[ROUTING_TABLE_SIZE]; // 라우팅 테이블
 
+extern bool DGcheckReceive[34]; // index : 마스터 주소, value : 게이트웨이 입장에서 해당 마스터의 경로 설정이 되었는지
 
+extern int DGmaster_num; // master 개수
 
+extern int8_t DGparentMaster[34]; // index : 마스터 주소, value : 마스터의 부모 노드
+extern byte DGunRecvCnt[34]; // index : 마스터 주소, value : 해당 마스터에게 받지 못한 응답의 개수
+extern byte DGtemp_buf[20]; // 패킷의 payload
+extern byte DGbuffer[20]; // 받은 패킷을 임시로 저장하기 위한 배열(DGtemp_buf 복사)
 
+static volatile uint8_t DG_thisAddress;		// The address of this node
+static volatile uint8_t DG_rxHeaderTo;
+static volatile uint8_t DG_rxHeaderFrom;
+static volatile uint8_t DG_rxHeaderSource;
+static volatile uint8_t	DG_rxHeaderDestination;
+static volatile uint8_t DG_rxHeaderType;
+static volatile uint8_t DG_rxHeaderData;
+static volatile uint8_t DG_rxHeaderFlags;
+static volatile uint8_t DG_rxHeaderSeqNum;
+static volatile uint8_t	DG_rxHeaderHop;
 
-extern RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
+static volatile uint8_t DGcandidateAddress; // 마스터의 후보 부모 노드
+static volatile signed char DGcandidateRSSI; // 후보 부모 노드의 RSSI
 
-extern bool DGcheckReceive[34];// = { false };
+static volatile uint8_t DGreceivedType; //To avoid receiving from Master that has same hop
 
-static volatile uint8_t DGch;
-extern int DGmaster_num;// = 2;
-
-extern int8_t DGparentMaster[34];// = { -1 };
-extern byte DGunRecvCnt[34];// = { 0 };
-extern byte DGtemp_buf[20];
-extern byte DGbuffer[20];
-
-//ELECHOUSE_CC1120&   DG_driver;	   /// The Driver we are to use
-static volatile uint8_t         	DG_thisAddress;		/// The address of this node
-static volatile uint8_t  			DG_rxHeaderTo;
-static volatile uint8_t  			DG_rxHeaderFrom;
-static volatile uint8_t  			DG_rxHeaderSource;
-static volatile uint8_t				DG_rxHeaderDestination;
-static volatile uint8_t   			DG_rxHeaderType;
-static volatile uint8_t   			DG_rxHeaderData;
-static volatile uint8_t   			DG_rxHeaderFlags;
-static volatile uint8_t   			DG_rxHeaderSeqNum;
-static volatile uint8_t				DG_rxHeaderHop;
-
-
-static volatile uint8_t DGcandidateAddress;// = 0;
-static volatile signed char DGcandidateRSSI;// = 0;
-
-
-static volatile uint8_t DGreceivedType;// = 0;//To avoid receiving from Master that has same hop
-
-static volatile unsigned long DGstartTime;
-static volatile unsigned long DGresetTime;
-
+static volatile unsigned long DGstartTime; // 응답 메시지의 time out 여부를 check하기 위해서 패킷 전송 시간을 기록
+static volatile unsigned long DGresetTime; // 마스터가 오랫동안 사용하지 않는 라우팅 테이블 엔트리를 주기적으로 삭제하기 위해서 시간을 기록
 
 static volatile uint8_t DGmasterBroadcastAddress;
 
-static volatile uint8_t DGgatewayNumber;// = 0;
+static volatile uint8_t DGgatewayNumber; // 층
 
-static volatile unsigned long	DGsendingTime;// = -60000;
+static volatile unsigned long	DGsendingTime; // 1초에 한 번씩만 전송이 가능하도록 하기위해서 패킷 전송 시간을 기록 (send 함수에서 사용)
 
 #endif

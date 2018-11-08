@@ -360,15 +360,15 @@ int main()
 								newNode = false;
 								if(!DGsendToWaitAck(_thisAddress, 
 									DGgetRouteTo(_thisAddress & 0x00)->next_hop, 
-								_thisAddress, 
-								_thisAddress & 0x00, 
-								CHECK_ROUTING_ACK, 
-								newNodeCnt, 
-								NONE, 
-								NONE, 
-								NONE, 
-								DGtemp_buf, 
-								sizeof(DGtemp_buf), 2000))
+															 _thisAddress, 
+															 _thisAddress & 0x00, 
+															 CHECK_ROUTING_ACK, 
+															 newNodeCnt, 
+															 NONE, 
+															 NONE, 
+															 NONE, 
+															 DGtemp_buf, 
+															 sizeof(DGtemp_buf), 2000))
 									
 								newNode = true; //gateway에게 전달이 안됐으면 다음에 다시 보냄
 							}

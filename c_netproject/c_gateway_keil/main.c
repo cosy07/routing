@@ -90,6 +90,10 @@ int main()
 	
 	USART2_Configuration();
 	
+	while(1)
+	{
+		printf("hi");
+	}
 	DGFromGatewayToMaster();
 
 	while(1)
@@ -591,6 +595,7 @@ void GPIO_Configuration(void)
 	  /* Configure USARTx_Tx as alternate function push-pull */
   GPIO_InitStructure.GPIO_Pin = GPIO_TxPin_R;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	//STM32F1에서는 10, 2, 50중 선택할 수 있음. 보드에 따라 다름(높게 설정할수록 noise 유발 가능성이 높아짐)
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_Init(GPIOxR, &GPIO_InitStructure);
 
