@@ -107,7 +107,7 @@ void loop()
           manager.temp_buf[10] = num_of_slave;
 
           //스캔 메시지 송수신
-          send_and_wait_for_scan()
+          send_and_wait_for_scan();
 
           //스캔응답을 보내지 않은 slave가 있다면 한 번 더 전체에 대하여 scan 요청
           for(int j = 0;j <= num_of_slave;j++)

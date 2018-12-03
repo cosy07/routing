@@ -6,9 +6,7 @@
 *OUTPUT       :none
 ****************************************************************/
 void PrintfInit(void)
-{
-  SystemInit();
-    
+{    
   /* Enable GPIOx clock */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOx, ENABLE);
 

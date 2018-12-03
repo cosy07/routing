@@ -76,7 +76,6 @@
 //#define NUM_OF_MASTER				17
 #define MAX_UN_RECV					2//일단 0으로
 
-
 class  InDatagram
 {
 public:

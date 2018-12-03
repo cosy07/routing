@@ -37,11 +37,7 @@ byte DGtemp_buf[20];
 
 int main()
 {
-	DGInit(0x01, 0x01, 15); // zone의 외부마스터 번호, 내 주소, 채널
-	_thisAddress = DGgetThisAddress();
-	master_number = DGgetMasterNumber();
-
-	//PrintfInit();
+	SystemInit();
 	/* System Clocks Configuration */
   RCC_Configuration();
   /* Configure the GPIO ports */
@@ -49,6 +45,35 @@ int main()
 	
 	USART2_Configuration();
 	USART3_Configuration();
+	
+	PrintfInit();
+	MyTimerInit();
+	
+		//주소 설정을 위해 처음에 FCU로부터 type이 CA인 값을 받음
+	byte initDataFromFCU[4];
+	byte tempIndex = 0;
+	
+	while(1)
+	{
+		while(tempIndex < 4) //master는 받아야할 데이터가 총 4바이트(CA(type), 층 주소, 외부주소, 내부주소)
+		{
+			if(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == SET) // usart2로부터 데이터 수신
+			{
+				while(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == RESET); // 데이터를 모두 받을 때까지 대기
+				initDataFromFCU[tempIndex++] = USART_ReceiveData(USART2); //수신한 데이터를 변수에 저장
+			}
+		}
+		if(initDataFromFCU[0] == 0xCA) // 맞는 데이터를 수신했다면
+		{
+				DGInit(initDataFromFCU[2], initDataFromFCU[3], initDataFromFCU[1] * 2); // 층, 주소, 채널 번호(외부채널은 층 * 2 -1, 내부채널은 층 * 2)
+				_thisAddress = DGgetThisAddress(); // main.c의 전역변수 초기화
+				master_number = DGgetMasterNumber();
+			break; // 제대로 수신했다면 while문 탈출
+		}
+	}	
+	
+	
+	
 	
 	DGSetReceive();
 
@@ -104,15 +129,6 @@ int main()
 
 void RCC_Configuration(void)
 {
-  /* Setup the microcontroller system. Initialize the Embedded Flash Interface,  
-     initialize the PLL and update the SystemFrequency variable. */
-  //SystemInit();
-    
-  /* Enable GPIOx clock */
-  //RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOx | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
-
-/* Enable USARTx clocks */ 
-  //RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2 | RCC_APB1Periph_USART3, ENABLE);
 }
 
@@ -230,7 +246,7 @@ void USART3_IRQHandler(void)
 {
 	if (USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) 
 	{
-		USART_ClearITPendingBit(USART2, USART_IT_RXNE);
+		USART_ClearITPendingBit(USART3, USART_IT_RXNE);
 		byte temp = USART_ReceiveData(USART3);
 		
 		// 제어요청일 경우
@@ -238,7 +254,6 @@ void USART3_IRQHandler(void)
 		// (GW) -----> (외부 마스터) -----> (FCU)
 		//                       -----> (내부 마스터)
 		//  GW의 제어요청에 맞게 FCU 상태 변화 및 내부마스터에게 알려줌
-		
 		
 		// ************ 2단계 ************
 		// (내부 마스터) -----상태 요청-----> (FCU) -----상태 응답-----> (내부 마스터)
@@ -249,8 +264,8 @@ void USART3_IRQHandler(void)
 		// (내부 마스터) -----CONTROL_TO_RC-----> (룸콘) -----GW_CONTROL_TO_SLAVE-----> (슬레이브, 내부 마스터)
 		//                                                                              (내부 마스터) -----CONTROL_RESPONSE_BROADCAST-----> (룸콘, 슬레이브)
 		//                                                                                             룸콘에게는 ACK의 역할
-		//																																							  							다른 슬레이브에게는 RC_CONTROL_TO_SLAVE를 못받을 경우에 대비
-		USART_ITConfig(USART2, USART_IT_RXNE, DISABLE);
+		//																																							  						 다른 슬레이브에게는 RC_CONTROL_TO_SLAVE를 못받을 경우에 대비
+		USART_ITConfig(USART3, USART_IT_RXNE, DISABLE);
 		if(temp == INTERNAL_CONTROL)
 		{
 			for(int i = 0;i < 10;i++)
@@ -405,35 +420,6 @@ void USART3_IRQHandler(void)
                 timeout = false;
                 controlTime = millis();
   
-                //2초간 대기하며 자기 zone의 룸콘의 제어 메시지가 있는지를 확인함
-                while(millis() - controlTime < 2000)
-                {
-                  DGSetReceive();
-                  if(DGavailable() && DGrecvData(DGtemp_buf))
-                  {
-                    _rxHeaderFrom = DGheaderFrom();
-                    _rxHeaderTo = DGheaderTo();
-                    _rxHeaderMaster = DGheaderMaster();
-                    _rxHeaderType = DGheaderType();
-  
-                    //내 zone의 룸콘으로부터 제어메시지를 수신했을 경우
-                    if(_rxHeaderMaster == master_number && _rxHeaderType == RC_CONTROL_TO_SLAVE)
-                    {
-                      for(int i = 0;i < 10;i++)
-                        inputData[i] = DGtemp_buf[i];
-                        
-                      inputData[2] = 0x00;
-                      inputData[9] = 0x00;
-                      
-                      for(int i = 0;i < 9;i++)
-                        inputData[9] ^= inputData[i];
-                        
-                      DGsend(_thisAddress, 0xFF, master_number, CONTROL_RESPONSE_BROADCAST, DGtemp_buf, sizeof(DGtemp_buf));
-                      RS485_Write_Read();
-                    }
-                  }
-                }
-  
                 //scan이 완료됐음을 외부 마스터에게 알림
 								USART_SendData(USART3, INTERNAL_SCAN_FINISH);
 								while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET);
@@ -450,7 +436,7 @@ void USART3_IRQHandler(void)
       }
 		}
 	}
-	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
 }
 
 void RS485_Write_Read()

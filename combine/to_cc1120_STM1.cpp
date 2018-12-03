@@ -526,14 +526,14 @@ void TO_ELECHOUSE_CC1120::inSendData(byte *txBuffer, byte size)
 	temp[2] = e_txHeaderMaster;
 	temp[3] = e_txHeaderType;
 
-	for (i = CC1120_HEADER_LEN; i<size + CC1120_HEADER_LEN; i++) {
-		temp[i] = txBuffer[i - CC1120_HEADER_LEN];
+	for (i = IN_CC1120_HEADER_LEN; i<size + IN_CC1120_HEADER_LEN; i++) {
+		temp[i] = txBuffer[i - IN_CC1120_HEADER_LEN];
 	}
 
-	temp[size + CC1120_HEADER_LEN] = 0;
-	for (i = 0; i < size + CC1120_HEADER_LEN; i++)
+	temp[size + IN_CC1120_HEADER_LEN] = 0;
+	for (i = 0; i < size + IN_CC1120_HEADER_LEN; i++)
 	{
-		temp[size + CC1120_HEADER_LEN] ^= temp[i];
+		temp[size + IN_CC1120_HEADER_LEN] ^= temp[i];
 	}
 
 
@@ -543,15 +543,15 @@ void TO_ELECHOUSE_CC1120::inSendData(byte *txBuffer, byte size)
 	DisableLNA();
 
 
-	for (i = 0; i<CC1120_HEADER_LEN + size + 1; i++) {
+	for (i = 0; i<IN_CC1120_HEADER_LEN + size + 1; i++) {
 		Serial.print(temp[i]);
 		//if ((i == 1) || (i == 3) || (i == 5) || (i == 7) || (i > 7)) 
 		Serial.print("   ");
 	}
 
 	Serial.println("          ");
-	SpiWriteReg(SINGLE_TXFIFO, CC1120_HEADER_LEN + size + 1); // Header + Payload + checksum
-	SpiWriteBurstReg(BURST_TXFIFO, temp, CC1120_HEADER_LEN + size + 1);
+	SpiWriteReg(SINGLE_TXFIFO, IN_CC1120_HEADER_LEN + size + 1); // Header + Payload + checksum
+	SpiWriteBurstReg(BURST_TXFIFO, temp, IN_CC1120_HEADER_LEN + size + 1);
 	SpiStrobe(STX);		//start send	
 
 
@@ -763,10 +763,10 @@ byte TO_ELECHOUSE_CC1120::inReceiveData(byte *rxBuffer)
 	size = SpiReadReg(NUM_RXBYTES);
 	if (size == 0)
 		return 0;
-	while ((num = SpiReadReg(NUM_RXBYTES)) >CC1120_HEADER_LEN)
+	while ((num = SpiReadReg(NUM_RXBYTES)) >IN_CC1120_HEADER_LEN)
 	{
 		size = SpiReadReg(SINGLE_RXFIFO);
-		if ((size < CC1120_HEADER_LEN) || (size > CC1120_MAX_MESSAGE_LEN)) { //  CC1120_MAX_MESSAGE_LEN is  50
+		if ((size < IN_CC1120_HEADER_LEN) || (size > CC1120_MAX_MESSAGE_LEN)) { //  CC1120_MAX_MESSAGE_LEN is  50
 			Serial.print("************* Size ERROR : Too short or Too large ********* ");
 			Serial.println(size);
 			delay(100);
@@ -826,7 +826,7 @@ byte TO_ELECHOUSE_CC1120::inReceiveData(byte *rxBuffer)
 		e_rxHeaderMaster = temp[2];
 		e_rxHeaderType = temp[3];
 
-		memcpy(rxBuffer, temp + CC1120_HEADER_LEN, size - CC1120_HEADER_LEN - 1); // copy payload. payload size = size - header length - checksum - bytenumber
+		memcpy(rxBuffer, temp + IN_CC1120_HEADER_LEN, size - IN_CC1120_HEADER_LEN - 1); // copy payload. payload size = size - header length - checksum - bytenumber
 		for (i = 0; i<120; i++) {
 			temp[i] = 0;
 		}

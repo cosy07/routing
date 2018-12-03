@@ -30,41 +30,55 @@ byte scanningAddress;
   
 void RS485_Write_Read()
 {
-  uint8_t num = 0;
-  
-  /*for(int i = 0;i < 10;i++)
-  {
-    Serial.print(inputData[i], HEX);
-    Serial.print(" ");
-  }
-  Serial.println();*/
-  
-  digitalWrite(SSerialTxControl, RS485Transmit);
-  Serial1.write(tempData, sizeof(tempData));
-  Serial1.flush();
-  digitalWrite(SSerialTxControl, RS485Receive);
+  uint8_t index = 0;
+  byte buffer[10];
 
-  rs485_loop_time = millis();
-  Serial1.flush();
-  while(rs485_loop_time + 3000 > millis())
+  for(int i = 0;i < 3;i++)
   {
-    if(Serial1.available())
-      outputData[num++] = Serial1.read();
-    if(num == 10)
-      break;
+    digitalWrite(SSerialTxControl, RS485Transmit);
+    Serial1.write(inputData, sizeof(inputData));
+    Serial1.flush();
+    digitalWrite(SSerialTxControl, RS485Receive);
+  
+    rs485_loop_time = millis();
+    Serial1.flush();
+    while(rs485_loop_time + 3000 > millis())
+    {
+      if(Serial1.available())
+        buffer[index++] = Serial1.read();
+      if(index == 10)
+        break;
+    }
+    Serial1.flush();
+    if(buffer[0] == 0xB5 || buffer[0] == 0xA5)
+    {
+      byte temp = 0;
+      for(int i = 0;i < 9;i++)
+        temp ^= buffer[i];
+      if(buffer[9] == temp)
+      {
+        for(int i = 0;i < 10;i++)
+          outputData[i] = buffer[i];
+        return;
+      }
+    }
   }
-  Serial1.flush();
-  if(num == 10)
+  for(int i = 0;i < 10;i++)
+    outputData[i] = 0;
+  return;
+
+
+  if(index == 10)
   {
     for(int i = 0;i < 10;i++)
     {
-      Serial.print(outputData[i], HEX);
+      Serial.print(buffer[i], HEX);
       Serial.print(" ");
     }
   }
   Serial.println();
   Serial.print("num : ");
-  Serial.println(num);
+  Serial.println(index);
 }
 
 void setup() 
@@ -143,7 +157,7 @@ void loop()
             manager.send(_thisAddress, 0, master_number, SCAN_RESPONSE_TO_RC, manager.temp_buf, sizeof(manager.temp_buf));
             scanning = false;
             
-            while(millis() - scanTIme < 350);
+            while(millis() - scanTime < 350);
           }
           
           /*이전 주소의 응답은 들었지만 자기 바로 앞의 FCU의 응답 신호를 못들었을 경우*/
@@ -151,7 +165,7 @@ void loop()
           //  3번 FCU가 1번FCU의 응답은 들었지만 2번 FCU의 응답을 못듣는 경우에 대비해서
           //  1번 FCU의 응답을 들은 시간을 저장해두고 2번 FCU가 보내야할 구간이 지나가면 자신의 응답을 보냄
                   
-          if(scanning && (millis() - scanningTime > (_thisAddress - scanningAddress) * 350))
+          if(scanning && (millis() - scanTime > (_thisAddress - scanningAddress) * 350))
           {
             inputData[2] = _thisAddress - 1;
             inputData[9] = 0x00;

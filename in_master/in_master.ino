@@ -27,7 +27,7 @@ byte inputData[10]; // RS485 송신 버퍼
 byte outputData[10]; // RS485 수신 버퍼
 byte state_request[10] {0xD5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; //에어텍 내부 통신 프로토콜 상태 요청 메시지
 
-unsigned long rs485_time = millis();
+unsigned long rs485_loop_time = millis();
 unsigned long controlTime;
 unsigned long scanTime;
 bool timeout = true;
@@ -39,24 +39,55 @@ byte receivedFromOutMaster;
 // 에어텍 내부 통신 프로토콜에서 주고받는 데이터는 10 Bytes
 void RS485_Write_Read()
 {
-  uint8_t num = 0;
-  
-  digitalWrite(SSerialTxControl, RS485Transmit);
-  Serial1.write(inputData, sizeof(inputData));
-  Serial1.flush();
-  digitalWrite(SSerialTxControl, RS485Receive);
+  uint8_t index = 0;
+  byte buffer[10];
 
-  rs485_time = millis();
-  while(rs485_time + 3000 > millis())
+  for(int i = 0;i < 3;i++)
   {
-    if(Serial1.available())
+    digitalWrite(SSerialTxControl, RS485Transmit);
+    Serial1.write(inputData, sizeof(inputData));
+    Serial1.flush();
+    digitalWrite(SSerialTxControl, RS485Receive);
+  
+    rs485_loop_time = millis();
+    Serial1.flush();
+    while(rs485_loop_time + 3000 > millis())
     {
-      outputData[num++] = Serial1.read();
-      if(num == 10)
+      if(Serial1.available())
+        buffer[index++] = Serial1.read();
+      if(index == 10)
         break;
     }
+    Serial1.flush();
+    if(buffer[0] == 0xB5 || buffer[0] == 0xA5)
+    {
+      byte temp = 0;
+      for(int i = 0;i < 9;i++)
+        temp ^= buffer[i];
+      if(buffer[9] == temp)
+      {
+        for(int i = 0;i < 10;i++)
+          outputData[i] = buffer[i];
+        return;
+      }
+    }
   }
-  Serial1.flush();   
+  for(int i = 0;i < 10;i++)
+    outputData[i] = 0;
+  return;
+
+
+  if(index == 10)
+  {
+    for(int i = 0;i < 10;i++)
+    {
+      Serial.print(buffer[i], HEX);
+      Serial.print(" ");
+    }
+  }
+  Serial.println();
+  Serial.print("num : ");
+  Serial.println(index); 
 }
 
 

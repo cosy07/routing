@@ -132,8 +132,6 @@ void e_Init(uint8_t f)
 	e_txHeaderFlags = 0xFF;
 	e_txHeaderSeqNum = 0x00;
 
-	PrintfInit();
-	MyTimerInit();
 	e_SpiInit();					//spi initialization
 	e_GDO_Set();					//GDO set
 

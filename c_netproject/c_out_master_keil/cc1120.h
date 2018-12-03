@@ -293,26 +293,26 @@ uint8_t e_SpiReadStatus(uint16_t addr);
 
 // ********************************************************************************
 
-static volatile uint8_t  e_thisAddress;
-static volatile uint8_t  e_rxHeaderFrom;
-static volatile uint8_t  e_rxHeaderTo;
-static volatile uint8_t  e_rxHeaderSource;
-static volatile uint8_t  e_rxHeaderDestination;
-static volatile uint8_t   e_rxHeaderType;
-static volatile uint8_t   e_rxHeaderData;
-static volatile uint8_t   e_rxHeaderFlags;
-static volatile uint8_t   e_rxHeaderSeqNum;
-static volatile uint8_t   e_rxHeaderHop;
+static uint8_t  e_thisAddress;
+static uint8_t  e_rxHeaderFrom;
+static uint8_t  e_rxHeaderTo;
+static uint8_t  e_rxHeaderSource;
+static uint8_t  e_rxHeaderDestination;
+static uint8_t   e_rxHeaderType;
+static uint8_t   e_rxHeaderData;
+static uint8_t   e_rxHeaderFlags;
+static uint8_t   e_rxHeaderSeqNum;
+static uint8_t   e_rxHeaderHop;
 
-static volatile uint8_t  e_txHeaderFrom;
-static volatile uint8_t  e_txHeaderTo;
-static volatile uint8_t  e_txHeaderSource;
-static volatile uint8_t  e_txHeaderDestination;
-static volatile uint8_t   e_txHeaderType;
-static volatile uint8_t   e_txHeaderData;
-static volatile uint8_t   e_txHeaderFlags;
-static volatile uint8_t   e_txHeaderSeqNum;
-static volatile uint8_t   e_txHeaderHop;
+static uint8_t  e_txHeaderFrom;
+static uint8_t  e_txHeaderTo;
+static uint8_t  e_txHeaderSource;
+static uint8_t  e_txHeaderDestination;
+static uint8_t   e_txHeaderType;
+static uint8_t   e_txHeaderData;
+static uint8_t   e_txHeaderFlags;
+static uint8_t   e_txHeaderSeqNum;
+static uint8_t   e_txHeaderHop;
 
 //uint8_t   _mosi, _miso, _sclk, _cs, _gdo;
 

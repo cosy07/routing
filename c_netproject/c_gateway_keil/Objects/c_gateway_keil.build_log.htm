@@ -28,60 +28,30 @@ Project File Date:  11/08/2018
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Rebuild target 'Target 1'
 compiling retarget_io.c...
-compiling cc1120.c...
+compiling myTimer.c...
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+myTimer.c(19): warning:  #9-D: nested comment is not allowed
+  	/*for more accuracy irq priority should be higher, but now its default*/
+myTimer.c(5): warning:  #177-D: variable "timerInitStructure"  was declared but never referenced
+  	TIM_TimeBaseInitTypeDef timerInitStructure;
+myTimer.c: 4 warnings, 0 errors
+compiling spi.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
 spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
   void SPIx_EnableSlave();
 spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
   void SPIx_DisableSlave();
+spi.c: 3 warnings, 0 errors
+compiling printf.c...
 printf.h(21): warning:  #1-D: last line of file ends without a newline
   void PrintfInit(void);	
-myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
-  void SysTick_Handler();
-myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
-  uint32_t millis();
-cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
-  void e_setTxPowerTo5mW();
-cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
-  uint8_t  e_headerFrom(); //  
-cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
-  uint8_t  e_headerTo();  // return _rxHeaderTo  
-cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
-  uint8_t  e_headerSource();
-cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
-  uint8_t  e_headerDestination();
-cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
-  uint8_t  e_headerType();
-cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
-  uint8_t  e_headerData();
-cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
-  uint8_t  e_headerFlags();
-cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
-  uint8_t  e_headerSeqNum();
-cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
-  uint8_t  e_headerHop();
-cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
-  void e_ManualCalibration();
-cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
-  void e_PrintChannel();
-cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
-  void e_DisableLNA();
-cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
-  void e_EnableLNA();
-cc1120.c(257): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadReg" 
+printf.c(61): warning:  #1-D: last line of file ends without a newline
   }
-cc1120.c(335): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadStatus" 
-  }
-cc1120.c(503): warning:  #550-D: variable "reserved"  was set but never used
-  	uint8_t reserved;
-cc1120.c(540): warning:  #550-D: variable "lqi"  was set but never used
-  	signed char lqi;
-cc1120.c(541): warning:  #550-D: variable "crc"  was set but never used
-  	uint8_t crc;
-cc1120.c(864): warning:  #940-D: missing return statement at end of non-void function "e_setSyncWords" 
-  }
-cc1120.c: 26 warnings, 0 errors
+printf.c: 2 warnings, 0 errors
 compiling main.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
@@ -123,79 +93,107 @@ cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg
   void e_DisableLNA();
 cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
   void e_EnableLNA();
-Datagram_STM.h(138): warning:  #1295-D: Deprecated declaration DGheaderTo - give arg types
+Datagram_STM.h(140): warning:  #1295-D: Deprecated declaration DGheaderTo - give arg types
   uint8_t DGheaderTo();
-Datagram_STM.h(139): warning:  #1295-D: Deprecated declaration DGheaderFrom - give arg types
+Datagram_STM.h(141): warning:  #1295-D: Deprecated declaration DGheaderFrom - give arg types
   uint8_t DGheaderFrom();
-Datagram_STM.h(140): warning:  #1295-D: Deprecated declaration DGheaderSource - give arg types
+Datagram_STM.h(142): warning:  #1295-D: Deprecated declaration DGheaderSource - give arg types
   uint8_t DGheaderSource();
-Datagram_STM.h(141): warning:  #1295-D: Deprecated declaration DGheaderDestination - give arg types
+Datagram_STM.h(143): warning:  #1295-D: Deprecated declaration DGheaderDestination - give arg types
   uint8_t DGheaderDestination();
-Datagram_STM.h(142): warning:  #1295-D: Deprecated declaration DGheaderType - give arg types
+Datagram_STM.h(144): warning:  #1295-D: Deprecated declaration DGheaderType - give arg types
   uint8_t DGheaderType();
-Datagram_STM.h(143): warning:  #1295-D: Deprecated declaration DGheaderData - give arg types
+Datagram_STM.h(145): warning:  #1295-D: Deprecated declaration DGheaderData - give arg types
   uint8_t DGheaderData();
-Datagram_STM.h(144): warning:  #1295-D: Deprecated declaration DGheaderSeqNum - give arg types
+Datagram_STM.h(146): warning:  #1295-D: Deprecated declaration DGheaderSeqNum - give arg types
   uint8_t DGheaderSeqNum();
-Datagram_STM.h(145): warning:  #1295-D: Deprecated declaration DGheaderFlags - give arg types
+Datagram_STM.h(147): warning:  #1295-D: Deprecated declaration DGheaderFlags - give arg types
   uint8_t DGheaderFlags();
-Datagram_STM.h(146): warning:  #1295-D: Deprecated declaration DGheaderHop - give arg types
+Datagram_STM.h(148): warning:  #1295-D: Deprecated declaration DGheaderHop - give arg types
   uint8_t	DGheaderHop();
-Datagram_STM.h(147): warning:  #1295-D: Deprecated declaration DGgetThisAddress - give arg types
+Datagram_STM.h(149): warning:  #1295-D: Deprecated declaration DGgetThisAddress - give arg types
   uint8_t	DGgetThisAddress();
-Datagram_STM.h(150): warning:  #1295-D: Deprecated declaration DGavailable - give arg types
+Datagram_STM.h(152): warning:  #1295-D: Deprecated declaration DGavailable - give arg types
   bool DGavailable();
-Datagram_STM.h(160): warning:  #1295-D: Deprecated declaration DGclearRoutingTable - give arg types
+Datagram_STM.h(162): warning:  #1295-D: Deprecated declaration DGclearRoutingTable - give arg types
   void DGclearRoutingTable();
-Datagram_STM.h(162): warning:  #1295-D: Deprecated declaration DGprintRoutingTable - give arg types
+Datagram_STM.h(164): warning:  #1295-D: Deprecated declaration DGprintRoutingTable - give arg types
   void DGprintRoutingTable();
-Datagram_STM.h(164): warning:  #1295-D: Deprecated declaration DGFromGatewayToMaster - give arg types
+Datagram_STM.h(168): warning:  #1295-D: Deprecated declaration DGFromGatewayToMaster - give arg types
   void DGFromGatewayToMaster();
-Datagram_STM.h(166): warning:  #1295-D: Deprecated declaration DGG_find_1stRow_master - give arg types
+Datagram_STM.h(170): warning:  #1295-D: Deprecated declaration DGG_find_1stRow_master - give arg types
   int8_t DGG_find_1stRow_master();
-Datagram_STM.h(174): warning:  #1295-D: Deprecated declaration DGM_findCandidateParents - give arg types
+Datagram_STM.h(178): warning:  #1295-D: Deprecated declaration DGM_findCandidateParents - give arg types
   void DGM_findCandidateParents();
-Datagram_STM.h(176): warning:  #1295-D: Deprecated declaration DGM_find2ndRowMasters - give arg types
+Datagram_STM.h(180): warning:  #1295-D: Deprecated declaration DGM_find2ndRowMasters - give arg types
   void DGM_find2ndRowMasters();
-Datagram_STM.h(178): warning:  #1295-D: Deprecated declaration DGM_masterSendRoutingReply - give arg types
+Datagram_STM.h(182): warning:  #1295-D: Deprecated declaration DGM_masterSendRoutingReply - give arg types
   void DGM_masterSendRoutingReply();
-Datagram_STM.h(190): warning:  #1295-D: Deprecated declaration DGprintRecvPacketHeader - give arg types
+Datagram_STM.h(194): warning:  #1295-D: Deprecated declaration DGprintRecvPacketHeader - give arg types
   void DGprintRecvPacketHeader();
-Datagram_STM.h(192): warning:  #1295-D: Deprecated declaration DGprintPath - give arg types
+Datagram_STM.h(196): warning:  #1295-D: Deprecated declaration DGprintPath - give arg types
   void DGprintPath();
-Datagram_STM.h(194): warning:  #1295-D: Deprecated declaration DGprintTree - give arg types
+Datagram_STM.h(198): warning:  #1295-D: Deprecated declaration DGprintTree - give arg types
   void DGprintTree();
-Datagram_STM.h(206): warning:  #1295-D: Deprecated declaration DGnewMaster - give arg types
+Datagram_STM.h(212): warning:  #1295-D: Deprecated declaration DGnewMaster - give arg types
   void DGnewMaster();
-Datagram_STM.h(208): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
+Datagram_STM.h(214): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
   void DGcheckRoutingTable();
-main.c(97): warning:  #111-D: statement is unreachable
-  	DGFromGatewayToMaster();
-main.c: 44 warnings, 0 errors
-compiling printf.c...
-printf.h(21): warning:  #1-D: last line of file ends without a newline
-  void PrintfInit(void);	
-printf.c(63): warning:  #1-D: last line of file ends without a newline
-  }
-printf.c: 2 warnings, 0 errors
-compiling myTimer.c...
-myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
-  void SysTick_Handler();
-myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
-  uint32_t millis();
-myTimer.c(19): warning:  #9-D: nested comment is not allowed
-  	/*for more accuracy irq priority should be higher, but now its default*/
-myTimer.c(5): warning:  #177-D: variable "timerInitStructure"  was declared but never referenced
-  	TIM_TimeBaseInitTypeDef timerInitStructure;
-myTimer.c: 4 warnings, 0 errors
-compiling spi.c...
+main.c: 43 warnings, 0 errors
+compiling cc1120.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
 spi.h(21): warning:  #1295-D: Deprecated declaration SPIx_EnableSlave - give arg types
   void SPIx_EnableSlave();
 spi.h(22): warning:  #1295-D: Deprecated declaration SPIx_DisableSlave - give arg types
   void SPIx_DisableSlave();
-spi.c: 3 warnings, 0 errors
+printf.h(21): warning:  #1-D: last line of file ends without a newline
+  void PrintfInit(void);	
+myTimer.h(13): warning:  #1295-D: Deprecated declaration SysTick_Handler - give arg types
+  void SysTick_Handler();
+myTimer.h(15): warning:  #1295-D: Deprecated declaration millis - give arg types
+  uint32_t millis();
+cc1120.h(340): warning:  #1295-D: Deprecated declaration e_setTxPowerTo5mW - give arg types
+  void e_setTxPowerTo5mW();
+cc1120.h(344): warning:  #1295-D: Deprecated declaration e_headerFrom - give arg types
+  uint8_t  e_headerFrom(); //  
+cc1120.h(345): warning:  #1295-D: Deprecated declaration e_headerTo - give arg types
+  uint8_t  e_headerTo();  // return _rxHeaderTo  
+cc1120.h(346): warning:  #1295-D: Deprecated declaration e_headerSource - give arg types
+  uint8_t  e_headerSource();
+cc1120.h(347): warning:  #1295-D: Deprecated declaration e_headerDestination - give arg types
+  uint8_t  e_headerDestination();
+cc1120.h(348): warning:  #1295-D: Deprecated declaration e_headerType - give arg types
+  uint8_t  e_headerType();
+cc1120.h(349): warning:  #1295-D: Deprecated declaration e_headerData - give arg types
+  uint8_t  e_headerData();
+cc1120.h(350): warning:  #1295-D: Deprecated declaration e_headerFlags - give arg types
+  uint8_t  e_headerFlags();
+cc1120.h(351): warning:  #1295-D: Deprecated declaration e_headerSeqNum - give arg types
+  uint8_t  e_headerSeqNum();
+cc1120.h(352): warning:  #1295-D: Deprecated declaration e_headerHop - give arg types
+  uint8_t  e_headerHop();
+cc1120.h(354): warning:  #1295-D: Deprecated declaration e_ManualCalibration - give arg types
+  void e_ManualCalibration();
+cc1120.h(356): warning:  #1295-D: Deprecated declaration e_PrintChannel - give arg types
+  void e_PrintChannel();
+cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg types
+  void e_DisableLNA();
+cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
+  void e_EnableLNA();
+cc1120.c(255): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadReg" 
+  }
+cc1120.c(333): warning:  #940-D: missing return statement at end of non-void function "e_SpiReadStatus" 
+  }
+cc1120.c(501): warning:  #550-D: variable "reserved"  was set but never used
+  	uint8_t reserved;
+cc1120.c(538): warning:  #550-D: variable "lqi"  was set but never used
+  	signed char lqi;
+cc1120.c(539): warning:  #550-D: variable "crc"  was set but never used
+  	uint8_t crc;
+cc1120.c(862): warning:  #940-D: missing return statement at end of non-void function "e_setSyncWords" 
+  }
+cc1120.c: 26 warnings, 0 errors
 compiling Datagram_STM.c...
 spi.h(19): warning:  #1295-D: Deprecated declaration SPIx_Init - give arg types
   void SPIx_Init();
@@ -237,74 +235,76 @@ cc1120.h(357): warning:  #1295-D: Deprecated declaration e_DisableLNA - give arg
   void e_DisableLNA();
 cc1120.h(358): warning:  #1295-D: Deprecated declaration e_EnableLNA - give arg types
   void e_EnableLNA();
-Datagram_STM.h(138): warning:  #1295-D: Deprecated declaration DGheaderTo - give arg types
+Datagram_STM.h(140): warning:  #1295-D: Deprecated declaration DGheaderTo - give arg types
   uint8_t DGheaderTo();
-Datagram_STM.h(139): warning:  #1295-D: Deprecated declaration DGheaderFrom - give arg types
+Datagram_STM.h(141): warning:  #1295-D: Deprecated declaration DGheaderFrom - give arg types
   uint8_t DGheaderFrom();
-Datagram_STM.h(140): warning:  #1295-D: Deprecated declaration DGheaderSource - give arg types
+Datagram_STM.h(142): warning:  #1295-D: Deprecated declaration DGheaderSource - give arg types
   uint8_t DGheaderSource();
-Datagram_STM.h(141): warning:  #1295-D: Deprecated declaration DGheaderDestination - give arg types
+Datagram_STM.h(143): warning:  #1295-D: Deprecated declaration DGheaderDestination - give arg types
   uint8_t DGheaderDestination();
-Datagram_STM.h(142): warning:  #1295-D: Deprecated declaration DGheaderType - give arg types
+Datagram_STM.h(144): warning:  #1295-D: Deprecated declaration DGheaderType - give arg types
   uint8_t DGheaderType();
-Datagram_STM.h(143): warning:  #1295-D: Deprecated declaration DGheaderData - give arg types
+Datagram_STM.h(145): warning:  #1295-D: Deprecated declaration DGheaderData - give arg types
   uint8_t DGheaderData();
-Datagram_STM.h(144): warning:  #1295-D: Deprecated declaration DGheaderSeqNum - give arg types
+Datagram_STM.h(146): warning:  #1295-D: Deprecated declaration DGheaderSeqNum - give arg types
   uint8_t DGheaderSeqNum();
-Datagram_STM.h(145): warning:  #1295-D: Deprecated declaration DGheaderFlags - give arg types
+Datagram_STM.h(147): warning:  #1295-D: Deprecated declaration DGheaderFlags - give arg types
   uint8_t DGheaderFlags();
-Datagram_STM.h(146): warning:  #1295-D: Deprecated declaration DGheaderHop - give arg types
+Datagram_STM.h(148): warning:  #1295-D: Deprecated declaration DGheaderHop - give arg types
   uint8_t	DGheaderHop();
-Datagram_STM.h(147): warning:  #1295-D: Deprecated declaration DGgetThisAddress - give arg types
+Datagram_STM.h(149): warning:  #1295-D: Deprecated declaration DGgetThisAddress - give arg types
   uint8_t	DGgetThisAddress();
-Datagram_STM.h(150): warning:  #1295-D: Deprecated declaration DGavailable - give arg types
+Datagram_STM.h(152): warning:  #1295-D: Deprecated declaration DGavailable - give arg types
   bool DGavailable();
-Datagram_STM.h(160): warning:  #1295-D: Deprecated declaration DGclearRoutingTable - give arg types
+Datagram_STM.h(162): warning:  #1295-D: Deprecated declaration DGclearRoutingTable - give arg types
   void DGclearRoutingTable();
-Datagram_STM.h(162): warning:  #1295-D: Deprecated declaration DGprintRoutingTable - give arg types
+Datagram_STM.h(164): warning:  #1295-D: Deprecated declaration DGprintRoutingTable - give arg types
   void DGprintRoutingTable();
-Datagram_STM.h(164): warning:  #1295-D: Deprecated declaration DGFromGatewayToMaster - give arg types
+Datagram_STM.h(168): warning:  #1295-D: Deprecated declaration DGFromGatewayToMaster - give arg types
   void DGFromGatewayToMaster();
-Datagram_STM.h(166): warning:  #1295-D: Deprecated declaration DGG_find_1stRow_master - give arg types
+Datagram_STM.h(170): warning:  #1295-D: Deprecated declaration DGG_find_1stRow_master - give arg types
   int8_t DGG_find_1stRow_master();
-Datagram_STM.h(174): warning:  #1295-D: Deprecated declaration DGM_findCandidateParents - give arg types
+Datagram_STM.h(178): warning:  #1295-D: Deprecated declaration DGM_findCandidateParents - give arg types
   void DGM_findCandidateParents();
-Datagram_STM.h(176): warning:  #1295-D: Deprecated declaration DGM_find2ndRowMasters - give arg types
+Datagram_STM.h(180): warning:  #1295-D: Deprecated declaration DGM_find2ndRowMasters - give arg types
   void DGM_find2ndRowMasters();
-Datagram_STM.h(178): warning:  #1295-D: Deprecated declaration DGM_masterSendRoutingReply - give arg types
+Datagram_STM.h(182): warning:  #1295-D: Deprecated declaration DGM_masterSendRoutingReply - give arg types
   void DGM_masterSendRoutingReply();
-Datagram_STM.h(190): warning:  #1295-D: Deprecated declaration DGprintRecvPacketHeader - give arg types
+Datagram_STM.h(194): warning:  #1295-D: Deprecated declaration DGprintRecvPacketHeader - give arg types
   void DGprintRecvPacketHeader();
-Datagram_STM.h(192): warning:  #1295-D: Deprecated declaration DGprintPath - give arg types
+Datagram_STM.h(196): warning:  #1295-D: Deprecated declaration DGprintPath - give arg types
   void DGprintPath();
-Datagram_STM.h(194): warning:  #1295-D: Deprecated declaration DGprintTree - give arg types
+Datagram_STM.h(198): warning:  #1295-D: Deprecated declaration DGprintTree - give arg types
   void DGprintTree();
-Datagram_STM.h(206): warning:  #1295-D: Deprecated declaration DGnewMaster - give arg types
+Datagram_STM.h(212): warning:  #1295-D: Deprecated declaration DGnewMaster - give arg types
   void DGnewMaster();
-Datagram_STM.h(208): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
+Datagram_STM.h(214): warning:  #1295-D: Deprecated declaration DGcheckRoutingTable - give arg types
   void DGcheckRoutingTable();
 Datagram_STM.c(30): warning:  #68-D: integer conversion resulted in a change of sign
   	DGsendingTime = -60000;
 Datagram_STM.c(176): warning:  #1293-D: assignment in condition
   	if (size = e_ReceiveData(buf))
-Datagram_STM.c(613): warning:  #1293-D: assignment in condition
+Datagram_STM.c(630): warning:  #1293-D: assignment in condition
   		if ((number_of_unknown_node = DGG_find_2ndRow_master(unknown_node_list)))
-Datagram_STM.c(1290): warning:  #177-D: variable "hop"  was declared but never referenced
+Datagram_STM.c(622): warning:  #177-D: variable "address_i"  was declared but never referenced
+  	uint8_t address_i;
+Datagram_STM.c(1376): warning:  #177-D: variable "hop"  was declared but never referenced
   	uint8_t hop = 0;
-Datagram_STM.c: 47 warnings, 0 errors
-compiling stm32f10x_gpio.c...
-compiling stm32f10x_rcc.c...
+Datagram_STM.c: 48 warnings, 0 errors
 compiling misc.c...
-compiling stm32f10x_spi.c...
+compiling stm32f10x_gpio.c...
 compiling stm32f10x_rtc.c...
-compiling stm32f10x_tim.c...
+compiling stm32f10x_rcc.c...
 assembling startup_stm32f10x_md.s...
-compiling stm32f10x_usart.c...
+compiling stm32f10x_spi.c...
+compiling stm32f10x_tim.c...
 compiling GPIO_STM32F10x.c...
 compiling DMA_STM32F10x.c...
+compiling stm32f10x_usart.c...
 compiling system_stm32f10x.c...
 linking...
-Program Size: Code=10536 RO-data=332 RW-data=228 ZI-data=3404  
+Program Size: Code=23652 RO-data=728 RW-data=224 ZI-data=3408  
 FromELF: creating hex file...
 ".\Objects\c_gateway_keil.axf" - 0 Error(s), 126 Warning(s).
 
@@ -350,8 +350,8 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: Keil::Device:StdPeriph Drivers:USART:3.5.0
-      Source file:   Device\StdPeriph_Driver\src\stm32f10x_usart.c
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_usart.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_usart.c
 
    * Component: Keil::Device:StdPeriph Drivers:TIM:3.5.0
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_tim.h
@@ -362,8 +362,8 @@ Package Vendor: Keil
       Source file:   Device\StdPeriph_Driver\src\stm32f10x_spi.c
 
    * Component: Keil::Device:StdPeriph Drivers:RTC:3.5.0
-      Source file:   Device\StdPeriph_Driver\src\stm32f10x_rtc.c
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_rtc.h
+      Source file:   Device\StdPeriph_Driver\src\stm32f10x_rtc.c
 
    * Component: Keil::Device:StdPeriph Drivers:RCC:3.5.0
       Include file:  Device\StdPeriph_Driver\inc\stm32f10x_rcc.h
@@ -375,24 +375,24 @@ Package Vendor: Keil
 
    * Component: Keil::Device:StdPeriph Drivers:Framework:3.5.1
       Include file:  Device\StdPeriph_Driver\inc\misc.h
-      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
-      Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
-      Source file:   Device\StdPeriph_Driver\src\misc.c
       Source file:   Device\StdPeriph_Driver\templates\stm32f10x_it.c
+      Source file:   Device\StdPeriph_Driver\templates\stm32f10x_conf.h
+      Source file:   Device\StdPeriph_Driver\src\misc.c
+      Include file:  Device\StdPeriph_Driver\templates\stm32f10x_it.h
 
    * Component: Keil::Device:Startup:1.0.0
-      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
+      Source file:   Device\Source\ARM\STM32F1xx_OPT.s
       Source file:   Device\Source\system_stm32f10x.c
       Include file:  RTE_Driver\Config\RTE_Device.h
-      Source file:   Device\Source\ARM\STM32F1xx_OPT.s
+      Source file:   Device\Source\ARM\startup_stm32f10x_md.s
 
    * Component: Keil::Device:GPIO:1.3
       Source file:   RTE_Driver\GPIO_STM32F10x.c
       Include file:  RTE_Driver\GPIO_STM32F10x.h
 
    * Component: Keil::Device:DMA:1.2
-      Include file:  RTE_Driver\DMA_STM32F10x.h
       Source file:   RTE_Driver\DMA_STM32F10x.c
+      Include file:  RTE_Driver\DMA_STM32F10x.h
 
    * Component: Keil.ARM Compiler::Compiler:I/O:STDOUT:ITM:1.2.0
       Source file:   Source\retarget_io.c
@@ -404,7 +404,7 @@ Package Vendor: Keil
       Source file:   Source\retarget_io.c
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:04
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

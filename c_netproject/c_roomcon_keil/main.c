@@ -45,11 +45,7 @@ void receiveFromRC();
 void send_and_wait_for_scan();
 
 int main()
-{
-	DGInit(0x01, 0x00, 15); //zone의 외부 마스터 번호, 내 주소, 채널
-	_thisAddress = DGgetThisAddress();
-	DGSetReceive();
-
+{	
 	for(int i = 0;i < 16;i++)
 	{
 		slave_answer[i][0] = 0xB5;
@@ -66,13 +62,39 @@ int main()
 			slave_answer[i][9] ^= slave_answer[i][j];
 	}
 	
-	master_number = DGgetMasterNumber();
+	SystemInit();
 	/* System Clocks Configuration */
 	 RCC_Configuration();
 	/* NVIC configuration */
 	 NVIC_Configuration();
   /* Configure the GPIO ports */
 	GPIO_Configuration();
+	
+	PrintfInit();
+	MyTimerInit();
+	
+	//주소 설정을 위해 처음에 FCU로부터 type이 CA인 값을 받음
+	byte initDataFromFCU[4];
+	byte tempIndex = 0;
+	
+	while(1)
+	{
+		while(tempIndex < 4) //master는 받아야할 데이터가 총 4바이트(CA(type), 층 주소, 외부주소, 내부주소)
+		{
+			if(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == SET) // usart2로부터 데이터 수신
+			{
+				while(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == RESET); // 데이터를 모두 받을 때까지 대기
+				initDataFromFCU[tempIndex++] = USART_ReceiveData(USART2); //수신한 데이터를 변수에 저장
+			}
+		}
+		if(initDataFromFCU[0] == 0xCA) // 맞는 데이터를 수신했다면
+		{
+				DGInit(initDataFromFCU[2], initDataFromFCU[3], initDataFromFCU[1] * 2); // 층, 주소, 채널 번호(외부채널은 층 * 2 -1, 내부채널은 층 * 2)
+				_thisAddress = DGgetThisAddress(); // main.c의 전역변수 초기화
+				master_number = DGgetMasterNumber();
+			break; // 제대로 수신했다면 while문 탈출
+		}
+	}	
 	
 	DGSetReceive();
 

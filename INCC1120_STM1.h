@@ -9,7 +9,6 @@
 #include <SPI.h>
 
 // Init constants
-
 #define RX 0
       
 #define CC1120_MAX_MESSAGE_LEN 50
@@ -352,7 +351,7 @@ IN_ELECHOUSE_CC1120(uint8_t mosi,uint8_t miso, uint8_t sclk, uint8_t cs,uint8_t 
     		} TransmitPower;
 
 };
-//extern  IN_ELECHOUSE_CC1120 IN_ELECHOUSE_CC1120;
+extern  IN_ELECHOUSE_CC1120 IN_ELECHOUSE_CC1120;
 
 
 #endif

@@ -123,7 +123,7 @@ byte  ToInDatagram::recvData(uint8_t* buf)
 		_rxHeaderTo = headerTo();
 		_rxHeaderMaster = headerMaster();
 		_rxHeaderType = headerType();
-		return (size - CC1120_HEADER_LEN);
+		return (size - IN_CC1120_HEADER_LEN);
 	}
 	return 0;
 }

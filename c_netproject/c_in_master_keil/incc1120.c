@@ -128,8 +128,6 @@ void e_Init(uint8_t f)
 	e_txHeaderMaster = 0xCC;
 	e_txHeaderType = 0xDD;
 
-	PrintfInit();
-	MyTimerInit();
 	e_SpiInit();					//spi initialization
 	e_GDO_Set();					//GDO set
 

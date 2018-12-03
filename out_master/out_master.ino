@@ -48,11 +48,13 @@ byte outputData[10];
 
 byte receivedFromInMaster;
 bool timeout = true;
+byte receiveFromInMaster;
 
 bool RS485_Write_Read()
 {
   byte buffer[10];
   uint8_t index = 0;
+  
   for(int i = 0;i < 3;i++)
   {
     digitalWrite(SSerialTxControl, RS485Transmit);
@@ -61,6 +63,7 @@ bool RS485_Write_Read()
     digitalWrite(SSerialTxControl, RS485Receive);
   
     rs485_time = millis();
+    Serial1.flush();
     while(rs485_time + 3000 > millis())
     {
       if(Serial1.available())
@@ -457,14 +460,14 @@ void loop()
           manager.sendToWaitAck(_thisAddress, manager.getRouteTo(_thisAddress & 0x00)->next_hop, _thisAddress, _thisAddress & 0x00, SCAN_REQUEST_ACK_FROM_MASTER, NONE, NONE, NONE, NONE, manager.temp_buf, sizeof(manager.temp_buf));
 
           //send scan to internal master in serial
-          Serial2.send(INTERNAL_SCAN);
+          Serial2.write(INTERNAL_SCAN);
           
         }
         
         else if(_rxHeaderType == CONTROL_TO_MASTER && manager.getRouteTo(_thisAddress & 0x00) != NULL)
         {
-          byte temp;
-          manater.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, temp, sizeof(temp));
+          byte temp[2];
+          manager.send(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, temp, sizeof(temp));
           
           manager.getRouteTo(_thisAddress & 0x00)->hop = _rxHeaderHop + 1;
           
@@ -477,7 +480,7 @@ void loop()
             manager.temp_buf[i] = outputData[i];
             
           //send control to internal master in serial
-          Serial2.send(INTERNAL_CONTROL);
+          Serial2.write(INTERNAL_CONTROL);
 
           timeout = true;
           //내부 마스터로부터 제어 명령 전송이 완료됐는지 데이터를 수신하기까지 대기

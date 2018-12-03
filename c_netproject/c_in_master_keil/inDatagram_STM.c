@@ -120,7 +120,7 @@ byte  DGrecvData(uint8_t* buf)
 // 2017-04-26 ver.1
 void DGsend(uint8_t from, uint8_t to, uint8_t master, uint8_t type, uint8_t* temp_buf, uint8_t size)
 {
-	while (millis() - DGsendingTime < 1000);//??? ?? 20?? ??? reset???? sendingTime ?? int?? ???
+	while (millis() - DGsendingTime < 1000);
 	DGsetHeaderFrom(from);
 	DGsetHeaderTo(to);
 	DGsetHeaderMaster(master);
@@ -140,7 +140,6 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t master, uint8_t type, uin
 	for (int i = 0; i < DEFAULT_RETRIES; i++)
 	{
 		while (millis() - DGsendingTime < 1000);
-		//sendingTime = millis();//??? ?? 20?? ??? reset???? sendingTime ?? int?? ???, TIME_TERM? 1000 ???? ?? ??? ??? ACK ?? ? send???? ??? ?? ? ?? ?? ??? ???? ??
 
 		printf("retry : %d", i);
 		e_SendData(temp_buf, size);
@@ -151,9 +150,9 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t master, uint8_t type, uin
 			DGSetReceive();
 			if (DGavailable())
 			{
-				if (DGrecvData(temp_buf))// &&  _rxHeaderFrom == to)
+				if (DGrecvData(temp_buf))
 				{
-					if (DG_rxHeaderTo == DG_thisAddress || DG_rxHeaderTo == 0xFF)// && _rxHeaderType == ACK)
+					if (DG_rxHeaderTo == DG_thisAddress || DG_rxHeaderTo == 0xFF)
 					{
 						printf("success\r\n");
 						return true;

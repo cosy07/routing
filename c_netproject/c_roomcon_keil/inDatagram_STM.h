@@ -111,21 +111,21 @@ bool DGsendToWaitAck(uint8_t from, uint8_t to, uint8_t master, uint8_t type, uin
 
 void DGprintRecvPacketHeader();
 
-static volatile uint8_t DGch;
+static uint8_t DGch;
 
 extern byte DGtemp_buf[20];
 
-static volatile uint8_t       DG_thisAddress;		/// The address of this node
-static volatile uint8_t  			DG_rxHeaderTo;
-static volatile uint8_t  			DG_rxHeaderFrom;
-static volatile uint8_t  			DG_rxHeaderMaster;
-static volatile uint8_t				DG_rxHeaderType;
+static uint8_t       DG_thisAddress;		/// The address of this node
+static uint8_t  			DG_rxHeaderTo;
+static uint8_t  			DG_rxHeaderFrom;
+static uint8_t  			DG_rxHeaderMaster;
+static uint8_t				DG_rxHeaderType;
 
-static volatile uint8_t				DGgatewayNumber;
-static volatile uint8_t				DGmasterNumber;
-static volatile uint8_t				DGnum_of_slave;
+static uint8_t				DGgatewayNumber;
+static uint8_t				DGmasterNumber;
+static uint8_t				DGnum_of_slave;
 
-static volatile unsigned long		DGsendingTime;
+static unsigned long		DGsendingTime;
 
 
 #endif

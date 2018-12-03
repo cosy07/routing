@@ -3,9 +3,9 @@
 <title>Static Call Graph - [.\Objects\c_roomcon_keil.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\c_roomcon_keil.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Wed Oct 24 15:40:45 2018
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Fri Nov 30 14:04:41 2018
 <BR><P>
-<H3>Maximum Stack Usage =        360 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =        368 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
 __rt_entry_main &rArr; main &rArr; DGsendToWaitAck &rArr; DGrecvData &rArr; e_ReceiveData &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 <P>
@@ -245,7 +245,7 @@ Global Symbols
 <P><STRONG><a name="[11b]"></a>__rt_entry_postsh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000009))
 
 <P><STRONG><a name="[57]"></a>__rt_entry_main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$0000000D))
-<BR><BR>[Stack]<UL><LI>Max Depth = 360 + Unknown Stack Size
+<BR><BR>[Stack]<UL><LI>Max Depth = 368 + Unknown Stack Size
 <LI>Call Chain = __rt_entry_main &rArr; main &rArr; DGsendToWaitAck &rArr; DGrecvData &rArr; e_ReceiveData &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -446,9 +446,9 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DGsendToWaitAck
-<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
+<LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
 <LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SendData
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
 <LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
 </UL>
 
@@ -479,7 +479,7 @@ Global Symbols
 
 <P><STRONG><a name="[11f]"></a>_printf_longlong_hex</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, _printf_hex_int.o(.text), UNUSED)
 
-<P><STRONG><a name="[db]"></a>__aeabi_memcpy</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text))
+<P><STRONG><a name="[da]"></a>__aeabi_memcpy</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text))
 <BR><BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
 </UL>
 
@@ -1092,32 +1092,32 @@ Global Symbols
 <P><STRONG><a name="[b0]"></a>GPIO_Init</STRONG> (Thumb, 278 bytes, Stack size 24 bytes, stm32f10x_gpio.o(i.GPIO_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = GPIO_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Configuration
+<BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
+<LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Configuration
 <LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Init
-<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
-<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
+<LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_GDO_Set
 </UL>
 
 <P><STRONG><a name="[cf]"></a>GPIO_ReadInputDataBit</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_ReadInputDataBit))
-<BR><BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
+<BR><BR>[Called By]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiStrobe
-<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
+<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
+<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
 <LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SendData
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
 <LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_CheckReceiveFlag
 </UL>
 
 <P><STRONG><a name="[c9]"></a>GPIO_ResetBits</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_ResetBits))
 <BR><BR>[Called By]<UL><LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
-<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
+<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiStrobe
-<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
+<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
 <LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_EnableLNA
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_DisableLNA
@@ -1125,12 +1125,12 @@ Global Symbols
 
 <P><STRONG><a name="[c6]"></a>GPIO_SetBits</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_SetBits))
 <BR><BR>[Called By]<UL><LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
-<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
+<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiStrobe
-<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
+<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
 <LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_GDO_Set
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_EnableLNA
@@ -1141,10 +1141,10 @@ Global Symbols
 <LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stderr_putchar
 </UL>
 
-<P><STRONG><a name="[d3]"></a>MyTimerInit</STRONG> (Thumb, 82 bytes, Stack size 12 bytes, mytimer.o(i.MyTimerInit))
+<P><STRONG><a name="[e7]"></a>MyTimerInit</STRONG> (Thumb, 82 bytes, Stack size 12 bytes, mytimer.o(i.MyTimerInit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = MyTimerInit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
+<BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[b1]"></a>NVIC_Configuration</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, main.o(i.NVIC_Configuration))
@@ -1166,16 +1166,15 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NVIC_Configuration
 </UL>
 
-<P><STRONG><a name="[b4]"></a>PrintfInit</STRONG> (Thumb, 124 bytes, Stack size 24 bytes, printf.o(i.PrintfInit))
+<P><STRONG><a name="[b4]"></a>PrintfInit</STRONG> (Thumb, 120 bytes, Stack size 24 bytes, printf.o(i.PrintfInit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 92<LI>Call Chain = PrintfInit &rArr; USART_Init &rArr; RCC_GetClocksFreq
 </UL>
-<BR>[Calls]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemInit
-<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_Init
+<BR>[Calls]<UL><LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_Init
 <LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_Cmd
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB2PeriphClockCmd
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
+<BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[b9]"></a>RCC_APB1PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f10x_rcc.o(i.RCC_APB1PeriphClockCmd))
@@ -1183,9 +1182,9 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[b5]"></a>RCC_APB2PeriphClockCmd</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f10x_rcc.o(i.RCC_APB2PeriphClockCmd))
-<BR><BR>[Called By]<UL><LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Init
-<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
-<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
+<BR><BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
+<LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Init
+<LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
 </UL>
 
 <P><STRONG><a name="[b8]"></a>RCC_Configuration</STRONG> (Thumb, 12 bytes, Stack size 8 bytes, main.o(i.RCC_Configuration))
@@ -1225,16 +1224,16 @@ Global Symbols
 <LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_APB2PeriphClockCmd
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Init
 </UL>
-<BR>[Called By]<UL><LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
+<BR>[Called By]<UL><LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
 </UL>
 
-<P><STRONG><a name="[de]"></a>SPIx_Transfer</STRONG> (Thumb, 56 bytes, Stack size 0 bytes, spi.o(i.SPIx_Transfer))
-<BR><BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
+<P><STRONG><a name="[dd]"></a>SPIx_Transfer</STRONG> (Thumb, 56 bytes, Stack size 0 bytes, spi.o(i.SPIx_Transfer))
+<BR><BR>[Called By]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiStrobe
-<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
+<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
 </UL>
 
 <P><STRONG><a name="[12]"></a>SysTick_Handler</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, mytimer.o(i.SysTick_Handler))
@@ -1245,7 +1244,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SetSysClock
 </UL>
-<BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
+<BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f10x_md.o(.text)
 </UL>
@@ -1296,6 +1295,7 @@ Global Symbols
 
 <P><STRONG><a name="[c8]"></a>USART_GetFlagStatus</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32f10x_usart.o(i.USART_GetFlagStatus))
 <BR><BR>[Called By]<UL><LI><a href="#[40]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fputc
+<LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
 </UL>
 
@@ -1320,7 +1320,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[c4]"></a>USART_ReceiveData</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32f10x_usart.o(i.USART_ReceiveData))
-<BR><BR>[Called By]<UL><LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
+<BR><BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<LI><a href="#[39]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART2_IRQHandler
 </UL>
 
 <P><STRONG><a name="[c7]"></a>USART_SendData</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, stm32f10x_usart.o(i.USART_SendData))
@@ -1367,10 +1368,10 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;millis
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DGsendToWaitAck
-<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
+<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
 <LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SendData
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
 <LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
 </UL>
 
@@ -1410,27 +1411,25 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
 </UL>
 
-<P><STRONG><a name="[8b]"></a>e_Init</STRONG> (Thumb, 90 bytes, Stack size 8 bytes, incc1120.o(i.e_Init))
+<P><STRONG><a name="[8b]"></a>e_Init</STRONG> (Thumb, 82 bytes, Stack size 8 bytes, incc1120.o(i.e_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 144 + Unknown Stack Size
 <LI>Call Chain = e_Init &rArr; e_SpiInit &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
-<LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MyTimerInit
-<LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
+<BR>[Calls]<UL><LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
-<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
-<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
-<LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_RegConfigSettings
+<LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiInit
+<LI><a href="#[d4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Reset
+<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_RegConfigSettings
 <LI><a href="#[d2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_GDO_Set
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_EnableLNA
 </UL>
 <BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DGInit
 </UL>
 
-<P><STRONG><a name="[d7]"></a>e_Read8BitRssi</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, incc1120.o(i.e_Read8BitRssi))
+<P><STRONG><a name="[d6]"></a>e_Read8BitRssi</STRONG> (Thumb, 46 bytes, Stack size 24 bytes, incc1120.o(i.e_Read8BitRssi))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = e_Read8BitRssi &rArr; e_SpiReadReg
 </UL>
-<BR>[Calls]<UL><LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
+<BR>[Calls]<UL><LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
 </UL>
 <BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
 </UL>
@@ -1442,31 +1441,31 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[9b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;millis
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiStrobe
-<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
-<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Read8BitRssi
-<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rssi_dbm
-<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
+<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadReg
+<LI><a href="#[d8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiReadBurstReg
+<LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Read8BitRssi
+<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rssi_dbm
+<LI><a href="#[da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2printf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DGrecvData
 </UL>
 
-<P><STRONG><a name="[d6]"></a>e_RegConfigSettings</STRONG> (Thumb, 386 bytes, Stack size 8 bytes, incc1120.o(i.e_RegConfigSettings))
+<P><STRONG><a name="[d5]"></a>e_RegConfigSettings</STRONG> (Thumb, 386 bytes, Stack size 8 bytes, incc1120.o(i.e_RegConfigSettings))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = e_RegConfigSettings &rArr; e_SetChannel &rArr; __aeabi_dmul
 </UL>
-<BR>[Calls]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 <BR>[Called By]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
 </UL>
 
-<P><STRONG><a name="[d5]"></a>e_Reset</STRONG> (Thumb, 94 bytes, Stack size 8 bytes, incc1120.o(i.e_Reset))
+<P><STRONG><a name="[d4]"></a>e_Reset</STRONG> (Thumb, 94 bytes, Stack size 8 bytes, incc1120.o(i.e_Reset))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136 + Unknown Stack Size
 <LI>Call Chain = e_Reset &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay
-<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
@@ -1481,8 +1480,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
-<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
+<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteBurstReg
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiStrobe
 <LI><a href="#[d1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_EnableLNA
 <LI><a href="#[d0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_DisableLNA
@@ -1492,20 +1491,20 @@ Global Symbols
 <LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DGsend
 </UL>
 
-<P><STRONG><a name="[dd]"></a>e_SetChannel</STRONG> (Thumb, 196 bytes, Stack size 72 bytes, incc1120.o(i.e_SetChannel))
+<P><STRONG><a name="[dc]"></a>e_SetChannel</STRONG> (Thumb, 196 bytes, Stack size 72 bytes, incc1120.o(i.e_SetChannel))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = e_SetChannel &rArr; __aeabi_dmul
 </UL>
-<BR>[Calls]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
-<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fmul
-<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
-<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
-<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
-<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
-<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_i2d
-<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dadd
-<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2f
+<BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SpiWriteReg
+<LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fmul
+<LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2iz
+<LI><a href="#[e5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fdiv
+<LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
+<LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
+<LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_i2d
+<LI><a href="#[e2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dadd
+<LI><a href="#[e3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2f
 </UL>
-<BR>[Called By]<UL><LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_RegConfigSettings
+<BR>[Called By]<UL><LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_RegConfigSettings
 </UL>
 
 <P><STRONG><a name="[8d]"></a>e_SetReceive</STRONG> (Thumb, 66 bytes, Stack size 16 bytes, incc1120.o(i.e_SetReceive))
@@ -1516,7 +1515,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DGSetReceive
 </UL>
 
-<P><STRONG><a name="[d4]"></a>e_SpiInit</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, incc1120.o(i.e_SpiInit))
+<P><STRONG><a name="[d3]"></a>e_SpiInit</STRONG> (Thumb, 76 bytes, Stack size 8 bytes, incc1120.o(i.e_SpiInit))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136 + Unknown Stack Size
 <LI>Call Chain = e_SpiInit &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -1529,10 +1528,10 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Init
 </UL>
 
-<P><STRONG><a name="[d9]"></a>e_SpiReadBurstReg</STRONG> (Thumb, 162 bytes, Stack size 32 bytes, incc1120.o(i.e_SpiReadBurstReg))
+<P><STRONG><a name="[d8]"></a>e_SpiReadBurstReg</STRONG> (Thumb, 162 bytes, Stack size 32 bytes, incc1120.o(i.e_SpiReadBurstReg))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = e_SpiReadBurstReg
 </UL>
-<BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
+<BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
@@ -1540,22 +1539,22 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
 </UL>
 
-<P><STRONG><a name="[d8]"></a>e_SpiReadReg</STRONG> (Thumb, 132 bytes, Stack size 24 bytes, incc1120.o(i.e_SpiReadReg))
+<P><STRONG><a name="[d7]"></a>e_SpiReadReg</STRONG> (Thumb, 132 bytes, Stack size 24 bytes, incc1120.o(i.e_SpiReadReg))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = e_SpiReadReg
 </UL>
-<BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
+<BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
-<LI><a href="#[d7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Read8BitRssi
+<LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_Read8BitRssi
 </UL>
 
 <P><STRONG><a name="[ce]"></a>e_SpiStrobe</STRONG> (Thumb, 46 bytes, Stack size 16 bytes, incc1120.o(i.e_SpiStrobe))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = e_SpiStrobe
 </UL>
-<BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
+<BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
@@ -1566,10 +1565,10 @@ Global Symbols
 <LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_CheckReceiveFlag
 </UL>
 
-<P><STRONG><a name="[df]"></a>e_SpiWriteBurstReg</STRONG> (Thumb, 72 bytes, Stack size 24 bytes, incc1120.o(i.e_SpiWriteBurstReg))
+<P><STRONG><a name="[de]"></a>e_SpiWriteBurstReg</STRONG> (Thumb, 72 bytes, Stack size 24 bytes, incc1120.o(i.e_SpiWriteBurstReg))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = e_SpiWriteBurstReg
 </UL>
-<BR>[Calls]<UL><LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
+<BR>[Calls]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
@@ -1577,18 +1576,18 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SendData
 </UL>
 
-<P><STRONG><a name="[dc]"></a>e_SpiWriteReg</STRONG> (Thumb, 120 bytes, Stack size 24 bytes, incc1120.o(i.e_SpiWriteReg))
+<P><STRONG><a name="[db]"></a>e_SpiWriteReg</STRONG> (Thumb, 120 bytes, Stack size 24 bytes, incc1120.o(i.e_SpiWriteReg))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = e_SpiWriteReg &rArr; delay
 </UL>
 <BR>[Calls]<UL><LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;delay
-<LI><a href="#[de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SPIx_Transfer
 <LI><a href="#[c6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_SetBits
 <LI><a href="#[c9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ResetBits
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_ReadInputDataBit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 <LI><a href="#[a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SendData
-<LI><a href="#[d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_RegConfigSettings
+<LI><a href="#[d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_RegConfigSettings
 </UL>
 
 <P><STRONG><a name="[91]"></a>e_headerFrom</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, incc1120.o(i.e_headerFrom))
@@ -1635,11 +1634,16 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> _printf_char_file.o(.text)
 </UL>
-<P><STRONG><a name="[58]"></a>main</STRONG> (Thumb, 664 bytes, Stack size 16 bytes, main.o(i.main))
-<BR><BR>[Stack]<UL><LI>Max Depth = 360 + Unknown Stack Size
+<P><STRONG><a name="[58]"></a>main</STRONG> (Thumb, 750 bytes, Stack size 24 bytes, main.o(i.main))
+<BR><BR>[Stack]<UL><LI>Max Depth = 368 + Unknown Stack Size
 <LI>Call Chain = main &rArr; DGsendToWaitAck &rArr; DGrecvData &rArr; e_ReceiveData &rArr; __2printf &rArr; _printf_char_file &rArr; _printf_char_common &rArr; __printf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_and_wait_for_scan
+<BR>[Calls]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_ReceiveData
+<LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USART_GetFlagStatus
+<LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemInit
+<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PrintfInit
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MyTimerInit
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;send_and_wait_for_scan
 <LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_Configuration
 <LI><a href="#[b1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NVIC_Configuration
 <LI><a href="#[af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_Configuration
@@ -1687,10 +1691,10 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[e4]"></a>__aeabi_d2f</STRONG> (Thumb, 0 bytes, Stack size 32 bytes, d2f.o(x$fpl$d2f))
+<P><STRONG><a name="[e3]"></a>__aeabi_d2f</STRONG> (Thumb, 0 bytes, Stack size 32 bytes, d2f.o(x$fpl$d2f))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = __aeabi_d2f
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[ec]"></a>_d2f</STRONG> (Thumb, 98 bytes, Stack size 32 bytes, d2f.o(x$fpl$d2f), UNUSED)
@@ -1698,10 +1702,10 @@ Global Symbols
 <LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__fpl_dnaninf
 </UL>
 
-<P><STRONG><a name="[e3]"></a>__aeabi_dadd</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, daddsub_clz.o(x$fpl$dadd))
+<P><STRONG><a name="[e2]"></a>__aeabi_dadd</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, daddsub_clz.o(x$fpl$dadd))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = __aeabi_dadd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[ef]"></a>_dadd</STRONG> (Thumb, 332 bytes, Stack size 16 bytes, daddsub_clz.o(x$fpl$dadd), UNUSED)
@@ -1710,16 +1714,16 @@ Global Symbols
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_dsub1
 </UL>
 
-<P><STRONG><a name="[e0]"></a>__aeabi_i2d</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, dflt_clz.o(x$fpl$dflt))
-<BR><BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<P><STRONG><a name="[df]"></a>__aeabi_i2d</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, dflt_clz.o(x$fpl$dflt))
+<BR><BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[134]"></a>_dflt</STRONG> (Thumb, 46 bytes, Stack size 0 bytes, dflt_clz.o(x$fpl$dflt), UNUSED)
 
-<P><STRONG><a name="[e1]"></a>__aeabi_dmul</STRONG> (Thumb, 0 bytes, Stack size 32 bytes, dmul.o(x$fpl$dmul))
+<P><STRONG><a name="[e0]"></a>__aeabi_dmul</STRONG> (Thumb, 0 bytes, Stack size 32 bytes, dmul.o(x$fpl$dmul))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = __aeabi_dmul
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[f2]"></a>_dmul</STRONG> (Thumb, 332 bytes, Stack size 32 bytes, dmul.o(x$fpl$dmul), UNUSED)
@@ -1747,10 +1751,10 @@ Global Symbols
 <LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_dadd1
 </UL>
 
-<P><STRONG><a name="[e2]"></a>__aeabi_f2d</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, f2d.o(x$fpl$f2d))
+<P><STRONG><a name="[e1]"></a>__aeabi_f2d</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, f2d.o(x$fpl$f2d))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = __aeabi_f2d
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[f5]"></a>_f2d</STRONG> (Thumb, 86 bytes, Stack size 16 bytes, f2d.o(x$fpl$f2d), UNUSED)
@@ -1758,10 +1762,10 @@ Global Symbols
 <LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__fpl_dretinf
 </UL>
 
-<P><STRONG><a name="[e6]"></a>__aeabi_fdiv</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, fdiv.o(x$fpl$fdiv))
+<P><STRONG><a name="[e5]"></a>__aeabi_fdiv</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, fdiv.o(x$fpl$fdiv))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = __aeabi_fdiv
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[f7]"></a>_fdiv</STRONG> (Thumb, 384 bytes, Stack size 16 bytes, fdiv.o(x$fpl$fdiv), UNUSED)
@@ -1769,20 +1773,20 @@ Global Symbols
 <LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__fpl_fnaninf
 </UL>
 
-<P><STRONG><a name="[e7]"></a>__aeabi_f2iz</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, ffix.o(x$fpl$ffix))
+<P><STRONG><a name="[e6]"></a>__aeabi_f2iz</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, ffix.o(x$fpl$ffix))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = __aeabi_f2iz
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[f8]"></a>_ffix</STRONG> (Thumb, 54 bytes, Stack size 16 bytes, ffix.o(x$fpl$ffix), UNUSED)
 <BR><BR>[Calls]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__fpl_fnaninf
 </UL>
 
-<P><STRONG><a name="[e5]"></a>__aeabi_fmul</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, fmul.o(x$fpl$fmul))
+<P><STRONG><a name="[e4]"></a>__aeabi_fmul</STRONG> (Thumb, 0 bytes, Stack size 16 bytes, fmul.o(x$fpl$fmul))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = __aeabi_fmul
 </UL>
-<BR>[Called By]<UL><LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
+<BR>[Called By]<UL><LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_SetChannel
 </UL>
 
 <P><STRONG><a name="[f9]"></a>_fmul</STRONG> (Thumb, 258 bytes, Stack size 16 bytes, fmul.o(x$fpl$fmul), UNUSED)
@@ -1806,7 +1810,7 @@ Global Symbols
 <H3>
 Local Symbols
 </H3>
-<P><STRONG><a name="[da]"></a>rssi_dbm</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, incc1120.o(i.rssi_dbm))
+<P><STRONG><a name="[d9]"></a>rssi_dbm</STRONG> (Thumb, 40 bytes, Stack size 0 bytes, incc1120.o(i.rssi_dbm))
 <BR><BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;e_ReceiveData
 </UL>
 

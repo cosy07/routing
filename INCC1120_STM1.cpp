@@ -812,7 +812,7 @@ int IN_ELECHOUSE_CC1120::Read8BitRssi(void){
 }
 
 //
-IN_ELECHOUSE_CC1120 IN_ELECHOUSE_cc1120;
+//IN_ELECHOUSE_CC1120 IN_ELECHOUSE_cc1120;
 
 /****************************************************************
 *FUNCTION NAME:setThisAddress

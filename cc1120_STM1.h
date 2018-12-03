@@ -373,7 +373,7 @@ ELECHOUSE_CC1120(uint8_t mosi,uint8_t miso, uint8_t sclk, uint8_t cs,uint8_t gdo
 static signed char rssi_dbm(unsigned char raw_rssi); 
 uint16_t culCalcCRC(uint8_t crcData, uint16_t  crcReg);
 uint16_t  CRC(uint8_t *txBuffer,uint8_t size );
-extern  ELECHOUSE_CC1120 ELECHOUSE_cc1120;
+//extern  ELECHOUSE_CC1120 ELECHOUSE_cc1120;
 
 
 #endif

@@ -15,7 +15,7 @@ void GPIO_Configuration(void);
 void USART2_Configuration(void);
 void NVIC_Configuration(void);
 
-
+// 수신된 패킷의 헤더 값을 저장하기 위한 변수
 uint8_t     _thisAddress;
 uint8_t     _rxHeaderTo;
 uint8_t     _rxHeaderFrom;
@@ -29,10 +29,12 @@ uint8_t     _rxHeaderHop;
 
 //현재 scan 중인 master number(외부 scan) -> 내부 scan(slave scan)과 구분을 위해 check라는 용어 사용
 uint8_t checkMasterNum = 1;
+
+// temp address를 담기위한 변수
 uint8_t address_i;
 unsigned long startTime;
 
-//multi-hop일 경우 timeout여부를 확인하기 위한 변수
+//multi-hop일 경우 timeout여부(시간이 지나도 목적지로부터 응답을 받지 못함)를 확인하기 위한 변수
 bool timeout = true;
 
 //현재 scan 중인 master number(내부 scan)
@@ -50,7 +52,6 @@ byte gateway_request[32][10];
 //제어명령 수신 여부를 체크하는 배열
 //만일 실제 게이트웨이가 1번 마스터에게 제어 명령을 내렸다면 control_message[1]에 해당 메시지를 저장하고
 //becontrol[1]을 true로 set
-
 bool beControl[32];
 byte control_message[32][10];
 unsigned long controlRecvTime[32];
@@ -62,39 +63,67 @@ uint8_t group_id;
 
 unsigned long scanTime = 0;
 unsigned long controlTime = 0;
-unsigned long waitTime = 0;
 
 
-bool DGcheckReceive[34]; //1번 index부터 값이 들어감
-RoutingTableEntry    _routes[ROUTING_TABLE_SIZE];
-int DGmaster_num;
-int8_t DGparentMaster[34]; //1번 index부터 값이 들어감
-byte DGunRecvCnt[34]; //1번 index부터 값이 들어감
-byte DGtemp_buf[20];
-byte DGbuffer[20];
+bool DGcheckReceive[34]; // 1번 index부터 값이 들어감, index에 해당하는 마스터가 경로 설정이 되었는지 여부를 확인하기 위한 변수
+RoutingTableEntry    _routes[ROUTING_TABLE_SIZE]; //라우팅 테이블
+int DGmaster_num; // 마스터의 개수
+int8_t DGparentMaster[34]; // 1번 index부터 값이 들어감, index에 해당하는 마스터의 부모 노드의 번호를 저장하기 위한 변수
+byte DGunRecvCnt[34]; // 1번 index부터 값이 들어감, 데이터 전송 에러가 몇 번 발생했는지 카운트하기 위한 변수 3회 초과 발생할 시 해당 마스터에 대한 경로를 다시 설정해준다.
+byte DGtemp_buf[20]; // 패킷의 payload
+byte DGbuffer[20];  // 패킷의 payload를 임시로 저장하기 위한 변수
 
 signed char e_rssi;
 
 int main()
 {
-	DGInit(0x00, 0x00, 15);
-	_thisAddress = DGgetThisAddress();
-	DGSetReceive();
-
+	/* Setup the microcontroller system. Initialize the Embedded Flash Interface,  
+	 initialize the PLL and update the SystemFrequency variable. */
+	SystemInit();
+	PrintfInit();		// printf 사용을 위한 초기화
+	MyTimerInit();	// delay 및 millis 사용을 위한 초기화
+	
 	/* System Clocks Configuration */
   RCC_Configuration();
-	/* NVIC configuration */
-  NVIC_Configuration();
   /* Configure the GPIO ports */
   GPIO_Configuration();
-	
+	/* Configure USART2 */
 	USART2_Configuration();
+	
+	
+	
+	//주소 설정을 위해 처음에 FCU로부터 type이 CA와 CB인 값을 받음
+	byte initDataFromFCU[6];
+	byte tempIndex = 0;
 	
 	while(1)
 	{
-		printf("hi");
+		while(tempIndex < 6) //gateway는 받아야할 데이터가 총 6바이트(CA(type), 층 주소, 외부주소, 내부주소, CB(type), 마스터 개수)
+		{
+			if(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == SET) // usart2로부터 데이터 수신
+			{
+				while(USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == RESET); // 데이터를 모두 받을 때까지 대기
+				initDataFromFCU[tempIndex++] = USART_ReceiveData(USART2); //수신한 데이터를 변수에 저장
+			}
+		}
+		if(initDataFromFCU[0] == 0xCA && initDataFromFCU[4] == 0xCB) // 맞는 데이터를 수신했다면
+		{ 
+			DGInit(initDataFromFCU[1], initDataFromFCU[2], initDataFromFCU[1] * 2 - 1); // 층, 주소, 채널 번호(외부채널은 층 * 2 -1, 내부채널은 층 * 2)
+			_thisAddress = DGgetThisAddress(); // main.c의 전역변수 초기화
+			DGmaster_num = initDataFromFCU[5]; //마스터 개수 변수에 저장
+			break; // 제대로 수신했다면 while문 탈출
+		}
 	}
-	DGFromGatewayToMaster();
+	
+	delay(600000); // master들이 다 켜지길 10분간 대기함
+	
+	/* Enable USART2 Receive interrupts */
+  USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+	
+  /* NVIC configuration */
+  NVIC_Configuration();
+	
+	DGFromGatewayToMaster(); //경로 설정
 
 	while(1)
 	{
@@ -106,21 +135,22 @@ int main()
 			// scanMasterNum이 속한 zone의 에러
 			// 어떤 에러인지는 알아서..
 			nextScan = true;
-			if(++scanMasterNum >= 33) //DGmaster_num)
+			if(++scanMasterNum > DGmaster_num)
 				scanMasterNum = 1;
-		}//nextScan = false; // for test
+		}
 
 
-		//*****************************************************************************************************************제어 명령**********************************************************************************************************************************************
-		//slave 스캔 중이 아닐 때만 제어 메시지 전송, beControl이 set되어 있으면 해당 마스터에게 제어 메시지를 보냄
-		if(nextScan)
+		// nextScan default value : true, 마스터로부터 내부 zone의 scan이 끝났다는 패킷을 받거나, 내부 zone으로부터 일정 시간이 지나도 scan 완료 패킷을 받지 못한다면 true로 set됨
+		if(nextScan) // nextScan이 true라는 것은 내부에서 주고받는 메시지가 없다는 것(단 룸콘 자체적인 명령은 주고받을 수 있음)을 뜻함 따라서 제어 명령이나, 내부스캔 명령을 보낼 수 있음
 		{
-			for(int beControlIndex = 0;beControlIndex < 32;beControlIndex++) // 마스터 번호(유선 통신) : 0 ~ 0x1F, 무선통신 주소 : 1 ~ 0x20
+			//*************************************제어 명령*************************************************************
+			//beControl이 set되어 있으면 해당 마스터에게 제어 메시지를 보냄
+			for(int beControlIndex = 0;beControlIndex < DGmaster_num;beControlIndex++) // 마스터 번호(유선 통신) : 0 ~ 0x1F, 무선통신 주소 : 1 ~ 0x20
 			{
 				if(beControl[beControlIndex])
 				{
 					// 마스터 번호(유선 통신) : 0 ~ 0x1F, 무선통신 주소 : 1 ~ 0x20
-					address_i = beControlIndex + 1;// convertToAddress(gatewayNumber, i, 0);
+					address_i = beControlIndex + 1;
 
 					// 실제 게이트웨이로부터 받은 제어 메시지를 무선통신 버퍼에 옮김
 					for(int i = 0;i < 10;i++)
@@ -128,16 +158,22 @@ int main()
 						
 					controlTime = millis();
 					
-					if(DGgetRouteTo(address_i)->hop == 1)
-						waitTime = TIME_TERM * 2 + 2500 + 5000;
-					else
-						waitTime = TIME_TERM * 2;
-					
 					// 라우팅이 정상인 마스터일 경우
 					if(DGcheckReceive[address_i])
 					{
 						//원하는 목적지의 next_hop에게 패킷 전송(type : CONTROL_TO_MASTER)
-						if (!DGsendToWaitAck(_thisAddress, DGgetRouteTo(address_i)->next_hop, _thisAddress, address_i, CONTROL_TO_MASTER, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), waitTime))
+						if (!DGsendToWaitAck(_thisAddress, 
+																 DGgetRouteTo(address_i)->next_hop, 
+																 _thisAddress, 
+																 address_i, 
+																 CONTROL_TO_MASTER, 
+																 NONE, 
+																 NONE, 
+																 NONE, 
+																 NONE, 
+																 DGtemp_buf, 
+																 sizeof(DGtemp_buf), 
+																 TIME_TERM))
 						{
 							// next_hop으로부터 ACK을 받지 못했을 경우
 							uint8_t reroutingAddr = DGgetRouteTo(address_i)->next_hop;
@@ -148,21 +184,23 @@ int main()
 								// unRecvCnt가 threshold이상일 때 다시 라우팅해줌
 								DGcheckReceive[reroutingAddr] = false;
 								DGparentMaster[reroutingAddr] = -1;
-								DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
+								DGG_discoverNewPath(reroutingAddr);
 								DGunRecvCnt[reroutingAddr] = 0;
 								DGprintTree();
 							}
 						}
 						else
 						{
+							// next_hop까지 전송이 잘 됨
 							timeout = true;
 							startTime = millis();
-							while (millis() - startTime < DEFAULT_RETRIES * 4 * DGgetRouteTo(address_i)->hop * TIME_TERM + 7500) // ??? ??? *4, 5?? zone??? ?? ???? ???? ??? ???? ??
+							while (millis() - startTime < DEFAULT_RETRIES * 4 * DGgetRouteTo(address_i)->hop * TIME_TERM + 7500) 
+						  // 실제 목적지까지 전송되는데 걸리는 시간과 내부 zone에서 제어 명령을 주고받는데 걸리는 시간, 다시 gateway에게 응답을 보내기까지 걸리는 시간만큼 기다려줌
 							{
-								DGSetReceive();
-								if (DGavailable())
+								DGSetReceive(); //CC1120의 통신모듈을 수신가능상태로 set
+								if (DGavailable()) //패킷이 수신 중임
 								{
-									if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress)
+									if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress) // 패킷 수신
 									{
 										// 헤더 저장
 										_rxHeaderTo = DGheaderTo();
@@ -175,27 +213,39 @@ int main()
 										_rxHeaderSeqNum = DGheaderSeqNum();
 										_rxHeaderHop = DGheaderHop();
 						
-										//DGprintRecvPacketHeader();
-										timeout = false;
+										DGprintRecvPacketHeader(); //수신된 헤더 printf로 출력
+										timeout = false; //응답이 왔으므로 timeout이 발생한 것은 아님 따라서 값을 false로
 
 										// ACK 전송
-										DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
+										DGsend(_thisAddress, 
+													 _rxHeaderFrom,
+													 _thisAddress, 
+													 _rxHeaderFrom, 
+													 ACK, 
+													 NONE, 
+													 NONE, 
+													 NONE, 
+													 NONE, 
+													 DGtemp_buf, 
+													 sizeof(DGtemp_buf));
 										
 										if (_rxHeaderType == NACK)
-										{
+										{ // NACK은 목적지까지 데이터가 전송되지 않았을 경우
+											// payload(DGtemp_buf)의 첫번째 바이트에 연결이 끊긴 마스터의 번호가 들어있음
 											printf("NACK\r\n");
 											uint8_t reroutingAddr = DGtemp_buf[0];
 											if (DGunRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
 											{
 												DGcheckReceive[reroutingAddr] = false;
 												DGparentMaster[reroutingAddr] = -1;
-												DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
+												DGG_discoverNewPath(reroutingAddr);
 												DGunRecvCnt[reroutingAddr] = 0;
 												DGprintTree();
 											}
 										}
 										else if (_rxHeaderType == CONTROL_RESPONSE_TO_GATEWAY)
 										{
+											// 제어 명령이 목적지까지 잘 전달됨
 											// control메시지를 무선으로 전송 중에 게이트웨이가 또 제어명령을 할 수도 있으므로
 											// 게이트웨이로부터 명령을 받은 시간(A)을 기록해두고 무선으로 이 제어 명령을 보낸 시간이 A 이후일 경우만 제어 명령이 완료되었음을 표시
 											
@@ -218,30 +268,19 @@ int main()
 					} // end of if(DGcheckReceive[address_i])
 				} // end of if(beControl[beControlIndex])
 				
-				/*else
+				else
 				{
 					for(uint8_t i = 0;i < 10;i++)
 						master_answer[beControlIndex][i] = 0;
-				}*/
+				}
 			}
-		}
-
-
-
-
-
-
-
-
-
-
-		//*****************************************************************************************************************내부 zone scan 명령**********************************************************************************************************************************************
-		// nextScan default value : true, 마스터로부터 내부 zone의 scan이 끝났다는 패킷을 받거나, 내부 zone으로부터 일정 시간이 지나도 scan 완료 패킷을 받지 못한다면 true로 set됨
-		// 각 zone의 scan 요청
-		// scanMasterNum : 현재 scan할 zone의 마스터 번호(무선 통신 주소)
-		
-		if(nextScan)
-		{
+			
+			
+			
+			//****************************************************내부 zone scan 명령*****************************************************
+			// 각 zone의 scan 요청
+			// scanMasterNum : 현재 scan할 zone의 마스터 번호(무선 통신 주소)
+			
 			printf("SCAN\r\n");
 			printf("%d\r\n", scanMasterNum);
 			address_i = scanMasterNum;
@@ -249,12 +288,19 @@ int main()
 			// 라우팅이 정상인 마스터일 경우
 			if(DGcheckReceive[address_i])
 			{
-				if(DGgetRouteTo(address_i)->hop == 1)
-					waitTime = TIME_TERM * 2 + 2500;
-				else
-					waitTime = TIME_TERM * 2;
 				// sendToWaitAck으로 해당 마스터의 next_hop에게 패킷 전송
-				if (!DGsendToWaitAck(_thisAddress, DGgetRouteTo(address_i)->next_hop, _thisAddress, address_i, SCAN_REQUEST_TO_MASTER, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), waitTime))
+				if (!DGsendToWaitAck(_thisAddress, 
+														 DGgetRouteTo(address_i)->next_hop, 
+														 _thisAddress, 
+														 address_i, 
+														 SCAN_REQUEST_TO_MASTER, 
+														 NONE, 
+														 NONE,
+														 NONE, 
+														 NONE, 
+														 DGtemp_buf, 
+														 sizeof(DGtemp_buf), 
+														 TIME_TERM))
 				{
 					// next_hop으로부터 ACK을 받지 못한 경우
 					uint8_t reroutingAddr = DGgetRouteTo(address_i)->next_hop;
@@ -265,36 +311,13 @@ int main()
 						// unRecvCnt가 threshold이상일 경우 그 마스터의 경로 설정을 다시 해줌
 						DGcheckReceive[reroutingAddr] = false;
 						DGparentMaster[reroutingAddr] = -1;
-						DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
+						DGG_discoverNewPath(reroutingAddr);
 						DGunRecvCnt[reroutingAddr] = 0;
 						DGprintTree();
 					}
 				}
-				else if(DGgetRouteTo(address_i)->hop == 1)
-				{
-					// one hop일 경우 sendToWaitAck으로 이미 SCAN_REQUEST_ACK_FROM_MASTER를 수신함
-
-					// 헤더 저장
-					_rxHeaderTo = DGheaderTo();
-					_rxHeaderFrom = DGheaderFrom();
-					_rxHeaderSource = DGheaderSource();
-					_rxHeaderDestination = DGheaderDestination();
-					_rxHeaderType = DGheaderType();
-					_rxHeaderData = DGheaderData();
-					_rxHeaderFlags = DGheaderFlags();
-					_rxHeaderSeqNum = DGheaderSeqNum();
-					_rxHeaderHop = DGheaderHop();
-
-					// ACK 전송
-					DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
-					
-					nextScan = false; //현재 내부 존 스캔 중임
-					scanTime = millis(); //내부 존 스캔 응답이 안 올 경우 다음 존 스캔을 위해서 timeout여부를 확인하기 위함
-				}
-				else if (DGgetRouteTo(address_i)->hop != 1)
-				{
-					//multi hop일 경우 SCAN_REQUEST_ACK_FROM_MASTER를 수신할 때까지 기다려줌
-					
+				else
+				{				
 					timeout = true;
 					startTime = millis();
 					while (millis() - startTime < DEFAULT_RETRIES * 4 * DGgetRouteTo(address_i)->hop * TIME_TERM + 2500)
@@ -316,7 +339,17 @@ int main()
 				
 								DGprintRecvPacketHeader();
 								timeout = false;
-								DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
+								DGsend(_thisAddress, 
+											 _rxHeaderFrom, 
+											 _thisAddress, 
+											 _rxHeaderFrom, 
+											 ACK, 
+											 NONE, 
+											 NONE, 
+											 NONE, 
+											 NONE, 
+											 DGtemp_buf, 
+											 sizeof(DGtemp_buf));
 		
 								
 								if (_rxHeaderType == NACK)
@@ -327,7 +360,7 @@ int main()
 									{
 										DGcheckReceive[reroutingAddr] = false;
 										DGparentMaster[reroutingAddr] = -1;
-										DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
+										DGG_discoverNewPath(reroutingAddr);
 										DGunRecvCnt[reroutingAddr] = 0;
 										DGprintTree();
 									}
@@ -351,11 +384,12 @@ int main()
 		}
 
 
-
-
-
-
-		//*****************************************************************************************************************외부 master scan (check)**********************************************************************************************************************************************  
+		
+		
+		
+		
+		
+		//*********************************************외부 master scan (check)******************************************************  
 		address_i = checkMasterNum;
 
 		// 보낼 데이터를 패킷의 payload에 복사
@@ -363,28 +397,34 @@ int main()
 		{
 			DGtemp_buf[i] = gateway_request[checkMasterNum - 1][i];
 		}
-		if(DGgetRouteTo(address_i)->hop == 1)
-			waitTime = TIME_TERM * 2 + 2500;
-		else
-			waitTime = TIME_TERM * 2;
+		
 		// 라우팅이 정상인 마스터일 경우
 		if(DGcheckReceive[address_i])
 		{
-			if (!DGsendToWaitAck(_thisAddress, DGgetRouteTo(address_i)->next_hop, _thisAddress, address_i, CHECK_ROUTING, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf), waitTime))
+			if (!DGsendToWaitAck(_thisAddress, 
+								 DGgetRouteTo(address_i)->next_hop, 
+								 _thisAddress, 
+								 address_i, 
+								 CHECK_ROUTING, 
+								 NONE, 
+								 NONE, 
+								 NONE, 
+								 NONE, 
+								 DGtemp_buf, 
+								 sizeof(DGtemp_buf), 
+								 TIME_TERM))
 			{
 				uint8_t reroutingAddr = DGgetRouteTo(address_i)->next_hop;
 				if (DGunRecvCnt[reroutingAddr]++ > MAX_UN_RECV)
 				{
 					DGcheckReceive[reroutingAddr] = false;
 					DGparentMaster[reroutingAddr] = -1;
-					DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
+					DGG_discoverNewPath(reroutingAddr);
 					DGunRecvCnt[reroutingAddr] = 0;
 					DGprintTree();
 				}
 			}
-			
-			// multi hop노도의 경우
-			else if (DGgetRouteTo(address_i)->hop != 1)
+			else
 			{
 				startTime = millis();
 				timeout = true;
@@ -396,10 +436,10 @@ int main()
 					// 수신 상태로 전환
 					DGSetReceive();
 
-					// 패킷 수신
+					// 패킷 수신 중
 					if (DGavailable())
 					{
-						if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress)
+						if (DGrecvData(DGtemp_buf) && DGheaderTo() == _thisAddress) //패킷 수신
 						{
 							// 헤더 저장
 							_rxHeaderTo = DGheaderTo();
@@ -416,7 +456,17 @@ int main()
 							timeout = false;
 
 							// ACK 전송
-							DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
+							DGsend(_thisAddress,
+										 _rxHeaderFrom,
+										 _thisAddress,
+										 _rxHeaderFrom,
+										 ACK,
+										 NONE,
+										 NONE,
+										 NONE,
+										 NONE,
+										 DGtemp_buf,
+										 sizeof(DGtemp_buf));
 
 							// 패킷이 dst까지 relay되지 못 함
 							if (_rxHeaderType == NACK)
@@ -429,7 +479,7 @@ int main()
 								{
 									DGcheckReceive[reroutingAddr] = false;
 									DGparentMaster[reroutingAddr] = -1;
-									DGG_discoverNewPath(reroutingAddr, DGgetRouteTo(reroutingAddr)->hop);
+									DGG_discoverNewPath(reroutingAddr);
 									DGunRecvCnt[reroutingAddr] = 0;
 									DGprintTree();
 								}
@@ -445,7 +495,7 @@ int main()
 								// scan완료
 								if (_rxHeaderType == CHECK_ROUTING_ACK)
 								{
-									// 새로운 master가 추가되었다면 _rxHeaderData에 새로 추가된 노드의 개수, payload(master응답 데이터 이후에, index10부터)에 추가된 노드의 주소가 들어있음
+									// 새로운 master가 추가되었다면 _rxHeaderData에 새로 추가된 노드의 개수, payload(master응답 데이터 이후에, index 10부터)에 추가된 노드의 주소가 들어있음
 									for (uint8_t i = 0; i < _rxHeaderData; i++)
 									{
 										DGaddRouteTo(DGtemp_buf[10 + i], _rxHeaderFrom, Valid, DGgetRouteTo(_rxHeaderSource)->hop + 1, millis());
@@ -470,7 +520,7 @@ int main()
 								// scan 완료 + 해당 zone의 내부 scan 완료
 								else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
 								{
-									if(++scanMasterNum >= 33)//DGmaster_num)
+									if(++scanMasterNum > DGmaster_num)
 										scanMasterNum = 1;
 									nextScan = true;
 								}
@@ -485,55 +535,6 @@ int main()
 					DGG_find_error_node(address_i);
 				}
 			} // end of multihop 노드 처리
-
-
-			// 원래 1hop이거나 rerouting 결과 1hop인 노드들, 위에랑 같은 처리
-			else 
-			{
-				// 헤더 저장
-				_rxHeaderTo = DGheaderTo();
-				_rxHeaderFrom = DGheaderFrom();
-				_rxHeaderSource = DGheaderSource();
-				_rxHeaderDestination = DGheaderDestination();
-				_rxHeaderType = DGheaderType();
-				_rxHeaderData = DGheaderData();
-				_rxHeaderFlags = DGheaderFlags();
-				_rxHeaderSeqNum = DGheaderSeqNum();
-				_rxHeaderHop = DGheaderHop();
-
-				// ACK 전송
-				DGsend(_thisAddress, _rxHeaderFrom, _thisAddress, _rxHeaderFrom, ACK, NONE, NONE, NONE, NONE, DGtemp_buf, sizeof(DGtemp_buf));
-				
-				for(int i = 0;i < 10;i++)
-					master_answer[checkMasterNum - 1][i] = DGtemp_buf[i];
-					
-				if (_rxHeaderType == CHECK_ROUTING_ACK)
-				{
-					for (uint8_t i = 0; i < _rxHeaderData; i++)
-					{
-						DGaddRouteTo(DGtemp_buf[10 + i], _rxHeaderFrom, Valid, DGgetRouteTo(_rxHeaderSource)->hop + 1, millis());
-						DGcheckReceive[DGtemp_buf[10 + i]] = true;
-						DGparentMaster[DGtemp_buf[10 + i]] = _rxHeaderSource;
-						DGprintRoutingTable();
-						DGmaster_num++;
-					}
-				}
-				else if (_rxHeaderType == CHECK_ROUTING_ACK_REROUTING)
-				{
-					int8_t temp_hopCount = DGgetRouteTo(_rxHeaderSource)->hop;
-					DGaddRouteTo(_rxHeaderSource, _rxHeaderFrom, Valid, _rxHeaderHop + 1, millis());
-					DGchangeNextHop(_rxHeaderSource, temp_hopCount - (_rxHeaderHop + 1));
-					DGparentMaster[_rxHeaderSource] = DGtemp_buf[10];
-			
-					DGprintRoutingTable();
-				}
-				else if(_rxHeaderType == SCAN_RESPONSE_TO_GATEWAY)
-				{
-					if(++scanMasterNum >= 33) //DGmaster_num)
-						scanMasterNum = 1;
-					nextScan = true;
-				}
-			} // end of 1hop 노드 처리
 		} // end of if(DGcheckReceive[address_i]) -> 라우팅이 정상인 마스터일 경우
 
 		// 라우팅이 제대로 되지않은 마스터일 경우
@@ -547,7 +548,7 @@ int main()
 
 
 		//다음 마스터 check
-		if(++checkMasterNum >= 33) //DGmaster_num)
+		if(++checkMasterNum > DGmaster_num)
 			checkMasterNum = 1;
 	}
 	
@@ -568,7 +569,7 @@ void RCC_Configuration(void)
   /* Enable GPIOx clock */
   //RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOx | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
 
-/* Enable USARTx clocks */ 
+	/* Enable USARTx clocks */ 
   //RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 }
@@ -632,8 +633,6 @@ void USART2_Configuration(void)
   
   /* Configure the USARTx */ 
 	USART_Init(USARTxR, &USART_InitStructure);
-	/* Enable USART2 Receive interrupts */
-  USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
   /* Enable the USARTx */
 	USART_Cmd(USARTxR, ENABLE);
 	GPIO_ResetBits(GPIOA, GPIO_Pin_1);
@@ -696,7 +695,6 @@ void USART2_IRQHandler(void)
 		for(int i = 0;i < 10;i++)
 		{
 			USART_SendData(USART2, master_answer[group_id][i]);
-			//while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
 			while(USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
 		}
 		
